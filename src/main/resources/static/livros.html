@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Biblioteca Online</title>
+  <link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/Livros.css">
+</head>
+<body>
+
+<div id="header-container"></div>
+ <div class="sidebar" id="sidebar">
+    <h3>Menu</h3>
+    <a href="principal.html">Inicio</a>
+    <a href="clientes.html">Cadastrar</a>
+    <a href="usuarios.html">Gerenciamento de Usuários</a>
+    <a href="pedidos.html">Status do Pedido</a>
+    <a href="livros.html">Cadastrar Livro</a>
+  </div>
+
+   <header>
+    <span class="menu-icon" onclick="toggleSidebar()">☰</span>
+    <span class="cliente-nome" id="nome-cliente">Gerenciamento de Livros</span>
+    <div class="profile-icon" onclick="toggleProfileForm()">
+      <i class="fas fa-user-circle"></i>
+    </div>
+  </header>
+
+<section id="tela-livros" style="padding:20px;">
+  <div class="container">
+    <h1></h1>
+    <button onclick="abrirFormulario()">➕ Novo Livro</button>
+
+    <!-- Formulário -->
+    <div id="form-container">
+      <h2>📘 Cadastro de Livro</h2>
+     <form id="form-livro">
+  <input type="hidden" id="livro-id" />
+
+  <div>
+    <label for="titulo">Título</label>
+    <input type="text" id="titulo" required />
+  </div>
+
+  <div>
+    <label for="autor">Autor</label>
+    <input type="text" id="autor" required />
+  </div>
+
+  <div>
+    <label for="editora">Editora</label>
+    <input type="text" id="editora" />
+  </div>
+
+  <div>
+    <label for="categoria">Categoria</label>
+    <input type="text" id="categoria" />
+  </div>
+
+  <div>
+    <label for="edicao">Edição</label>
+    <input type="number" id="edicao" min="1" />
+  </div>
+
+  <div>
+    <label for="isbn">ISBN</label>
+    <input type="text" id="isbn" />
+  </div>
+
+  <div>
+    <label for="paginas">Número de Páginas</label>
+    <input type="number" id="paginas" min="1" />
+  </div>
+
+  <div>
+    <label for="sinopse">Sinopse</label>
+    <textarea id="sinopse" rows="4"></textarea>
+  </div>
+
+  <fieldset>
+    <legend>Dimensões (cm / g)</legend>
+
+    <div>
+      <label for="altura">Altura (cm)</label>
+      <input type="number" step="0.01" id="altura" />
+    </div>
+
+    <div>
+      <label for="largura">Largura (cm)</label>
+      <input type="number" step="0.01" id="largura" />
+    </div>
+
+    <div>
+      <label for="profundidade">Profundidade (cm)</label>
+      <input type="number" step="0.01" id="profundidade" />
+    </div>
+
+    <div>
+      <label for="peso">Peso (g)</label>
+      <input type="number" step="0.01" id="peso" />
+    </div>
+  </fieldset>
+
+  <div>
+    <label for="codigoBarras">Código de Barras</label>
+    <input type="text" id="codigoBarras" />
+  </div>
+
+  <div>
+    <label for="precoCusto">Preço de Custo</label>
+    <input type="number" step="0.01" id="precoCusto" required />
+  </div>
+
+  <div>
+    <label for="estoque">Estoque</label>
+    <input type="number" id="estoque" required />
+  </div>
+
+  <div>
+    <label for="dataEntrada">Data de Entrada</label>
+    <input type="date" id="dataEntrada" required />
+  </div>
+
+  <button type="submit">Salvar</button>
+  <button type="button" onclick="fecharFormulario()">Cancelar</button>
+</form>
+
+    </div>
+
+
+<!-- Por este novo painel de filtros -->
+<div class="filtros-container">
+    <div class="filtro-header">
+        <h3>Filtrar Livros</h3>
+        <button class="btn-limpar" onclick="limparFiltros()">Limpar Filtros</button>
+    </div>
+    
+    <div class="filtros-grid">
+        <!-- Filtro por Título -->
+        <div class="filtro-item">
+            <label for="filtro-titulo">Título</label>
+            <input type="text" id="filtro-titulo" placeholder="Digite o título">
+        </div>
+        
+        <!-- Filtro por Autor -->
+        <div class="filtro-item">
+            <label for="filtro-autor">Autor</label>
+            <input type="text" id="filtro-autor" placeholder="Digite o autor">
+        </div>
+        
+        <!-- Filtro por Editora -->
+        <div class="filtro-item">
+            <label for="filtro-editora">Editora</label>
+            <input type="text" id="filtro-editora" placeholder="Digite a editora">
+        </div>
+        
+        <!-- Filtro por ISBN -->
+        <div class="filtro-item">
+            <label for="filtro-isbn">ISBN</label>
+            <input type="text" id="filtro-isbn" placeholder="Digite o ISBN">
+        </div>
+        
+        <!-- Filtro por Categoria -->
+        <div class="filtro-item">
+            <label for="filtro-categoria">Categoria</label>
+            <input type="text" id="filtro-categoria" placeholder="Digite a categoria">
+        </div>
+        
+        <!-- Filtro por Preço -->
+        <div class="filtro-item">
+            <label for="filtro-preco-min">Preço Mínimo</label>
+            <input type="number" id="filtro-preco-min" placeholder="R$ mínimo" min="0" step="0.01">
+        </div>
+        
+        <div class="filtro-item">
+            <label for="filtro-preco-max">Preço Máximo</label>
+            <input type="number" id="filtro-preco-max" placeholder="R$ máximo" min="0" step="0.01">
+        </div>
+        
+        <!-- Filtro por Estoque -->
+        <div class="filtro-item">
+            <label for="filtro-estoque-min">Estoque Mínimo</label>
+            <input type="number" id="filtro-estoque-min" placeholder="Mínimo" min="0">
+        </div>
+        
+        <div class="filtro-item">
+            <label for="filtro-estoque-max">Estoque Máximo</label>
+            <input type="number" id="filtro-estoque-max" placeholder="Máximo" min="0">
+        </div>
+        
+        <!-- Filtro por Status -->
+        <div class="filtro-item">
+            <label for="filtro-status">Status</label>
+            <select id="filtro-status">
+                <option value="">Todos</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+            </select>
+        </div>
+        
+        <!-- Botão de Aplicar Filtros -->
+        <div class="filtro-item full-width">
+            <button class="btn-filtrar" onclick="aplicarFiltros()">Aplicar Filtros</button>
+        </div>
+    </div>
+</div>
+
+    <div id="info-contagem" style="margin-bottom: 10px; font-weight: bold;"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Título</th>
+          <th>Autor</th>
+          <th>Edição</th>
+          <th>Editora</th>
+          <th>Categoria</th>
+          <th>Preço Venda</th>
+          <th>Estoque</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="livros-tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Modais -->
+<div id="modal-excluir" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:white; padding:20px; border-radius:10px; max-width:400px; text-align:center;">
+    <p id="modal-msg"></p>
+    <button id="btn-confirmar-excluir">Sim, excluir</button>
+    <button onclick="fecharModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal Detalhes -->
+<div id="modal-detalhes" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:white; padding:20px; max-width:600px; border-radius:8px; overflow-y:auto; max-height:90vh;">
+    <h3>Detalhes do Livro</h3>
+    <div id="detalhes-conteudo"></div>
+    <button onclick="fecharModalDetalhes()">Fechar</button>
+  </div>
+</div>
+
+<!-- Modal de Confirmação de Ação (Ativar/Inativar) -->
+<div id="modal-confirmacao" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:white; padding:20px; border-radius:10px; max-width:400px; text-align:center;">
+    <h3 id="modal-titulo"></h3>
+    <p id="modal-mensagem"></p>
+    <label for="motivoInput" style="display:block; margin-top:10px;">Motivo:</label>
+    <input type="text" id="motivoInput" style="width:100%; padding:8px; margin-bottom:15px;" />
+    <button id="btn-confirmar-acao">Confirmar</button>
+    <button onclick="fecharModalConfirmacao()">Cancelar</button>
+  </div>
+</div>
+
+
+<script src="js/script.js"></script>
+<script>
+  function abrirFormulario(id = null) {
+    document.getElementById('form-container').style.display = 'block';
+    if (id) carregarLivro(id);
+  }
+
+  function fecharFormulario() {
+    document.getElementById('form-livro').reset();
+    document.getElementById('livro-id').value = '';
+    document.getElementById('form-container').style.display = 'none';
+  }
+
+  async function carregarLivro(id) {
+    const res = await fetch(`/api/livros/${id}`);
+    const livro = await res.json();
+    document.getElementById('livro-id').value = livro.id;
+    document.getElementById('titulo').value = livro.titulo;
+    document.getElementById('autor').value = livro.autor;
+    document.getElementById('editora').value = livro.editora;
+    document.getElementById('categoria').value = livro.categoria;
+    document.getElementById('edicao').value = livro.edicao;
+    document.getElementById('isbn').value = livro.isbn;
+    document.getElementById('paginas').value = livro.paginas;
+    document.getElementById('sinopse').value = livro.sinopse;
+    document.getElementById('altura').value = livro.altura;
+    document.getElementById('largura').value = livro.largura;
+    document.getElementById('profundidade').value = livro.profundidade;
+    document.getElementById('peso').value = livro.peso;
+    document.getElementById('codigoBarras').value = livro.codigoBarras;
+    document.getElementById('precoCusto').value = livro.precoCusto;
+    document.getElementById('estoque').value = livro.estoque;
+    document.getElementById('dataEntrada').value = livro.dataEntrada;
+    abrirFormulario();
+  }
+
+  document.getElementById('form-livro').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const id = document.getElementById('livro-id').value;
+
+    const livro = {
+      titulo: document.getElementById('titulo').value,
+      autor: document.getElementById('autor').value,
+      editora: document.getElementById('editora').value,
+      categoria: document.getElementById('categoria').value,
+      edicao: parseInt(document.getElementById('edicao').value) || null,
+      isbn: document.getElementById('isbn').value,
+      paginas: parseInt(document.getElementById('paginas').value) || null,
+      sinopse: document.getElementById('sinopse').value,
+      altura: parseFloat(document.getElementById('altura').value) || null,
+      largura: parseFloat(document.getElementById('largura').value) || null,
+      profundidade: parseFloat(document.getElementById('profundidade').value) || null,
+      peso: parseFloat(document.getElementById('peso').value) || null,
+      codigoBarras: document.getElementById('codigoBarras').value,
+      precoCusto: parseFloat(document.getElementById('precoCusto').value),
+      estoque: parseInt(document.getElementById('estoque').value),
+      dataEntrada: document.getElementById('dataEntrada').value
+    };
+
+    const metodo = id ? 'PUT' : 'POST';
+    const url = id ? `/api/livros/${id}` : '/api/livros';
+
+    const response = await fetch(url, {
+      method: metodo,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(livro)
+    });
+
+    if (response.ok) {
+      alert('Livro salvo com sucesso!');
+      fecharFormulario();
+      location.reload();
+    } else {
+      alert('Erro ao salvar livro.');
+    }
+  });
+
+  function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('show');
+    }
+
+    let todosLivros = [];
+
+async function carregarLivros(filtros = {}) {
+    try {
+        const params = new URLSearchParams();
+        
+        // Adiciona os parâmetros de filtro
+        if (filtros.titulo) params.append('titulo', filtros.titulo);
+        if (filtros.autor) params.append('autor', filtros.autor);
+        if (filtros.editora) params.append('editora', filtros.editora);
+        if (filtros.isbn) params.append('isbn', filtros.isbn);
+        if (filtros.categoria) params.append('categoria', filtros.categoria);
+        if (filtros.precoMin) params.append('precoMin', filtros.precoMin);
+        if (filtros.precoMax) params.append('precoMax', filtros.precoMax);
+        if (filtros.estoqueMin) params.append('estoqueMin', filtros.estoqueMin);
+        if (filtros.estoqueMax) params.append('estoqueMax', filtros.estoqueMax);
+        if (filtros.status) params.append('ativo', filtros.status === 'ativo');
+
+        const url = '/api/livros/consulta?' + params.toString();
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error('Erro ao carregar livros');
+        
+        const resultado = await response.json();
+        todosLivros = resultado.livros || [];
+        
+        // Atualiza a contagem
+        const countFiltered = resultado.countFiltered || todosLivros.length;
+        const countTotal = resultado.countTotal || todosLivros.length;
+        
+        const infoDiv = document.getElementById('info-contagem');
+        if (infoDiv) {
+            infoDiv.textContent = `Mostrando ${countFiltered} livros de um total de ${countTotal}`;
+        }
+        
+        // Preenche a tabela
+        preencherTabelaLivros(todosLivros);
+        
+    } catch (error) {
+        console.error('Erro ao carregar livros:', error);
+        alert('Não foi possível carregar os livros. Tente novamente mais tarde.');
+    }
+}
+
+function preencherTabelaLivros(livros) {
+    const tbody = document.getElementById('livros-tbody');
+    tbody.innerHTML = '';
+
+    livros.forEach(livro => {
+        const tr = document.createElement('tr');
+        const status = livro.ativo ? 'Ativo' : 'Inativo';
+
+        const btnAcao = livro.ativo
+            ? `<button onclick="abrirModalConfirmacao(${livro.id}, 'inativar')">Inativar</button>`
+            : `<button onclick="abrirModalConfirmacao(${livro.id}, 'ativar')">Ativar</button>`;
+
+        tr.innerHTML = `
+            <td>${livro.id}</td>
+            <td>${livro.titulo}</td>
+            <td>${livro.autor ?? '-'}</td>
+            <td>${livro.edicao ?? '-'}</td>
+            <td>${livro.editora ?? '-'}</td>
+            <td>${livro.categoria ?? '-'}</td>
+            <td>R$ ${livro.precoVenda?.toFixed(2) ?? '0,00'}</td>
+            <td>${livro.estoque ?? 0}</td>
+            <td>${status}</td>
+            <td>
+                <button onclick="editarLivro(${livro.id})">Editar</button>
+                ${btnAcao}
+                <button onclick="abrirModalDetalhes(${livro.id})">Ver</button>
+                <button onclick="abrirModalExclusao(${livro.id}, '${livro.titulo.replace(/'/g, "\\'")}')">Excluir</button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
+
+function aplicarFiltros() {
+  const titulo = document.getElementById('filtro-titulo').value;
+  const autor = document.getElementById('filtro-autor').value;
+  const editora = document.getElementById('filtro-editora').value;
+  const isbn = document.getElementById('filtro-isbn').value;
+  const categoria = document.getElementById('filtro-categoria').value;
+  const precoMin = document.getElementById('filtro-preco-min').value;
+  const precoMax = document.getElementById('filtro-preco-max').value;
+  const estoqueMin = document.getElementById('filtro-estoque-min').value;
+  const estoqueMax = document.getElementById('filtro-estoque-max').value;
+  const status = document.getElementById('filtro-status').value;
+
+  let url = `/api/livros/consulta?`;
+
+  if (titulo) url += `titulo=${encodeURIComponent(titulo)}&`;
+  if (autor) url += `autor=${encodeURIComponent(autor)}&`;
+  if (editora) url += `editora=${encodeURIComponent(editora)}&`;
+  if (isbn) url += `isbn=${encodeURIComponent(isbn)}&`;
+  if (categoria) url += `categoria=${encodeURIComponent(categoria)}&`;
+  if (precoMin) url += `precoMin=${encodeURIComponent(precoMin)}&`;
+  if (precoMax) url += `precoMax=${encodeURIComponent(precoMax)}&`;
+  if (estoqueMin) url += `estoqueMin=${encodeURIComponent(estoqueMin)}&`;
+  if (estoqueMax) url += `estoqueMax=${encodeURIComponent(estoqueMax)}&`;
+  if (status) url += `status=${encodeURIComponent(status)}&`;
+
+  // Remover o último '&'
+  url = url.slice(0, -1);
+
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      mostrarLivros(data.livros);
+      document.getElementById('info-contagem').innerText = `Mostrando ${data.countFiltered} de ${data.countTotal} livros.`;
+    })
+    .catch(err => console.error('Erro ao carregar livros:', err));
+}
+
+function mostrarLivros(livros) {
+  const tbody = document.getElementById('livros-tbody');
+  tbody.innerHTML = '';
+
+  if (!livros || livros.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10">Nenhum livro encontrado.</td></tr>';
+    return;
+  }
+
+  livros.forEach(livro => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${livro.id}</td>
+      <td>${livro.titulo}</td>
+      <td>${livro.autor}</td>
+      <td>${livro.edicao || ''}</td>
+      <td>${livro.editora || ''}</td>
+      <td>${livro.categoria || ''}</td>
+      <td>R$ ${livro.precoVenda.toFixed(2)}</td>
+      <td>${livro.estoque}</td>
+      <td>${livro.ativo ? 'Ativo' : 'Inativo'}</td>
+      <td><!-- botões editar/excluir --></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+
+
+function limparFiltros() {
+    // Limpa todos os campos de filtro
+    document.querySelectorAll('.filtros-container input').forEach(input => {
+        input.value = '';
+    });
+    
+    document.getElementById('filtro-status').value = '';
+    
+    // Recarrega os livros sem filtros
+    carregarLivros();
+}
+
+// Adiciona event listeners para aplicar filtros ao pressionar Enter
+document.querySelectorAll('.filtros-container input').forEach(input => {
+    input.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            aplicarFiltros();
+        }
+    });
+});
+
+// Carrega os livros quando a página é aberta
+window.addEventListener('DOMContentLoaded', () => {
+    carregarLivros();
+});
+
+
+// Função para abrir modal de detalhes do livro
+async function abrirModalDetalhes(id) {
+  const res = await fetch(`/api/livros/${id}`);
+  if (!res.ok) {
+    alert('Erro ao buscar detalhes do livro');
+    return;
+  }
+  const livro = await res.json();
+
+  const conteudo = `
+    <p><strong>ID:</strong> ${livro.id}</p>
+    <p><strong>Título:</strong> ${livro.titulo}</p>
+    <p><strong>Autor:</strong> ${livro.autor}</p>
+    <p><strong>Editora:</strong> ${livro.editora ?? '-'}</p>
+    <p><strong>Categoria:</strong> ${livro.categoria ?? '-'}</p>
+    <p><strong>Edição:</strong> ${livro.edicao ?? '-'}</p>
+    <p><strong>ISBN:</strong> ${livro.isbn ?? '-'}</p>
+    <p><strong>Páginas:</strong> ${livro.paginas ?? '-'}</p>
+    <p><strong>Sinopse:</strong> ${livro.sinopse ?? '-'}</p>
+    <p><strong>Dimensões:</strong> ${livro.altura ?? '-'} x ${livro.largura ?? '-'} x ${livro.profundidade ?? '-'} cm</p>
+    <p><strong>Peso:</strong> ${livro.peso ?? '-'} g</p>
+    <p><strong>Código de Barras:</strong> ${livro.codigoBarras ?? '-'}</p>
+    <p><strong>Preço de Venda:</strong> R$ ${livro.precoVenda?.toFixed(2) ?? '-'}</p>
+    <p><strong>Preço de Custo:</strong> R$ ${livro.precoCusto?.toFixed(2) ?? '-'}</p>
+    <p><strong>Estoque:</strong> ${livro.estoque}</p>
+    <p><strong>Data de Entrada:</strong> ${livro.dataEntrada ?? '-'}</p>
+    <p><strong>Status:</strong> ${livro.ativo ? 'Ativo' : 'Inativo'}</p>
+  `;
+
+  document.getElementById('detalhes-conteudo').innerHTML = conteudo;
+  document.getElementById('modal-detalhes').style.display = 'flex';
+}
+
+function fecharModalDetalhes() {
+  document.getElementById('modal-detalhes').style.display = 'none';
+}
+
+// Modal exclusão
+let idParaExcluir = null;
+
+function abrirModalExclusao(id, titulo) {
+  idParaExcluir = id;
+  document.getElementById('modal-msg').textContent = `Tem certeza que deseja excluir o livro "${titulo}"?`;
+  document.getElementById('modal-excluir').style.display = 'flex';
+}
+
+function fecharModal() {
+  document.getElementById('modal-excluir').style.display = 'none';
+  idParaExcluir = null;
+}
+
+document.getElementById('btn-confirmar-excluir').addEventListener('click', async () => {
+  if (idParaExcluir) {
+    const res = await fetch(`/api/livros/${idParaExcluir}`, { method: 'DELETE' });
+    if (res.ok) {
+      fecharModal();
+      carregarLivros();
+    } else {
+      alert('Erro ao excluir livro');
+    }
+  }
+});
+
+// Funções para ativar/inativar livro
+async function inativarLivro(id) {
+  const res = await fetch(`/api/livros/change-status/${id}`, {
+    method: 'POST', // ou PUT, dependendo do seu backend
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ativo: false }),
+  });
+  if (res.ok) {
+    carregarLivros(); // atualiza a lista
+  } else {
+    alert('Erro ao inativar livro');
+  }
+}
+
+
+async function ativarLivro(id) {
+  const res = await fetch(`/api/livros/change-status/${id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ativo: true })
+  });
+  if (res.ok) carregarLivros();
+  else alert('Erro ao ativar livro');
+}
+
+// Função para iniciar edição (exemplo simples, você pode completar)
+async function editarLivro(id) {
+  await carregarLivro(id);
+}
+
+// Inicializa a lista ao carregar a página
+window.onload = () => carregarLivros();
+
+let acaoId = null;
+let acaoTipo = null; // 'ativar' ou 'inativar'
+
+function abrirModalConfirmacao(id, tipo) {
+  acaoId = id;
+  acaoTipo = tipo;
+
+  const titulo = tipo === 'ativar' ? 'Ativar Livro' : 'Inativar Livro';
+  const mensagem = tipo === 'ativar'
+    ? 'Você tem certeza que deseja ativar este livro?'
+    : 'Você tem certeza que deseja inativar este livro?';
+
+  document.getElementById('modal-titulo').textContent = titulo;
+  document.getElementById('modal-mensagem').textContent = mensagem;
+  document.getElementById('motivoInput').value = '';
+
+  document.getElementById('modal-confirmacao').style.display = 'flex';
+}
+
+function fecharModalConfirmacao() {
+  acaoId = null;
+  acaoTipo = null;
+  document.getElementById('modal-confirmacao').style.display = 'none';
+}
+
+
+function fecharModalConfirmacao() {
+  acaoId = null;
+  acaoTipo = null;
+  document.getElementById('modal-confirmacao').style.display = 'none';
+}
+
+document.getElementById('btn-confirmar-acao').addEventListener('click', async () => {
+  const motivo = document.getElementById('motivoInput').value.trim();
+  if (!motivo) {
+    alert('Por favor, informe o motivo.');
+    return;
+  }
+
+  if (acaoId && acaoTipo) {
+    if (acaoTipo === 'inativar') {
+      await enviarStatus(acaoId, false, motivo);
+    } else {
+      await enviarStatus(acaoId, true, motivo);
+    }
+  }
+
+  fecharModalConfirmacao();
+  carregarLivros();
+});
+
+
+async function enviarStatus(id, ativo, motivo) {
+  const res = await fetch(`/api/livros/change-status/${id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ativo, motivo })
+  });
+
+  if (!res.ok) {
+    alert('Erro ao atualizar status do livro');
+  }
+}
+
+
+document.getElementById('form-filtros').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const filtros = {
+    titulo: document.getElementById('filtro-titulo').value.trim(),
+    autor: document.getElementById('filtro-autor').value.trim(),
+    editora: document.getElementById('filtro-editora').value.trim(),
+    isbn: document.getElementById('filtro-isbn').value.trim(),
+    categoria: document.getElementById('filtro-categoria').value.trim(),
+    precoMin: parseFloat(document.getElementById('filtro-preco-min').value) || null,
+    precoMax: parseFloat(document.getElementById('filtro-preco-max').value) || null,
+    estoqueMin: parseInt(document.getElementById('filtro-estoque-min').value) || null,
+    estoqueMax: parseInt(document.getElementById('filtro-estoque-max').value) || null,
+    status: document.getElementById('filtro-status').value,
+  };
+
+  carregarLivros(filtros);
+});
+
+
+document.getElementById('btn-limpar').addEventListener('click', function() {
+  document.getElementById('filtro-autor').value = '';
+  document.getElementById('filtro-editora').value = '';
+  document.getElementById('filtro-categoria').value = '';
+
+  carregarLivros();
+});
+
+// Carrega a lista ao abrir a página sem filtros
+if (document.getElementById('livros-tbody')) {
+  carregarLivros();
+}
+
+function mostrarTela(tela) {
+  const telas = ['livros', 'clientes'];
+
+  telas.forEach(t => {
+    const sec = document.getElementById(`tela-${t}`);
+    if (sec) {
+      sec.style.display = (t === tela) ? 'block' : 'none';
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1. Captura o clienteId da URL e salva no localStorage
+  const params = new URLSearchParams(window.location.search);
+  const clienteId = params.get('clienteId');
+
+  if (clienteId) {
+    localStorage.setItem('clienteId', clienteId);
+  }
+
+  const storedClienteId = localStorage.getItem('clienteId');
+
+  // 2. Atualiza o link da barra lateral de pedidos.html
+  if (storedClienteId) {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      const links = sidebar.getElementsByTagName('a');
+      for (let i = 0; i < links.length; i++) {
+        if (links[i].href.includes('pedidos.html')) {
+          links[i].href = `pedidos.html?clienteId=${storedClienteId}`;
+        }
+      }
+    }
+
+    // 3. Buscar nome do cliente e colocar no header
+    try {
+      const response = await fetch(`http://localhost:8080/api/clientes/${storedClienteId}`);
+      if (response.ok) {
+        const cliente = await response.json();
+        const nomeCliente = cliente.nome || 'Cliente';
+
+        const nomeElemento = document.getElementById('nome-cliente');
+        if (nomeElemento) {
+          nomeElemento.textContent = `${nomeCliente}`;
+        }
+      } else {
+        console.warn('Erro ao buscar cliente:', response.status);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar cliente:', error);
+    }
+  }
+
+  
+});
+
+
+</script>
+</body>
+</html>

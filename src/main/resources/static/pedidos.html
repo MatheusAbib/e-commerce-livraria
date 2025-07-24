@@ -1,0 +1,358 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciamento de Pedidos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/Pedidos.css">
+</head>
+<body>
+  <div class="container">
+    <a href="principal.html" class="voltar-link"><i class="fas fa-arrow-left"></i> Voltar à loja</a>
+    <h1>Gerenciamento de Pedidos</h1>
+<div class="tabs">
+  <button id="tab-pedidos" class="tab active">Em Andamento</button>
+  <button id="tab-historico" class="tab">Entregas</button>
+  <button id="tab-devolucao" class="tab">Pedidos em Devolução</button>
+  <button id="tab-devolvidos" class="tab">Devolvidos</button>
+    <button id="tab-cancelado" class="tab">Cancelados</button> <!-- nova aba -->
+
+</div>
+
+
+    <div id="pedidos-container">
+      <div class="empty-state" id="empty-state">
+        <i class="fas fa-box-open" style="font-size: 50px; margin-bottom: 15px;"></i>
+        <p>Nenhum pedido encontrado</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+ let pedidosCache = []; // para armazenar todos os pedidos carregados
+ let pedidosDevolucao = []; 
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const devolucoesSalvas = localStorage.getItem('pedidosDevolucao');
+pedidosDevolucao = devolucoesSalvas ? JSON.parse(devolucoesSalvas) : [];
+  let clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+
+  if (!clienteLogado || !clienteLogado.id) {
+    alert('Você precisa estar logado para visualizar seus pedidos.');
+    return;
+  }
+
+  const clienteId = clienteLogado.id;
+
+  try {
+    const response = await fetch(`/api/pedidos?clienteId=${clienteId}`);
+    if (!response.ok) throw new Error('Erro ao carregar pedidos');
+
+    pedidosCache = await response.json();
+
+    // Exibir inicialmente só os pedidos em andamento (status != ENTREGUE)
+    exibirPedidosFiltrados(pedidosCache, false);
+  } catch (error) {
+    console.error('Erro:', error);
+    document.getElementById('pedidos-container').innerHTML = `
+      <div class="error-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>Não foi possível carregar seus pedidos.</p>
+      </div>
+    `;
+  }
+
+  // Adiciona eventos nas abas
+document.getElementById('tab-pedidos').addEventListener('click', () => {
+  setActiveTab('pedidos');
+  exibirPedidosFiltrados(pedidosCache, false); 
+});
+
+
+  document.getElementById('tab-historico').addEventListener('click', () => {
+    setActiveTab('historico');
+    exibirPedidosFiltrados(pedidosCache, true);
+  });
+
+  document.getElementById('tab-devolucao').addEventListener('click', () => {
+  setActiveTab('devolucao');
+  const pedidosDevolucao = pedidosCache.filter(p => p.status === 'DEVOLUCAO');
+exibirPedidos(pedidosDevolucao);
+
+});
+
+document.getElementById('tab-devolvidos').addEventListener('click', () => {
+  setActiveTab('devolvidos');
+  const pedidosDevolvidos = pedidosCache.filter(p => p.status === 'DEVOLVIDO');
+  exibirPedidos(pedidosDevolvidos);
+});
+
+document.getElementById('tab-cancelado').addEventListener('click', () => {
+  setActiveTab('cancelado');
+  const pedidosCancelados = pedidosCache.filter(p => p.status === 'CANCELADO');
+  exibirPedidos(pedidosCancelados);
+});
+
+
+});
+
+function setActiveTab(tab) {
+  document.getElementById('tab-pedidos').classList.toggle('active', tab === 'pedidos');
+  document.getElementById('tab-historico').classList.toggle('active', tab === 'historico');
+  document.getElementById('tab-devolucao').classList.toggle('active', tab === 'devolucao');
+  document.getElementById('tab-devolvidos').classList.toggle('active', tab === 'devolvidos');
+    document.getElementById('tab-cancelado').classList.toggle('active', tab === 'cancelado');
+
+}
+
+
+// Função para exibir pedidos filtrando se mostra só entregues ou só em andamento
+function exibirPedidosFiltrados(pedidos, mostrarEntregues) {
+  const pedidosFiltrados = pedidos.filter(pedido => 
+    mostrarEntregues 
+      ? pedido.status === 'ENTREGUE' 
+      : (pedido.status !== 'ENTREGUE' 
+          && pedido.status !== 'DEVOLUCAO' 
+          && pedido.status !== 'DEVOLVIDO'
+          && pedido.status !== 'CANCELADO')  // <-- filtra cancelados fora aqui
+  );
+  exibirPedidos(pedidosFiltrados);
+}
+
+
+
+
+function exibirPedidos(pedidos) {
+  const container = document.getElementById('pedidos-container');
+
+  if (!pedidos || pedidos.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-box-open"></i>
+        <p>Você ainda não fez nenhum pedido.</p>
+        <a href="principal.html" class="btn-voltar">Voltar às compras</a>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = pedidos.map(pedido => `
+    <div class="pedido-card" data-id="${pedido.id}">
+      <div class="pedido-header">
+        <div>
+          <span class="pedido-id">Seu Pedido</span>
+          <span class="pedido-data">${new Date(pedido.dataPedido).toLocaleDateString('pt-BR')}</span>
+        </div>
+        <span class="pedido-status ${getStatusClass(pedido.status)}">
+          ${formatStatus(pedido.status)}
+        </span>
+      </div>
+
+      <div class="pedido-produtos">
+        ${pedido.itens.map(item => `
+          <div class="produto-item">
+            <img src="${item.livro?.imagemUrl || 'img/livro-placeholder.jpg'}" class="produto-imagem" />
+            <div class="produto-info">
+              <div class="produto-nome">${item.livro?.titulo || 'Livro desconhecido'}</div>
+              <div>Quantidade: ${item.quantidade}</div>
+              <div class="produto-preco">R$ ${item.precoUnitario.toFixed(2)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="pedido-total">
+        Subtotal: R$ ${(pedido.valorTotal - pedido.valorFrete).toFixed(2)} <br />
+        Frete: R$ ${pedido.valorFrete.toFixed(2)} <br />
+        <strong>Total: R$ ${pedido.valorTotal.toFixed(2)}</strong>
+      </div>
+
+      <!-- Adicione esta seção de ações -->
+      <div class="pedido-acoes">
+        ${pedido.status !== 'ENTREGUE' && pedido.status !== 'DEVOLUCAO' && pedido.status !== 'DEVOLVIDO' && pedido.status !== 'CANCELADO' ? `
+          ${(pedido.status === 'EM_PROCESSAMENTO' || pedido.status === 'EM_TRANSITO') ? `
+            <button class="btn-acao btn-cancelar" onclick="cancelarPedido(${pedido.id})">
+              <i class="fas fa-times"></i> Cancelar Pedido
+            </button>
+          ` : ''}
+
+          <button class="btn-acao btn-entregue" onclick="atualizarStatusPedido(${pedido.id}, 'ENTREGUE')">
+            <i class="fas fa-check"></i> Marcar como Entregue
+          </button>
+        ` : ''}
+
+        ${pedido.status === 'ENTREGUE' ? `
+          <button class="btn-acao btn-devolucao" onclick="solicitarDevolucao(${pedido.id})">
+            <i class="fas fa-undo"></i> Solicitar Devolução
+          </button>
+        ` : ''}
+
+        ${pedido.status === 'DEVOLUCAO' ? `
+          <button class="btn-acao btn-aprovar" onclick="atualizarStatusPedido(${pedido.id}, 'DEVOLVIDO')">
+            <i class="fas fa-check-double"></i> Aprovar Devolução
+          </button>
+        ` : ''}
+
+        ${pedido.status === 'DEVOLVIDO' ? `
+          <button class="btn-acao btn-confirmar-troca" onclick="atualizarStatusPedido(${pedido.id}, 'ENTREGUE')">
+            <i class="fas fa-check"></i> Confirmar Troca
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+
+async function solicitarDevolucao(pedidoId) {
+  if (!confirm('Deseja realmente solicitar a devolução deste pedido?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ novoStatus: 'DEVOLUCAO' })
+    });
+
+    if (!response.ok) {
+      const erro = await response.json();
+      throw new Error(erro.message || 'Erro ao solicitar devolução');
+    }
+
+    alert('Solicitação de devolução registrada com sucesso.');
+    document.dispatchEvent(new Event('DOMContentLoaded')); // recarrega pedidos
+
+  } catch (error) {
+    console.error('Erro ao solicitar devolução:', error);
+    alert(`Erro: ${error.message}`);
+  }
+}
+
+
+function formatStatus(status) {
+  switch (status) {
+    case 'EM_PROCESSAMENTO': return 'Em Processamento';
+    case 'EM_TRANSITO': return 'Em Trânsito';
+    case 'ENTREGUE': return 'Entregue';
+    case 'DEVOLUCAO': return 'Em Devolução';
+    case 'DEVOLVIDO': return 'Devolvido';
+
+    default: return status;
+  }
+}
+
+function getStatusClass(status) {
+  switch (status) {
+    case 'EM_PROCESSAMENTO': return 'status-pendente';
+    case 'EM_TRANSITO': return 'status-envio';
+    case 'ENTREGUE': return 'status-entregue';
+    case 'DEVOLUCAO': return 'status-devolucao';
+    case 'DEVOLVIDO': return 'status-devoldio'; // Se quiser um estilo diferente
+    case 'CANCELADO': return 'status-cancelado'; // <-- aqui
+    default: return 'status-pendente';
+  }
+}
+
+
+function renderPedido(pedido) {
+  const container = document.createElement('div');
+  container.classList.add('pedido');
+  container.innerHTML = `
+    <p><strong>ID:</strong> ${pedido.id}</p>
+    <p><strong>Status:</strong> ${pedido.status}</p>
+  `;
+
+  if (pedido.status === 'DEVOLUCAO') {
+    const btnAprovar = document.createElement('button');
+    btnAprovar.textContent = 'Aprovar Devolução';
+    btnAprovar.onclick = () => {
+      fetch(`/api/pedidos/${pedido.id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ novoStatus: 'DEVOLVIDO' })
+      })
+      .then(res => res.ok ? location.reload() : alert('Erro ao aprovar devolução'));
+    };
+    container.appendChild(btnAprovar);
+  }
+
+  return container;
+}
+
+
+
+async function atualizarStatusPedido(pedidoId, novoStatus) {
+  if (!confirm(`Tem certeza que deseja alterar o status do pedido para "${formatStatus(novoStatus)}"?`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        novoStatus: novoStatus  // aqui precisa ser exatamente 'novoStatus'
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Erro ao atualizar status');
+    }
+
+    const pedidoAtualizado = await response.json();
+    alert(`Status do pedido #${pedidoId} atualizado para ${formatStatus(novoStatus)}`);
+    
+    // Recarrega a lista de pedidos
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    
+  } catch (error) {
+    console.error('Erro ao atualizar status:', error);
+    alert(`Erro: ${error.message}`);
+  }
+}
+
+async function cancelarPedido(pedidoId) {
+  if (!confirm('Deseja realmente cancelar este pedido?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ novoStatus: 'CANCELADO' })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Erro ao cancelar pedido');
+    }
+
+    alert('Pedido cancelado com sucesso.');
+    document.dispatchEvent(new Event('DOMContentLoaded')); // recarrega os pedidos
+    setActiveTab('cancelado'); // muda para a aba Cancelados
+  } catch (error) {
+    console.error('Erro ao cancelar pedido:', error);
+    alert(`Erro: ${error.message}`);
+  }
+}
+
+
+
+  </script>
+</body>
+</html>

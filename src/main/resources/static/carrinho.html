@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Seu Carrinho</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="css/Carrinho.css">
+</head>
+
+<body>
+  <header>
+    <h1>Seu Carrinho</h1>
+    <a href="principal.html">← Voltar à loja</a>
+  </header>
+
+  <main>
+    <div class="carrinho-container" id="carrinho-container">
+      <div class="carrinho-vazio" id="carrinho-vazio">
+        Seu carrinho está vazio
+      </div>
+      <div class="carrinho-itens" id="carrinho-itens" style="display: none;"></div>
+    </div>
+
+    <div class="carrinho-total" id="carrinho-total" style="display: none;">
+      <hr>
+      <div style="display: flex; justify-content: space-between; margin: 15px 0;">
+        <strong>Subtotal:</strong>
+        <span id="subtotal">R$ 0,00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 15px 0;">
+        <strong>Frete:</strong>
+        <span id="frete">R$ 10,00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 15px 0; font-weight: bold;">
+        <strong>Total:</strong>
+        <span id="total">R$ 0,00</span>
+      </div>
+
+      <div class="form-group">
+        <label for="select-endereco">Escolha o endereço de entrega:</label>
+        <select id="select-endereco" required>
+          <option value="">-- Selecione um endereço --</option>
+        </select>
+        <div id="detalhes-endereco" class="detalhes-box" style="display:none;"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="select-cartao">Escolha o cartão de pagamento:</label>
+        <select id="select-cartao" required>
+          <option value="">-- Selecione um cartão --</option>
+        </select>
+        <div id="detalhes-cartao" class="detalhes-box" style="display:none;"></div>
+      </div>
+
+      <button class="btn-finalizar" id="btn-finalizar" onclick="finalizarCompra()">Finalizar Compra</button>
+<div id="notificacao-sucesso" class="notificacao" style="display: none;">
+  Compra realizada com sucesso!
+</div>
+    </div>
+  </main>
+
+  <script>
+    // Funções para gerenciar carrinho por usuário
+    function obterCarrinhoUsuario() {
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!clienteLogado) return [];
+      
+      const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
+      return carrinhosPorUsuario[clienteLogado.id] || [];
+    }
+
+    function salvarCarrinhoUsuario(carrinho) {
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!clienteLogado) return;
+      
+      const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
+      carrinhosPorUsuario[clienteLogado.id] = carrinho;
+      localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhosPorUsuario));
+    }
+
+    let carrinho = obterCarrinhoUsuario();
+    let enderecos = [];
+    let cartoes = [];
+
+    function calcularFrete(valorSubtotal, estado) {
+      const acrescimosPorEstado = {
+        'AC': 9.75, 'AL': 6.45, 'AP': 10.00, 'AM': 9.90, 'BA': 5.30,
+        'CE': 6.25, 'DF': 4.70, 'ES': 3.60, 'GO': 4.15, 'MA': 7.80,
+        'MT': 6.95, 'MS': 5.55, 'MG': 4.85, 'PA': 9.35, 'PB': 6.60,
+        'PR': 2.40, 'PE': 6.10, 'PI': 7.35, 'RJ': 5.50, 'RN': 6.75,
+        'RS': 2.25, 'RO': 8.20, 'RR': 10.00, 'SC': 2.95, 'SP': 3.35,
+        'SE': 5.90, 'TO': 7.10
+      };
+
+      let freteBase = 15;
+      if (valorSubtotal >= 300) {
+        freteBase = 0;
+      } else {
+        const adicionais = Math.floor(valorSubtotal / 70) * 7;
+        freteBase += adicionais;
+      }
+
+      return freteBase + (acrescimosPorEstado[estado] || 0);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!clienteLogado) {
+        alert('Você precisa estar logado para acessar o carrinho');
+        window.location.href = 'principal.html';
+        return;
+      }
+
+      carrinho = obterCarrinhoUsuario();
+      carregarCarrinho();
+      carregarEnderecos();
+      carregarCartoes();
+
+      document.getElementById('select-endereco').addEventListener('change', mostrarDetalhesEndereco);
+      document.getElementById('select-cartao').addEventListener('change', mostrarDetalhesCartao);
+    });
+
+    async function carregarCarrinho() {
+      const carrinhoItens = document.getElementById('carrinho-itens');
+      const carrinhoVazio = document.getElementById('carrinho-vazio');
+      const carrinhoTotal = document.getElementById('carrinho-total');
+
+      if (carrinho.length === 0) {
+        carrinhoItens.style.display = 'none';
+        carrinhoVazio.style.display = 'block';
+        carrinhoTotal.style.display = 'none';
+        return;
+      }
+
+      carrinhoVazio.style.display = 'none';
+      carrinhoItens.style.display = 'block';
+      carrinhoTotal.style.display = 'block';
+
+      try {
+        const itensDetalhados = await Promise.all(
+          carrinho.map(async item => {
+            const res = await fetch(`/api/livros/${item.id}`);
+            if (!res.ok) throw new Error(`Erro ao buscar produto ${item.id}: ${res.status}`);
+            const produto = await res.json();
+            return { ...item, produto };
+          })
+        );
+
+        carrinhoItens.innerHTML = itensDetalhados.map(item => `
+          <div class="carrinho-item" data-id="${item.id}">
+            <img src="${item.produto.imagemUrl || 'img/livro-placeholder.jpg'}" alt="${item.produto.titulo}" class="carrinho-item-imagem">
+            <div class="carrinho-item-info">
+              <div class="carrinho-item-titulo">${item.produto.titulo}</div>
+              <div class="carrinho-item-preco">R$ ${item.produto.precoVenda.toFixed(2)}</div>
+              <div class="carrinho-item-controles">
+                <button onclick="alterarQuantidadeCarrinho(${item.id}, -1)">-</button>
+                <input type="number" class="carrinho-item-quantidade" value="${item.quantidade}" min="1" max="${item.produto.estoque}" onchange="atualizarQuantidadeCarrinho(${item.id}, this.value, ${item.produto.estoque})">
+                <button onclick="alterarQuantidadeCarrinho(${item.id}, 1, ${item.produto.estoque})">+</button>
+                <button class="carrinho-item-remover" onclick="removerDoCarrinho(${item.id})"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        const subtotal = itensDetalhados.reduce((s, i) => s + (i.produto.precoVenda * i.quantidade), 0);
+        const frete = calcularFrete(subtotal, ''); 
+
+        document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
+        document.getElementById('frete').textContent = `R$ ${frete.toFixed(2)}`;
+        document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+
+      } catch (error) {
+        console.error('Erro ao carregar itens:', error);
+        carrinhoItens.innerHTML = '<p>Erro ao carregar os produtos.</p>';
+      }
+    }
+
+    function alterarQuantidadeCarrinho(idProduto, delta, estoqueMax = Infinity) {
+      const item = carrinho.find(i => i.id === idProduto);
+      if (!item) return;
+      const novaQtd = item.quantidade + delta;
+      if (novaQtd < 1 || novaQtd > estoqueMax) return;
+      item.quantidade = novaQtd;
+      atualizarCarrinho();
+    }
+
+    function atualizarQuantidadeCarrinho(idProduto, novaQtd, estoqueMax) {
+      const quantidadeNum = parseInt(novaQtd);
+      if (isNaN(quantidadeNum)) return;
+      const item = carrinho.find(i => i.id === idProduto);
+      if (!item) return;
+      item.quantidade = Math.max(1, Math.min(quantidadeNum, estoqueMax));
+      atualizarCarrinho();
+    }
+
+    function removerDoCarrinho(idProduto) {
+      carrinho = carrinho.filter(i => i.id !== idProduto);
+      atualizarCarrinho();
+    }
+
+    function atualizarCarrinho() {
+      salvarCarrinhoUsuario(carrinho);
+      carregarCarrinho();
+    }
+
+    async function finalizarCompra() {
+  try {
+    const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!cliente) {
+      alert('Faça login para finalizar sua compra.');
+      window.location.href = 'principal.html';
+      return;
+    }
+
+    const itensPedido = carrinho.map(item => ({
+      livroId: item.id,
+      quantidade: item.quantidade
+    }));
+
+    const response = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+      },
+      body: JSON.stringify({
+        clienteId: cliente.id,
+        itens: itensPedido,
+        enderecoId: parseInt(document.getElementById('select-endereco').value),
+        cartaoId: parseInt(document.getElementById('select-cartao').value)
+      })
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.mensagem || 'Erro ao processar pedido');
+    }
+
+    // Mostra a notificação de sucesso
+    const notificacao = document.getElementById('notificacao-sucesso');
+    notificacao.style.display = 'block';
+    
+    // Limpa o carrinho do usuário atual
+    const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
+    delete carrinhosPorUsuario[cliente.id];
+    localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhosPorUsuario));
+    
+    // Atualiza o botão para "Ver Compras"
+    const btnFinalizar = document.getElementById('btn-finalizar');
+    btnFinalizar.textContent = 'Ver Compras';
+    btnFinalizar.onclick = function() {
+      window.location.href = `pedidos.html?clienteId=${cliente.id}`;
+    };
+
+    // Esconde a notificação após 3 segundos
+    setTimeout(() => {
+      notificacao.style.display = 'none';
+    }, 3000);
+
+  } catch (error) {
+    console.error('Erro detalhado:', error);
+    alert(`Erro: ${error.message}`);
+  }
+}
+
+    async function carregarEnderecos() {
+      const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!cliente) return;
+
+      try {
+        const res = await fetch(`/api/clientes/${cliente.id}/enderecos`);
+        if (!res.ok) throw new Error('Erro ao buscar endereços');
+        enderecos = await res.json();
+
+        const selectEnderecos = document.getElementById('select-endereco');
+        selectEnderecos.innerHTML = '<option value="">-- Selecione um endereço --</option>';
+
+        const enderecosEntrega = enderecos.filter(e => e.tipo === 'ENTREGA');
+
+        enderecosEntrega.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = `${e.rua}, ${e.numero} - ${e.bairro}, ${e.cidade}`;
+          selectEnderecos.appendChild(opt);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function carregarCartoes() {
+      const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!cliente) return;
+
+      try {
+        const res = await fetch(`/api/clientes/${cliente.id}/cartoes`);
+        if (!res.ok) throw new Error('Erro ao buscar cartões');
+        cartoes = await res.json();
+
+        const selectCartao = document.getElementById('select-cartao');
+        selectCartao.innerHTML = '<option value="">-- Selecione um cartão --</option>';
+
+        cartoes.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = `${c.bandeira} **** **** **** ${c.numero.slice(-4)}`;
+          selectCartao.appendChild(opt);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function mostrarDetalhesEndereco() {
+      const select = document.getElementById('select-endereco');
+      const detalhesDiv = document.getElementById('detalhes-endereco');
+      const endereco = enderecos.find(e => e.id == select.value);
+
+      if (!endereco) {
+        detalhesDiv.style.display = 'none';
+        detalhesDiv.innerHTML = '';
+        return;
+      }
+
+      detalhesDiv.style.display = 'block';
+      detalhesDiv.innerHTML = `
+        <strong>${endereco.nomeEndereco || 'Endereço de Entrega'}</strong>
+        <div class="detalhes-row"><strong>Rua:</strong> ${endereco.tipoLogradouro ? endereco.tipoLogradouro + ' ' : ''}${endereco.rua}, Nº ${endereco.numero}${endereco.complemento ? ' - ' + endereco.complemento : ''}</div>
+        <div class="detalhes-row"><strong>Bairro:</strong> ${endereco.bairro}</div>
+        <div class="detalhes-row"><strong>Cidade/Estado:</strong> ${endereco.cidade} / ${endereco.estado}</div>
+        <div class="detalhes-row"><strong>CEP:</strong> ${endereco.cep}</div>
+        <div class="detalhes-row"><strong>Tipo Residência:</strong> ${endereco.tipoResidencia || 'Não informado'}</div>
+        <div class="detalhes-row"><strong>País:</strong> ${endereco.pais || 'Brasil'}</div>
+      `;
+
+      const subtotalSpan = document.getElementById('subtotal');
+      const freteSpan = document.getElementById('frete');
+      const totalSpan = document.getElementById('total');
+
+      if (subtotalSpan && freteSpan && totalSpan) {
+        const subtotal = parseFloat(subtotalSpan.textContent.replace('R$', '').replace(',', '.'));
+        const frete = calcularFrete(subtotal, endereco.estado);
+
+        freteSpan.textContent = `R$ ${frete.toFixed(2)}`;
+        totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+      }
+    }
+
+    function mostrarDetalhesCartao() {
+      const select = document.getElementById('select-cartao');
+      const detalhesDiv = document.getElementById('detalhes-cartao');
+      const cartao = cartoes.find(c => c.id == select.value);
+      if (!cartao) {
+        detalhesDiv.style.display = 'none';
+        detalhesDiv.innerHTML = '';
+        return;
+      }
+
+      detalhesDiv.style.display = 'block';
+      detalhesDiv.innerHTML = `
+        <strong>Cartão ${cartao.bandeira}</strong>
+        <div class="detalhes-row"><strong>Número:</strong> **** **** **** ${cartao.numero.slice(-4)}</div>
+        <div class="detalhes-row"><strong>Nome do Titular:</strong> ${cartao.nomeTitular}</div>
+        <div class="detalhes-row"><strong>Validade:</strong> ${cartao.dataValidade}</div>
+      `;
+    }
+  </script>
+</body>
+</html>

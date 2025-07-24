@@ -1,0 +1,824 @@
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lista de Clientes</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/usuarios.css">
+</head>
+<body>
+ <div class="sidebar" id="sidebar">
+    <h3>Menu</h3>
+    <a href="principal.html">Inicio</a>
+    <a href="clientes.html">Cadastrar</a>
+    <a href="usuarios.html">Gerenciamento de Usuários</a>
+    <a href="pedidos.html">Status do Pedido</a>
+    <a href="livros.html">Cadastrar Livro</a>
+  </div>
+
+   <header>
+    <span class="menu-icon" onclick="toggleSidebar()">☰</span>
+    <span class="cliente-nome" id="nome-cliente">Gerenciamento de Usuários</span>
+    <div class="profile-icon" onclick="toggleProfileForm()">
+      <i class="fas fa-user-circle"></i>
+    </div>
+  </header>
+  <div id="info-contagem"></div>
+
+  <form id="form-filtro-clientes" style="margin-bottom: 20px;">
+<div class="filtros-container">
+    <div class="filtro-header">
+        <h3>Filtrar Clientes</h3>
+        <button class="btn-limpar" onclick="limparFiltros()">Limpar Filtros</button>
+    </div>
+    
+    <div class="filtros-grid">
+        <!-- Filtro por Nome -->
+        <div class="filtro-item">
+            <label for="filtro-nome">Nome</label>
+            <input type="text" id="filtro-nome" placeholder="Digite o nome">
+        </div>
+        
+        <!-- Filtro por Email -->
+        <div class="filtro-item">
+            <label for="filtro-email">Email</label>
+            <input type="text" id="filtro-email" placeholder="Digite o email">
+        </div>
+        
+        <!-- Filtro por CPF -->
+        <div class="filtro-item">
+            <label for="filtro-cpf">CPF</label>
+            <input type="text" id="filtro-cpf" placeholder="Digite o CPF">
+        </div>
+             
+        <!-- Filtro por Gênero -->
+        <div class="filtro-item">
+            <label for="filtro-genero">Gênero</label>
+            <select id="filtro-genero">
+                <option value="">Todos</option>
+                <option value="MASCULINO">Masculino</option>
+                <option value="FEMININO">Feminino</option>
+                <option value="PREFIRO_NAO_INFORMAR">Prefiro não informar</option>
+            </select>
+        </div>
+        
+        <!-- Filtro por Status -->
+        <div class="filtro-item">
+            <label for="filtro-status">Status</label>
+            <select id="filtro-status">
+                <option value="">Todos</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+            </select>
+        </div>
+        
+        <!-- Filtro por Data de Cadastro -->
+
+
+        <!-- Botão de Aplicar Filtros -->
+<div class="filtro-item full-width">
+  <button type="submit" class="btn-filtrar">Aplicar Filtros</button>
+</div>
+
+    </div>
+</div>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Telefone</th>
+        <th>CPF</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="clientes-tbody"></tbody>
+  </table>
+
+  <div id="modal-senha">
+    <div class="modal-content">
+      <h3>Alterar Senha</h3>
+      <label for="nova-senha">Nova senha</label>
+      <input type="password" id="nova-senha" />
+      <label for="confirmar-senha">Confirmar senha</label>
+      <input type="password" id="confirmar-senha" />
+      <br /><br />
+      <button onclick="confirmarAlterarSenha()">Confirmar</button>
+      <button onclick="fecharModalSenha()">Cancelar</button>
+    </div>
+  </div>
+
+  <div id="modal-visualizar">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Dados do Cliente</h3>
+        <button class="modal-close-btn" onclick="fecharModalVer()">Fechar</button>
+      </div>
+      <div class="modal-body" id="dados-cliente">
+        <!-- Os dados serão inseridos aqui pelo JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-login" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="background: white; width: 400px; margin: 100px auto; padding: 20px; border-radius: 5px;">
+      <h2>Login</h2>
+      <form id="form-login">
+        <input type="hidden" id="login-cliente-id">
+        <div style="margin-bottom: 15px;">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" style="width: 100%; padding: 8px;" readonly>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label for="login-senha">Senha</label>
+          <input type="password" id="login-senha" style="width: 100%; padding: 8px;" required>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <button type="button" onclick="fecharModalLogin()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px;">Cancelar</button>
+          <button type="submit" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px;">Entrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  // Variável global para armazenar todos os clientes
+let todosClientes = [];
+
+async function carregarClientes(filtros = {}) {
+    try {
+        const params = new URLSearchParams();
+        
+        // Adiciona os parâmetros de filtro
+        if (filtros.nome) params.append('nome', filtros.nome);
+        if (filtros.email) params.append('email', filtros.email);
+        if (filtros.cpf) params.append('cpf', filtros.cpf);
+        if (filtros.genero) params.append('genero', filtros.genero);
+        if (filtros.ativo !== null && filtros.ativo !== undefined) {
+            params.append('ativo', filtros.ativo);
+        }
+        const url = '/api/clientes/consulta?' + params.toString();
+        console.log('URL da requisição:', url); // Para depuração
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+        
+        const resultado = await response.json();
+        console.log('Resposta da API:', resultado); // Para depuração
+        
+        // Verifica se a resposta tem a estrutura esperada
+        const clientes = Array.isArray(resultado) ? resultado : 
+                        (resultado.clientes || resultado.data || []);
+        
+        todosClientes = clientes;
+        
+        // Atualiza a contagem
+        const countFiltered = clientes.length;
+        const countTotal = resultado.countTotal || clientes.length;
+        
+        const infoDiv = document.getElementById('info-contagem');
+        if (infoDiv) {
+            infoDiv.textContent = `Mostrando ${countFiltered} clientes de um total de ${countTotal}`;
+        }
+        
+        // Preenche a tabela
+        preencherTabelaClientes(clientes);
+        
+    } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+        alert(`Erro ao carregar clientes: ${error.message}`);
+        
+        // Mostra mensagem na tabela
+        const tbody = document.getElementById('clientes-tbody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="7">Erro ao carregar clientes. Tente novamente.</td></tr>';
+        }
+    }
+}
+
+function preencherTabelaClientes(clientes) {
+    const tbody = document.getElementById('clientes-tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+
+    if (!clientes || clientes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7">Nenhum cliente encontrado</td></tr>';
+        return;
+    }
+
+    clientes.forEach(cliente => {
+        const tr = document.createElement('tr');
+        const status = cliente.ativo ? 'Ativo' : 'Inativo';
+        const btnAcao = cliente.ativo
+            ? `<button onclick="abrirModalConfirmacao(${cliente.id}, 'inativar')">Inativar</button>`
+            : `<button onclick="abrirModalConfirmacao(${cliente.id}, 'ativar')">Ativar</button>`;
+
+        tr.innerHTML = `
+            <td>${cliente.id}</td>
+            <td>${cliente.nome || '-'}</td>
+            <td>${cliente.email || '-'}</td>
+            <td>${cliente.telefone || '-'}</td>
+            <td>${cliente.cpf || '-'}</td>
+            <td>${status}</td>
+            <td>
+                <button onclick="abrirModalSenha(${cliente.id})">Alterar Senha</button>
+                <button onclick="confirmarExclusaoCliente(${cliente.id})">Excluir</button>
+                <button onclick="abrirModalLogin(${cliente.id}, '${cliente.email || ''}')">Entrar</button>
+                ${btnAcao}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function aplicarFiltros() {
+    // Obter todos os valores dos filtros
+    const filtros = {
+        nome: document.getElementById('filtro-nome').value.trim(),
+        email: document.getElementById('filtro-email').value.trim(),
+        cpf: document.getElementById('filtro-cpf').value.trim(),
+        genero: document.getElementById('filtro-genero').value,
+        ativo: document.getElementById('filtro-status').value // Mantém como string ("ativo", "inativo" ou "")
+    };
+
+    // Remove filtros vazios ou nulos
+    const filtrosLimpos = Object.fromEntries(
+        Object.entries(filtros).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
+    );
+
+    // Converte o filtro ativo para boolean se necessário
+    if (filtrosLimpos.ativo) {
+        filtrosLimpos.ativo = filtrosLimpos.ativo === 'ativo';
+    }
+
+    console.log('Filtros aplicados:', filtrosLimpos); // Para depuração
+    carregarClientes(filtrosLimpos);
+}
+
+function limparFiltros() {
+    // Limpa todos os campos de filtro
+    document.querySelectorAll('.filtros-container input').forEach(input => {
+        input.value = '';
+    });
+    
+    document.getElementById('filtro-genero').value = '';
+    document.getElementById('filtro-status').value = '';
+    
+    // Recarrega os clientes sem filtros
+    carregarClientes();
+}
+
+// Adiciona event listeners para aplicar filtros ao pressionar Enter
+document.querySelectorAll('.filtros-container input').forEach(input => {
+    input.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            aplicarFiltros();
+        }
+    });
+});
+
+// Carrega os clientes quando a página é aberta
+window.addEventListener('DOMContentLoaded', () => {
+    carregarClientes();
+});
+
+    function abrirModalConfirmacao(id, acao) {
+      const motivo = prompt(`Informe o motivo para ${acao} o cliente:`);
+      if (!motivo || motivo.trim() === '') {
+        alert('Motivo obrigatório.');
+        return;
+      }
+      mudarStatusCliente(id, acao === 'ativar', motivo);
+    }
+
+    async function mudarStatusCliente(id, ativo, motivo) {
+      const response = await fetch(`/api/clientes/change-status/${id}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ ativo, motivo })
+      });
+
+      if (response.ok) {
+        alert(`Cliente ${ativo ? 'ativado' : 'inativado'} com sucesso!`);
+        carregarClientes();
+      } else {
+        alert('Erro ao alterar status do cliente.');
+      }
+    }
+
+    let clienteAlterarSenhaId = null;
+
+    function abrirModalSenha(id) {
+      clienteAlterarSenhaId = id;
+      document.getElementById('nova-senha').value = '';
+      document.getElementById('confirmar-senha').value = '';
+      document.getElementById('modal-senha').style.display = 'block';
+    }
+
+    function fecharModalSenha() {
+      document.getElementById('modal-senha').style.display = 'none';
+    }
+
+    async function confirmarAlterarSenha() {
+      const novaSenha = document.getElementById('nova-senha').value;
+      const confirmarSenha = document.getElementById('confirmar-senha').value;
+
+      if (novaSenha === '' || confirmarSenha === '') {
+        alert('Preencha os dois campos.');
+        return;
+      }
+      if (novaSenha !== confirmarSenha) {
+        alert('Senhas não conferem.');
+        return;
+      }
+
+      const response = await fetch(`/api/clientes/${clienteAlterarSenhaId}/change-password`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ senha: novaSenha, confirmacaoSenha: confirmarSenha })
+      });
+
+      if (response.ok) {
+        alert('Senha alterada com sucesso!');
+        fecharModalSenha();
+      } else {
+        const msg = await response.text();
+        alert('Erro: ' + msg);
+      }
+    }
+
+document.getElementById('form-filtro-clientes').addEventListener('submit', function (e) {
+  e.preventDefault();
+  aplicarFiltros();
+});
+
+
+    function limparFiltro() {
+      document.getElementById('filtro-nome').value = '';
+      document.getElementById('filtro-cpf').value = '';
+      carregarClientes();
+    }
+
+    function confirmarExclusaoCliente(id) {
+      const confirmar = confirm("Tem certeza que deseja excluir este cliente?");
+      if (confirmar) {
+        excluirCliente(id);
+      }
+    }
+
+    async function excluirCliente(id) {
+      try {
+        const response = await fetch(`/api/clientes/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          alert('Cliente excluído com sucesso.');
+          carregarClientes();
+        } else {
+          const erro = await response.text();
+          alert('Erro ao excluir cliente: ' + erro);
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Erro na comunicação com o servidor.');
+      }
+    }
+
+    async function verCliente(id) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      const response = await fetch(`/api/clientes/${id}`);
+      if (!response.ok) {
+        alert('Erro ao carregar dados do cliente.');
+        return;
+      }
+
+      const cliente = await response.json();
+      const div = document.getElementById('dados-cliente');
+      div.innerHTML = '';
+
+      const dataCadastro = cliente.dataCadastro 
+        ? new Date(cliente.dataCadastro).toLocaleDateString('pt-BR') 
+        : '-';
+
+      let html = `
+        <div class="cliente-info" data-cliente-id="${cliente.id}">
+          <p><strong>Nome:</strong> ${cliente.nome}</p>
+          <p><strong>Email:</strong> ${cliente.email}</p>
+          <p><strong>Telefone:</strong> ${cliente.telefone || '-'}</p>
+          <p><strong>CPF:</strong> ${cliente.cpf || '-'}</p>
+          <p><strong>Gênero:</strong> ${cliente.genero || '-'}</p>
+          <p><strong>Data de Nascimento:</strong> ${cliente.nascimento || '-'}</p>
+          <p><strong>Status:</strong> ${cliente.ativo ? 'Ativo' : 'Inativo'}</p>
+          <p><strong>Data de Cadastro:</strong> ${dataCadastro}</p>
+        </div>
+      `;
+
+      const enderecoCobranca = cliente.enderecos.find(e => e.tipo === 'COBRANCA') || {};
+      html += `
+        <div class="modal-section">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h4>Endereço de Cobrança</h4>
+            <button onclick="editarEndereco(${enderecoCobranca.id || 'null'}, 'COBRANCA', event); return false;" class="btn-editar">Editar</button>
+          </div>
+          <div class="endereco-info" id="endereco-cobranca-${enderecoCobranca.id || '0'}">
+            <!-- Conteúdo será preenchido dinamicamente -->
+          </div>
+        </div>
+      `;
+
+      const enderecosEntrega = cliente.enderecos.filter(e => e.tipo === 'ENTREGA') || [];
+      if (enderecosEntrega.length > 0) {
+        html += `<div class="modal-section"><h4>Endereço(s) de Entrega</h4>`;
+        
+        enderecosEntrega.forEach((e) => {
+          html += `
+            <div class="endereco-container" style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h5 style="margin-top: 0;">
+                  <span id="nome-endereco-${e.id}">${e.nomeEndereco || 'Endereço de Entrega'}</span>
+                  <button onclick="editarNomeEndereco(${e.id})" style="background: none; border: none; cursor: pointer;">✏️</button>
+                </h5>
+                <button onclick="editarEndereco(${e.id}, 'ENTREGA', event); return false;" class="btn-editar">Editar</button>
+              </div>
+              <div class="endereco-info" id="endereco-${e.id}">
+                <!-- Conteúdo será preenchido dinamicamente -->
+              </div>
+            </div>
+          `;
+        });
+        
+        html += `</div>`;
+      }
+
+      if (cliente.cartoes && cliente.cartoes.length > 0) {
+        html += `<div class="modal-section"><h4>Cartões de Crédito</h4>`;
+        
+        cliente.cartoes.forEach((cartao, index) => {
+          const classeCartao = cartao.preferencial ? 'cartao-info preferencial' : 'cartao-info';
+          
+          html += `
+            <div class="${classeCartao}" style="margin-bottom: 15px; padding: 10px; border-radius: 5px; position: relative;">
+              ${cartao.preferencial ? 
+                '<div class="badge-preferencial">PREFERENCIAL</div>' : 
+                ''}
+              <p><strong>Cartão ${index + 1}:</strong> ${cartao.bandeira || 'Sem bandeira'}</p>
+              <p><strong>Número:</strong> **** **** **** ${cartao.numero ? cartao.numero.slice(-4) : '****'}</p>
+              <p><strong>Nome:</strong> ${cartao.nomeTitular || '-'}</p>
+              <p><strong>Validade:</strong> ${cartao.dataValidade || '-'}</p>
+            </div>
+          `;
+        });
+        
+        html += `</div>`;
+      }
+
+      div.innerHTML = html;
+
+      preencherDadosEndereco(enderecoCobranca, `endereco-cobranca-${enderecoCobranca.id || '0'}`);
+      enderecosEntrega.forEach(e => {
+        preencherDadosEndereco(e, `endereco-${e.id}`);
+      });
+
+      document.getElementById('modal-visualizar').style.display = 'block';
+    }
+
+    function fecharModalVer() {
+      document.getElementById('modal-visualizar').style.display = 'none';
+      return false;
+    }
+
+    function preencherDadosEndereco(endereco, containerId) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div><strong>CEP:</strong> ${endereco.cep || '-'}</div>
+          <div><strong>Rua:</strong> ${endereco.rua || '-'}</div>
+          <div><strong>Número:</strong> ${endereco.numero || '-'}</div>
+          <div><strong>Complemento:</strong> ${endereco.complemento || '-'}</div>
+          <div><strong>Bairro:</strong> ${endereco.bairro || '-'}</div>
+          <div><strong>Cidade:</strong> ${endereco.cidade || '-'}</div>
+          <div><strong>Estado:</strong> ${endereco.estado || '-'}</div>
+          <div><strong>País:</strong> ${endereco.pais || 'Brasil'}</div>
+          <div><strong>Tipo Residência:</strong> ${endereco.tipoResidencia || '-'}</div>
+          <div><strong>Tipo Logradouro:</strong> ${endereco.tipoLogradouro || '-'}</div>
+          <div><strong>Logradouro:</strong> ${endereco.logradouro || '-'}</div>
+        </div>
+      `;
+    }
+
+    let activeAddressForm = null;
+
+    async function editarEndereco(enderecoId, tipo, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+      }
+
+      if (activeAddressForm) {
+        activeAddressForm.remove();
+        activeAddressForm = null;
+      }
+
+      let endereco;
+      
+      if (enderecoId && enderecoId !== 'null') {
+        const response = await fetch(`/api/enderecos/${enderecoId}`);
+        if (!response.ok) {
+          alert('Erro ao carregar endereço');
+          return;
+        }
+        endereco = await response.json();
+      } else {
+        endereco = {
+          cep: '',
+          rua: '',
+          numero: '',
+          complemento: '',
+          bairro: '',
+          cidade: '',
+          estado: '',
+          pais: 'Brasil',
+          tipoResidencia: '',
+          tipoLogradouro: '',
+          logradouro: '',
+          tipo: tipo
+        };
+      }
+
+      const containerId = tipo === 'COBRANCA' 
+        ? `endereco-cobranca-${enderecoId || '0'}` 
+        : `endereco-${enderecoId}`;
+      
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = `
+        <form id="form-editar-endereco-${enderecoId || 'novo'}" 
+            onsubmit="salvarEndereco(event, ${enderecoId || 'null'}, '${tipo}'); return false;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label>CEP</label>
+              <input type="text" name="cep" value="${endereco.cep || ''}" required>
+            </div>
+            <div>
+              <label>Rua</label>
+              <input type="text" name="rua" value="${endereco.rua || ''}" required>
+            </div>
+            <div>
+              <label>Número</label>
+              <input type="text" name="numero" value="${endereco.numero || ''}" required>
+            </div>
+            <div>
+              <label>Complemento</label>
+              <input type="text" name="complemento" value="${endereco.complemento || ''}">
+            </div>
+            <div>
+              <label>Bairro</label>
+              <input type="text" name="bairro" value="${endereco.bairro || ''}" required>
+            </div>
+            <div>
+              <label>Cidade</label>
+              <input type="text" name="cidade" value="${endereco.cidade || ''}" required>
+            </div>
+            <div>
+              <label>Estado</label>
+              <select name="estado" required>
+                <option value="">Selecione</option>
+                ${['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT',
+                   'MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS',
+                   'RO','RR','SC','SP','SE','TO'].map(uf => `
+                  <option value="${uf}" ${uf === endereco.estado ? 'selected' : ''}>${uf}</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label>País</label>
+              <input type="text" name="pais" value="${endereco.pais || 'Brasil'}" readonly>
+            </div>
+            <div>
+              <label>Tipo Residência</label>
+              <input type="text" name="tipoResidencia" value="${endereco.tipoResidencia || ''}" required>
+            </div>
+            <div>
+              <label>Tipo Logradouro</label>
+              <input type="text" name="tipoLogradouro" value="${endereco.tipoLogradouro || ''}" required>
+            </div>
+            <div>
+              <label>Logradouro</label>
+              <input type="text" name="logradouro" value="${endereco.logradouro || ''}" required>
+            </div>
+          </div>
+          <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button type="submit" class="btn-salvar">Salvar</button>
+            <button type="button" onclick="cancelarEdicaoEndereco('${containerId}', ${enderecoId || 'null'}, '${tipo}')" class="btn-cancelar">Cancelar</button>
+          </div>
+        </form>
+      `;
+    }
+
+    async function salvarEndereco(event, enderecoId, tipo) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      
+      const form = event.target;
+      const formData = new FormData(form);
+      
+      const enderecoAtualizado = {
+        cep: formData.get('cep'),
+        rua: formData.get('rua'),
+        numero: formData.get('numero'),
+        complemento: formData.get('complemento'),
+        bairro: formData.get('bairro'),
+        cidade: formData.get('cidade'),
+        estado: formData.get('estado'),
+        pais: formData.get('pais'),
+        tipoResidencia: formData.get('tipoResidencia'),
+        tipoLogradouro: formData.get('tipoLogradouro'),
+        logradouro: formData.get('logradouro'),
+        tipo: tipo
+      };
+
+      try {
+        let response;
+        const clienteId = document.querySelector('.cliente-info').dataset.clienteId;
+        
+        if (enderecoId && enderecoId !== 'null') {
+          response = await fetch(`/api/enderecos/${enderecoId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(enderecoAtualizado)
+          });
+        } else {
+          enderecoAtualizado.clienteId = clienteId;
+          response = await fetch('/api/enderecos', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(enderecoAtualizado)
+          });
+        }
+
+        if (response.ok) {
+          const enderecoSalvo = await response.json();
+          alert('Endereço salvo com sucesso!');
+          
+          const containerId = tipo === 'COBRANCA' 
+            ? `endereco-cobranca-${enderecoSalvo.id || '0'}` 
+            : `endereco-${enderecoSalvo.id}`;
+          
+          preencherDadosEndereco(enderecoSalvo, containerId);
+        } else {
+          const error = await response.text();
+          alert(`Erro ao salvar endereço: ${error}`);
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao conectar com o servidor');
+      }
+    }
+
+    function cancelarEdicaoEndereco(containerId, enderecoId, tipo) {
+      if (enderecoId && enderecoId !== 'null') {
+        fetch(`/api/enderecos/${enderecoId}`)
+          .then(res => res.json())
+          .then(endereco => {
+            preencherDadosEndereco(endereco, containerId);
+          })
+          .catch(err => {
+            console.error('Erro ao carregar endereço:', err);
+            document.getElementById(containerId).innerHTML = '';
+          });
+      } else {
+        document.getElementById(containerId).innerHTML = '';
+      }
+    }
+
+    async function editarNomeEndereco(idEndereco) {
+      const spanNome = document.getElementById(`nome-endereco-${idEndereco}`);
+      const nomeAtual = spanNome.textContent;
+
+      const novoNome = prompt("Digite o novo nome para este endereço:", nomeAtual);
+
+      if (novoNome !== null && novoNome.trim() !== '' && novoNome !== nomeAtual) {
+        try {
+          const response = await fetch(`/api/enderecos/${idEndereco}/nome`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nomeEndereco: novoNome.trim() })
+          });
+
+          if (response.ok) {
+            spanNome.textContent = novoNome.trim();
+            alert("Nome do endereço atualizado com sucesso!");
+          } else {
+            const error = await response.text();
+            alert(`Erro ao atualizar nome: ${error}`);
+          }
+        } catch (error) {
+          console.error('Erro:', error);
+          alert('Erro ao conectar com o servidor');
+        }
+      }
+    }
+
+    function editarCliente(id) {
+      window.location.href = `formulario_cadastro.html?id=${id}`;
+    }
+
+    let clienteLoginId = null;
+
+    function abrirModalLogin(id, email) {
+      clienteLoginId = id;
+      document.getElementById('login-cliente-id').value = id;
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-senha').value = '';
+      document.getElementById('modal-login').style.display = 'block';
+    }
+
+    function fecharModalLogin() {
+      document.getElementById('modal-login').style.display = 'none';
+    }
+
+    document.getElementById('form-login').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const senha = document.getElementById('login-senha').value;
+      
+      if (!senha) {
+        alert('Por favor, informe a senha');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/clientes/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: document.getElementById('login-email').value,
+            senha: senha
+          })
+        });
+
+        if (response.ok) {
+          const cliente = await response.json();
+          localStorage.setItem('clienteLogado', JSON.stringify(cliente));
+          fecharModalLogin();
+          window.location.href = 'principal.html';
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Login falhou');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao conectar com o servidor');
+      }
+    });
+function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('show');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para CPF
+    const cpfInput = document.getElementById('filtro-cpf');
+    if (cpfInput) {
+        cpfInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value.substring(0, 14);
+        });
+    }
+
+      carregarClientes();
+});
+
+
+</script>
+</body>
+</html>

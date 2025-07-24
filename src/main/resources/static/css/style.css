@@ -1,0 +1,251 @@
+body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #007bff; color: white; }
+    button { margin-right: 5px; padding: 8px 12px; cursor: pointer; }
+    form { margin-top: 20px; background: #f9f9f9; padding: 20px; border-radius: 5px; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    .endereco-section { margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+    .endereco-section h3 { margin-top: 0; }
+    .form-row { display: flex; gap: 15px; }
+    .form-row div { flex: 1; }
+    #modal-senha { display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); }
+    .modal-content { background:#fff; margin:100px auto; padding:20px; width:300px; position:relative; border-radius: 5px; }
+    .required:after { content:" *"; color: red; }
+
+     /* Estilo do Modal de Visualização */
+  #modal-visualizar {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .modal-container {
+    background: white;
+    margin: 20px auto;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 800px;
+    width: 90%;
+    position: relative;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: #007bff;
+    font-size: 1.5em;
+  }
+
+  .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+
+  .modal-section {
+    margin-bottom: 20px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+  }
+
+  .modal-section h4 {
+    margin-top: 0;
+    color: #555;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+  }
+
+  .modal-close-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.3s;
+  }
+
+  .modal-close-btn:hover {
+    background: #0056b3;
+  }
+
+  /* Estilo para os dados do cliente */
+  .cliente-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .cliente-info p {
+    margin: 5px 0;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .cliente-info strong {
+    color: #333;
+  }
+
+  .btn-editar {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-salvar {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-cancelar {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.endereco-info div {
+  margin-bottom: 5px;
+}
+
+.modal-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin: 5px 0;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Garante que o modal e seus elementos estão acima de tudo */
+#modal-visualizar * {
+  pointer-events: auto;
+}
+
+/* Desabilita interação com elementos fora do modal quando ele estiver aberto */
+body.modal-aberto {
+  pointer-events: none;
+}
+
+body.modal-aberto #modal-visualizar {
+  pointer-events: auto;
+}
+
+.cartao {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.cartao [name="cartao-preferencial"]:checked {
+    accent-color: #28a745; /* Cor verde para o checkbox marcado */
+}
+
+.cartao-preferencial {
+    border: 2px solid #28a745; /* Borda verde para o cartão preferencial */
+}
+
+    .cartao-info {
+        border: 1px solid #ddd;
+        background-color: #f9f9f9;
+        transition: all 0.3s ease;
+    }
+    
+    .cartao-info.preferencial {
+        border: 2px solid #28a745;
+        background-color: #f0fff4;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .badge-preferencial {
+        position: absolute;
+        top: -10px;
+        right: 15px;
+        background-color: #28a745;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .cartao-info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Estilo específico para o botão Entrar */
+button[onclick^="entrarComoCliente"] {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+button[onclick^="entrarComoCliente"]:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+/* Modal de login */
+#modal-login div {
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+#form-login input {
+  margin-top: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Botão Sair */
+.btn-logout {
+  padding: 8px 16px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-logout:hover {
+  background: #c82333 !important;
+}
