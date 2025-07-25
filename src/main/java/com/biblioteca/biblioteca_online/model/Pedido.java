@@ -16,44 +16,42 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-@ManyToOne
-@JoinColumn(name = "cliente_id", nullable = false)
-@JsonBackReference(value = "cliente-pedidos")  // <<< ADICIONE ESTA LINHA
-private Cliente cliente;
+    @ManyToOne
+    @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonBackReference(value = "cliente-pedidos")
+    private Cliente cliente;
     
-@OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-@JsonManagedReference  // <<< ADICIONE ESTA LINHA
-private List<ItemPedido> itens = new ArrayList<>();
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ItemPedido> itens = new ArrayList<>();
 
-@Column(name = "valor_frete", nullable = false, precision = 10, scale = 2)
-private BigDecimal valorFrete = BigDecimal.ZERO;
+    @Column(name = "valor_subtotal", nullable = false, precision = 10, scale = 2)
+    private BigDecimal valorSubtotal = BigDecimal.ZERO;
 
-public BigDecimal getValorFrete() {
-    return valorFrete;
-}
+    @Column(name = "valor_frete", nullable = false, precision = 10, scale = 2)
+    private BigDecimal valorFrete = BigDecimal.ZERO;
 
-public void setValorFrete(BigDecimal valorFrete) {
-    this.valorFrete = valorFrete;
-}
+    @Column(name = "valor_desconto", precision = 10, scale = 2)
+    private BigDecimal valorDesconto = BigDecimal.ZERO;
 
-    
+    @Column(name = "codigo_cupom")
+    private String codigoCupom;
+
     @ManyToOne
     @JoinColumn(name = "endereco_id", nullable = true)
-
     private Endereco enderecoEntrega;
-    
-@ManyToOne
-@JoinColumn(name = "cartao_id", nullable = true)
-private Cartao cartao;
 
-    
+    @ManyToOne
+    @JoinColumn(name = "cartao_id", nullable = true)
+    private Cartao cartao;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusPedido status = StatusPedido.EM_PROCESSAMENTO;
-    
+
     @Column(name = "data_pedido", nullable = false)
     private LocalDateTime dataPedido = LocalDateTime.now();
-    
+
     @Column(name = "valor_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorTotal;
 
@@ -67,16 +65,13 @@ private Cartao cartao;
         this.itens.add(item);
     }
 
-    public void calcularTotal(BigDecimal frete) {
-    BigDecimal subtotal = itens.stream()
-        .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-    this.valorFrete = frete != null ? frete : BigDecimal.ZERO;
-    this.valorTotal = subtotal.add(this.valorFrete);
-}
+        public void limparItens() {
+        this.itens.forEach(ItemPedido::desvincularPedido);
+        this.itens.clear();
+    }
 
     // Getters e Setters
+
     public Long getId() {
         return id;
     }
@@ -99,6 +94,38 @@ private Cartao cartao;
 
     public void setItens(List<ItemPedido> itens) {
         this.itens = itens;
+    }
+
+    public BigDecimal getValorSubtotal() {
+        return valorSubtotal;
+    }
+
+    public void setValorSubtotal(BigDecimal valorSubtotal) {
+        this.valorSubtotal = valorSubtotal;
+    }
+
+    public BigDecimal getValorFrete() {
+        return valorFrete;
+    }
+
+    public void setValorFrete(BigDecimal valorFrete) {
+        this.valorFrete = valorFrete;
+    }
+
+    public BigDecimal getValorDesconto() {
+        return valorDesconto;
+    }
+
+    public void setValorDesconto(BigDecimal valorDesconto) {
+        this.valorDesconto = valorDesconto;
+    }
+
+    public String getCodigoCupom() {
+        return codigoCupom;
+    }
+
+    public void setCodigoCupom(String codigoCupom) {
+        this.codigoCupom = codigoCupom;
     }
 
     public Endereco getEnderecoEntrega() {

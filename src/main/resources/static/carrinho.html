@@ -37,6 +37,23 @@
         <span id="total">R$ 0,00</span>
       </div>
 
+      <div class="cupom-container" style="margin: 15px 0;">
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="input-cupom" placeholder="Digite seu cupom" style="flex-grow: 1; padding: 8px;">
+        <button class="btn-aplicar-cupom" onclick="aplicarCupom()">Aplicar</button>
+    </div>
+    <div id="cupom-aplicado" style="display: none; margin-top: 10px; padding: 10px; background: #f0fff0; border-radius: 4px;">
+        <div style="display: flex; justify-content: space-between;">
+            <span>Cupom aplicado: <strong id="cupom-codigo"></strong></span>
+            <button onclick="removerCupom()" style="background: none; border: none; color: #ff4757; cursor: pointer;">Remover</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+            <span>Desconto:</span>
+            <span id="valor-desconto" style="color: #2ed573; font-weight: bold;"></span>
+        </div>
+    </div>
+</div>
+
       <div class="form-group">
         <label for="select-endereco">Escolha o endereço de entrega:</label>
         <select id="select-endereco" required>
@@ -121,60 +138,90 @@
       document.getElementById('select-cartao').addEventListener('change', mostrarDetalhesCartao);
     });
 
-    async function carregarCarrinho() {
-      const carrinhoItens = document.getElementById('carrinho-itens');
-      const carrinhoVazio = document.getElementById('carrinho-vazio');
-      const carrinhoTotal = document.getElementById('carrinho-total');
+ async function carregarCarrinho() {
+    const carrinhoItens = document.getElementById('carrinho-itens');
+    const carrinhoVazio = document.getElementById('carrinho-vazio');
+    const carrinhoTotal = document.getElementById('carrinho-total');
 
-      if (carrinho.length === 0) {
+    // Verifica se o carrinho está vazio
+    if (carrinho.length === 0) {
         carrinhoItens.style.display = 'none';
         carrinhoVazio.style.display = 'block';
         carrinhoTotal.style.display = 'none';
         return;
-      }
+    }
 
-      carrinhoVazio.style.display = 'none';
-      carrinhoItens.style.display = 'block';
-      carrinhoTotal.style.display = 'block';
+    carrinhoVazio.style.display = 'none';
+    carrinhoItens.style.display = 'block';
+    carrinhoTotal.style.display = 'block';
 
-      try {
+    try {
+        // Carrega os detalhes dos produtos
         const itensDetalhados = await Promise.all(
-          carrinho.map(async item => {
-            const res = await fetch(`/api/livros/${item.id}`);
-            if (!res.ok) throw new Error(`Erro ao buscar produto ${item.id}: ${res.status}`);
-            const produto = await res.json();
-            return { ...item, produto };
-          })
+            carrinho.map(async item => {
+                const res = await fetch(`/api/livros/${item.id}`);
+                if (!res.ok) throw new Error(`Erro ao buscar produto ${item.id}: ${res.status}`);
+                const produto = await res.json();
+                return { ...item, produto };
+            })
         );
 
+        // Atualiza a lista de itens no carrinho
         carrinhoItens.innerHTML = itensDetalhados.map(item => `
-          <div class="carrinho-item" data-id="${item.id}">
-            <img src="${item.produto.imagemUrl || 'img/livro-placeholder.jpg'}" alt="${item.produto.titulo}" class="carrinho-item-imagem">
-            <div class="carrinho-item-info">
-              <div class="carrinho-item-titulo">${item.produto.titulo}</div>
-              <div class="carrinho-item-preco">R$ ${item.produto.precoVenda.toFixed(2)}</div>
-              <div class="carrinho-item-controles">
-                <button onclick="alterarQuantidadeCarrinho(${item.id}, -1)">-</button>
-                <input type="number" class="carrinho-item-quantidade" value="${item.quantidade}" min="1" max="${item.produto.estoque}" onchange="atualizarQuantidadeCarrinho(${item.id}, this.value, ${item.produto.estoque})">
-                <button onclick="alterarQuantidadeCarrinho(${item.id}, 1, ${item.produto.estoque})">+</button>
-                <button class="carrinho-item-remover" onclick="removerDoCarrinho(${item.id})"><i class="fas fa-trash"></i></button>
-              </div>
+            <div class="carrinho-item" data-id="${item.id}">
+                <img src="${item.produto.imagemUrl || 'img/livro-placeholder.jpg'}" alt="${item.produto.titulo}" class="carrinho-item-imagem">
+                <div class="carrinho-item-info">
+                    <div class="carrinho-item-titulo">${item.produto.titulo}</div>
+                    <div class="carrinho-item-preco">R$ ${item.produto.precoVenda.toFixed(2)}</div>
+                    <div class="carrinho-item-controles">
+                        <button onclick="alterarQuantidadeCarrinho(${item.id}, -1)">-</button>
+                        <input type="number" class="carrinho-item-quantidade" value="${item.quantidade}" min="1" max="${item.produto.estoque}" onchange="atualizarQuantidadeCarrinho(${item.id}, this.value, ${item.produto.estoque})">
+                        <button onclick="alterarQuantidadeCarrinho(${item.id}, 1, ${item.produto.estoque})">+</button>
+                        <button class="carrinho-item-remover" onclick="removerDoCarrinho(${item.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
             </div>
-          </div>
         `).join('');
 
+        // Calcula subtotal e frete
         const subtotal = itensDetalhados.reduce((s, i) => s + (i.produto.precoVenda * i.quantidade), 0);
-        const frete = calcularFrete(subtotal, ''); 
+        const frete = calcularFrete(subtotal, '');
 
         document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
         document.getElementById('frete').textContent = `R$ ${frete.toFixed(2)}`;
-        document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
 
-      } catch (error) {
+        // Verifica se há cupom aplicado
+        const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+        if (cupomAplicado && clienteLogado) {
+            const validacao = validarCupom(cupomAplicado.codigo, subtotal, clienteLogado.id);
+            
+            if (validacao.valido) {
+                // Atualiza a UI do cupom
+                document.getElementById('cupom-codigo').textContent = cupomAplicado.codigo;
+                document.getElementById('valor-desconto').textContent = 
+                    cupomAplicado.tipo === 'percent' 
+                        ? `${cupomAplicado.desconto}% (R$ ${validacao.valorDesconto.toFixed(2)})`
+                        : `R$ ${validacao.valorDesconto.toFixed(2)}`;
+                document.getElementById('cupom-aplicado').style.display = 'block';
+                document.getElementById('input-cupom').value = cupomAplicado.codigo;
+                
+                // Atualiza o total com desconto
+                atualizarTotalComCupom(subtotal, validacao.valorDesconto);
+            } else {
+                // Cupom inválido (pode ter expirado ou valor mínimo não atingido)
+                removerCupom();
+                document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+            }
+        } else {
+            // Sem cupom aplicado
+            document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+        }
+
+    } catch (error) {
         console.error('Erro ao carregar itens:', error);
-        carrinhoItens.innerHTML = '<p>Erro ao carregar os produtos.</p>';
-      }
+        carrinhoItens.innerHTML = '<p>Erro ao carregar os produtos. Tente novamente mais tarde.</p>';
     }
+}
 
     function alterarQuantidadeCarrinho(idProduto, delta, estoqueMax = Infinity) {
       const item = carrinho.find(i => i.id === idProduto);
@@ -204,67 +251,150 @@
       carregarCarrinho();
     }
 
-    async function finalizarCompra() {
-  try {
-    const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
-    if (!cliente) {
-      alert('Faça login para finalizar sua compra.');
-      window.location.href = 'principal.html';
-      return;
+   async function finalizarCompra() {
+    try {
+        const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
+        if (!cliente) {
+            alert('Faça login para finalizar sua compra.');
+            window.location.href = 'principal.html';
+            return;
+        }
+
+        // Verifica se há itens no carrinho
+        if (carrinho.length === 0) {
+            alert('Seu carrinho está vazio!');
+            return;
+        }
+
+        // Valida endereço e cartão selecionados
+        const enderecoId = parseInt(document.getElementById('select-endereco').value);
+        const cartaoId = parseInt(document.getElementById('select-cartao').value);
+        
+        if (!enderecoId) {
+            alert('Selecione um endereço de entrega');
+            return;
+        }
+        
+        if (!cartaoId) {
+            alert('Selecione um cartão de pagamento');
+            return;
+        }
+
+        // Primeiro, carrega os detalhes completos dos produtos
+        const itensCompletos = await Promise.all(
+            carrinho.map(async item => {
+                const response = await fetch(`/api/livros/${item.id}`);
+                if (!response.ok) throw new Error(`Erro ao buscar produto ${item.id}`);
+                const produto = await response.json();
+                return {
+                    livroId: item.id,
+                    quantidade: item.quantidade,
+                    precoUnitario: produto.precoVenda,
+                    titulo: produto.titulo
+                };
+            })
+        );
+
+        // Calcula subtotal
+        const subtotal = itensCompletos.reduce((total, item) => total + (item.precoUnitario * item.quantidade), 0);
+        
+        // Obtém o frete
+        const freteText = document.getElementById('frete').textContent;
+        const frete = parseFloat(freteText.replace('R$', '').replace(',', '.'));
+        
+        // Obtém o total (já considerando cupom se aplicado)
+        const totalText = document.getElementById('total').textContent;
+        const total = parseFloat(totalText.replace('R$', '').replace(',', '.'));
+
+        // Monta o objeto do pedido
+        const pedido = {
+            clienteId: cliente.id,
+            itens: itensCompletos,
+            enderecoId: enderecoId,
+            cartaoId: cartaoId,
+            subtotal: subtotal,
+            valorFrete: frete,
+            valorTotal: total,
+            status: 'PENDENTE'
+        };
+
+        // Adiciona informações do cupom se aplicado
+        if (cupomAplicado) {
+            pedido.cupomId = cupomAplicado.id;
+            pedido.codigoCupom = cupomAplicado.codigo;
+            pedido.valorDesconto = subtotal - (total - frete); // Calcula o desconto aplicado
+            
+            // Marca o cupom como usado
+            const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+            if (cuponsPorUsuario[cliente.id]) {
+                const cupom = cuponsPorUsuario[cliente.id].find(c => c.id === cupomAplicado.id);
+                if (cupom) {
+                    cupom.usado = true;
+                    localStorage.setItem('cuponsPorUsuario', JSON.stringify(cuponsPorUsuario));
+                }
+            }
+        }
+
+        console.log('Enviando pedido:', pedido); // Debug
+
+        // Envia o pedido para a API
+        const response = await fetch('/api/pedidos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+            },
+            body: JSON.stringify(pedido)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Erro ao processar pedido');
+        }
+
+        const data = await response.json();
+        console.log('Pedido criado:', data); // Debug
+
+        // Mostra notificação de sucesso
+        const notificacao = document.getElementById('notificacao-sucesso');
+        notificacao.style.display = 'block';
+        
+        // Limpa o carrinho
+        const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
+        delete carrinhosPorUsuario[cliente.id];
+        localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhosPorUsuario));
+        
+        // Remove cupom aplicado
+        cupomAplicado = null;
+        document.getElementById('cupom-aplicado').style.display = 'none';
+        document.getElementById('input-cupom').value = '';
+        
+        // Atualiza o botão para "Ver Compras"
+        const btnFinalizar = document.getElementById('btn-finalizar');
+        btnFinalizar.textContent = 'Ver Compras';
+        btnFinalizar.onclick = function() {
+            window.location.href = `pedidos.html?clienteId=${cliente.id}`;
+        };
+
+        // Esconde a notificação após 3 segundos
+        setTimeout(() => {
+            notificacao.style.display = 'none';
+        }, 3000);
+
+    } catch (error) {
+        console.error('Erro ao finalizar compra:', error);
+        
+        let errorMessage = 'Erro ao finalizar compra';
+        if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Erro de conexão com o servidor';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        alert(`${errorMessage}\n\nPor favor, tente novamente.`);
     }
-
-    const itensPedido = carrinho.map(item => ({
-      livroId: item.id,
-      quantidade: item.quantidade
-    }));
-
-    const response = await fetch('/api/pedidos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-      },
-      body: JSON.stringify({
-        clienteId: cliente.id,
-        itens: itensPedido,
-        enderecoId: parseInt(document.getElementById('select-endereco').value),
-        cartaoId: parseInt(document.getElementById('select-cartao').value)
-      })
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.mensagem || 'Erro ao processar pedido');
-    }
-
-    // Mostra a notificação de sucesso
-    const notificacao = document.getElementById('notificacao-sucesso');
-    notificacao.style.display = 'block';
-    
-    // Limpa o carrinho do usuário atual
-    const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
-    delete carrinhosPorUsuario[cliente.id];
-    localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhosPorUsuario));
-    
-    // Atualiza o botão para "Ver Compras"
-    const btnFinalizar = document.getElementById('btn-finalizar');
-    btnFinalizar.textContent = 'Ver Compras';
-    btnFinalizar.onclick = function() {
-      window.location.href = `pedidos.html?clienteId=${cliente.id}`;
-    };
-
-    // Esconde a notificação após 3 segundos
-    setTimeout(() => {
-      notificacao.style.display = 'none';
-    }, 3000);
-
-  } catch (error) {
-    console.error('Erro detalhado:', error);
-    alert(`Erro: ${error.message}`);
-  }
 }
-
+  
     async function carregarEnderecos() {
       const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
       if (!cliente) return;
@@ -314,18 +444,18 @@
     }
 
     function mostrarDetalhesEndereco() {
-      const select = document.getElementById('select-endereco');
-      const detalhesDiv = document.getElementById('detalhes-endereco');
-      const endereco = enderecos.find(e => e.id == select.value);
+    const select = document.getElementById('select-endereco');
+    const detalhesDiv = document.getElementById('detalhes-endereco');
+    const endereco = enderecos.find(e => e.id == select.value);
 
-      if (!endereco) {
+    if (!endereco) {
         detalhesDiv.style.display = 'none';
         detalhesDiv.innerHTML = '';
         return;
-      }
+    }
 
-      detalhesDiv.style.display = 'block';
-      detalhesDiv.innerHTML = `
+    detalhesDiv.style.display = 'block';
+    detalhesDiv.innerHTML = `
         <strong>${endereco.nomeEndereco || 'Endereço de Entrega'}</strong>
         <div class="detalhes-row"><strong>Rua:</strong> ${endereco.tipoLogradouro ? endereco.tipoLogradouro + ' ' : ''}${endereco.rua}, Nº ${endereco.numero}${endereco.complemento ? ' - ' + endereco.complemento : ''}</div>
         <div class="detalhes-row"><strong>Bairro:</strong> ${endereco.bairro}</div>
@@ -333,20 +463,32 @@
         <div class="detalhes-row"><strong>CEP:</strong> ${endereco.cep}</div>
         <div class="detalhes-row"><strong>Tipo Residência:</strong> ${endereco.tipoResidencia || 'Não informado'}</div>
         <div class="detalhes-row"><strong>País:</strong> ${endereco.pais || 'Brasil'}</div>
-      `;
+    `;
 
-      const subtotalSpan = document.getElementById('subtotal');
-      const freteSpan = document.getElementById('frete');
-      const totalSpan = document.getElementById('total');
+    const subtotalSpan = document.getElementById('subtotal');
+    const freteSpan = document.getElementById('frete');
+    const totalSpan = document.getElementById('total');
 
-      if (subtotalSpan && freteSpan && totalSpan) {
+    if (subtotalSpan && freteSpan && totalSpan) {
         const subtotal = parseFloat(subtotalSpan.textContent.replace('R$', '').replace(',', '.'));
         const frete = calcularFrete(subtotal, endereco.estado);
 
         freteSpan.textContent = `R$ ${frete.toFixed(2)}`;
-        totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
-      }
+        
+        // Recalcula o total considerando o cupom se existir
+        if (cupomAplicado) {
+            const validacao = validarCupom(cupomAplicado.codigo, subtotal, JSON.parse(localStorage.getItem('clienteLogado')).id);
+            if (validacao.valido) {
+                atualizarTotalComCupom(subtotal, validacao.valorDesconto);
+            } else {
+                removerCupom();
+                totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+            }
+        } else {
+            totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+        }
     }
+}
 
     function mostrarDetalhesCartao() {
       const select = document.getElementById('select-cartao');
@@ -366,6 +508,194 @@
         <div class="detalhes-row"><strong>Validade:</strong> ${cartao.dataValidade}</div>
       `;
     }
+
+/* Seção de Cupons */
+// Variável para armazenar o cupom aplicado
+let cupomAplicado = null;
+
+// Função para aplicar um cupom
+function aplicarCupom() {
+    const codigoCupom = document.getElementById('input-cupom').value.trim();
+    if (!codigoCupom) {
+        alert('Por favor, digite um código de cupom');
+        return;
+    }
+
+    // Verifica se o usuário está logado
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) {
+        alert('Você precisa estar logado para usar um cupom');
+        openModalLogin();
+        return;
+    }
+
+    // Obtém o subtotal atual
+    const subtotalText = document.getElementById('subtotal').textContent;
+    const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
+
+    console.log('Validando cupom:', codigoCupom); // Debug
+    
+    // Verifica o cupom
+    const validacao = validarCupom(codigoCupom, subtotal, clienteLogado.id);
+    
+    console.log('Resultado validação:', validacao); // Debug
+    
+    if (!validacao.valido) {
+        alert(validacao.mensagem);
+        return;
+    }
+
+    // Armazena o cupom aplicado
+    cupomAplicado = validacao.cupom;
+    
+    // Atualiza a UI para mostrar o cupom aplicado
+    document.getElementById('cupom-codigo').textContent = cupomAplicado.codigo;
+    document.getElementById('valor-desconto').textContent = 
+        cupomAplicado.tipo === 'percent' 
+            ? `${cupomAplicado.desconto}% (R$ ${validacao.valorDesconto.toFixed(2)})`
+            : `R$ ${validacao.valorDesconto.toFixed(2)}`;
+    
+    document.getElementById('cupom-aplicado').style.display = 'block';
+    
+    // Atualiza o total
+    atualizarTotalComCupom(subtotal, validacao.valorDesconto);
+}
+
+// Função para validar um cupom
+function validarCupom(codigoCupom, valorSubtotal, userId) {
+    // Verifica se o código do cupom está no formato esperado
+    if (!codigoCupom || (!codigoCupom.startsWith('CUPOM') && !codigoCupom.startsWith('TROCA-'))) {
+        return { valido: false, mensagem: 'Formato de cupom inválido' };
+    }
+
+
+    // Obtém todos os cupons do usuário
+    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+    const cuponsUsuario = cuponsPorUsuario[userId] || [];
+    
+    console.log('Cupons do usuário:', cuponsUsuario); // Debug
+    
+    // Encontra o cupom pelo código (case insensitive)
+    const cupom = cuponsUsuario.find(c => 
+        c.codigo.toUpperCase() === codigoCupom.toUpperCase()
+    );
+    
+    if (!cupom) {
+        console.log('Cupom não encontrado para o usuário'); // Debug
+        return { valido: false, mensagem: 'Cupom não encontrado' };
+    }
+    
+    console.log('Cupom encontrado:', cupom); // Debug
+    
+    // Verifica se já foi usado
+    if (cupom.usado) {
+        return { valido: false, mensagem: 'Este cupom já foi utilizado' };
+    }
+    
+    // Verifica se expirou
+    const dataExpiracao = new Date(cupom.dataExpiracao);
+    const hoje = new Date();
+    if (dataExpiracao < hoje) {
+        return { valido: false, mensagem: 'Este cupom está expirado' };
+    }
+    
+    // Verifica o valor mínimo
+    if (valorSubtotal < cupom.valorMinimo) {
+        return { 
+            valido: false, 
+            mensagem: `Este cupom requer um valor mínimo de R$ ${cupom.valorMinimo.toFixed(2)}` 
+        };
+    }
+    
+    // Calcula o desconto
+    let valorDesconto = 0;
+    if (cupom.tipo === 'percent') {
+        valorDesconto = valorSubtotal * (cupom.desconto / 100);
+    } else {
+        valorDesconto = cupom.desconto;
+    }
+    
+    // Não permite desconto maior que o subtotal
+    if (valorDesconto > valorSubtotal) {
+        valorDesconto = valorSubtotal;
+    }
+    
+    return {
+        valido: true,
+        cupom: cupom,
+        valorDesconto: valorDesconto,
+        valorFinal: valorSubtotal - valorDesconto
+    };
+}
+// Função para atualizar o total com o cupom aplicado
+function atualizarTotalComCupom(subtotal, desconto) {
+    const freteText = document.getElementById('frete').textContent;
+    const frete = parseFloat(freteText.replace('R$', '').replace(',', '.'));
+    
+    const total = (subtotal - desconto) + frete;
+    document.getElementById('total').textContent = `R$ ${total.toFixed(2)}`;
+    
+    // Adiciona/atualiza a linha de desconto
+    let cupomLine = document.querySelector('.cupom-line');
+    if (!cupomLine) {
+        const totalDiv = document.querySelector('.carrinho-total');
+        const hr = document.createElement('hr');
+        cupomLine = document.createElement('div');
+        cupomLine.className = 'cupom-line';
+        cupomLine.style.display = 'flex';
+        cupomLine.style.justifyContent = 'space-between';
+        cupomLine.style.margin = '15px 0';
+        cupomLine.innerHTML = `
+            <strong>Desconto:</strong>
+            <span style="color: #2ed573; font-weight: bold;">- R$ ${desconto.toFixed(2)}</span>
+        `;
+        totalDiv.insertBefore(hr, totalDiv.querySelector('.form-group'));
+        totalDiv.insertBefore(cupomLine, hr.nextSibling);
+    } else {
+        cupomLine.querySelector('span').textContent = `- R$ ${desconto.toFixed(2)}`;
+    }
+}
+
+// Função para remover o cupom aplicado
+function removerCupom() {
+    cupomAplicado = null;
+    document.getElementById('cupom-aplicado').style.display = 'none';
+    document.getElementById('input-cupom').value = '';
+    
+    // Remove a linha de desconto
+    const cupomLine = document.querySelector('.cupom-line');
+    if (cupomLine) {
+        const hr = cupomLine.previousElementSibling;
+        if (hr && hr.tagName === 'HR') {
+            hr.remove();
+        }
+        cupomLine.remove();
+    }
+    
+    // Recalcula o total sem desconto
+    const subtotalText = document.getElementById('subtotal').textContent;
+    const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
+    const freteText = document.getElementById('frete').textContent;
+    const frete = parseFloat(freteText.replace('R$', '').replace(',', '.'));
+    
+    document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+}
+
+function debugCuponsUsuario() {
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) {
+        console.log('Nenhum usuário logado');
+        return;
+    }
+
+    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+    const cuponsUsuario = cuponsPorUsuario[clienteLogado.id] || [];
+    
+    console.log('Cupons do usuário atual:');
+    console.table(cuponsUsuario);
+    
+    return cuponsUsuario;
+}
   </script>
 </body>
 </html>

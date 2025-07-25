@@ -6,5 +6,6 @@ public enum StatusPedido {
     ENTREGUE,
     CANCELADO,
     DEVOLUCAO,  
-    DEVOLVIDO    
+    DEVOLVIDO,
+    TROCADO
 }

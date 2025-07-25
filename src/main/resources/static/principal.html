@@ -13,6 +13,7 @@
     <a href="principal.html">Inicio</a>
     <a href="clientes.html">Cadastrar</a>
     <a href="usuarios.html">Gerenciamento de Usuários</a>
+    <a href="grafico.html" >Histórico de Vendas</a>
     <a href="pedidos.html">Status do Pedido</a>
     <a href="livros.html">Cadastrar Livro</a>
 
@@ -86,6 +87,63 @@
 </div>
 
   <main>
+
+    <section class="cupons-container">
+    <h2>Cupons de Desconto</h2>
+    <div class="cupons-grid" id="cupons-grid">
+        <!-- Cupom 1 -->
+        <div class="cupom-card">
+            <div class="cupom-header">
+                <h3>Desconto de 10%</h3>
+                <span class="cupom-valor">10% OFF</span>
+            </div>
+            <div class="cupom-body">
+                <p>Use em qualquer compra acima de R$ 50,00</p>
+                <p class="cupom-codigo" id="cupom-1-codigo">Clique em "Pegar Cupom"</p>
+                <button class="btn-pegar-cupom" onclick="gerarCupom(1, 10, 50)">Pegar Cupom</button>
+            </div>
+        </div>
+        
+        <!-- Cupom 2 -->
+        <div class="cupom-card">
+            <div class="cupom-header">
+                <h3>Desconto de 15%</h3>
+                <span class="cupom-valor">15% OFF</span>
+            </div>
+            <div class="cupom-body">
+                <p>Use em qualquer compra acima de R$ 100,00</p>
+                <p class="cupom-codigo" id="cupom-2-codigo">Clique em "Pegar Cupom"</p>
+                <button class="btn-pegar-cupom" onclick="gerarCupom(2, 15, 100)">Pegar Cupom</button>
+            </div>
+        </div>
+        
+        <!-- Cupom 3 -->
+        <div class="cupom-card">
+            <div class="cupom-header">
+                <h3>Desconto de 20%</h3>
+                <span class="cupom-valor">20% OFF</span>
+            </div>
+            <div class="cupom-body">
+                <p>Use em qualquer compra acima de R$ 150,00</p>
+                <p class="cupom-codigo" id="cupom-3-codigo">Clique em "Pegar Cupom"</p>
+                <button class="btn-pegar-cupom" onclick="gerarCupom(3, 20, 150)">Pegar Cupom</button>
+            </div>
+        </div>
+        
+        <!-- Cupom 4 -->
+        <div class="cupom-card">
+            <div class="cupom-header">
+                <h3>Desconto de R$ 30</h3>
+                <span class="cupom-valor">R$ 30 OFF</span>
+            </div>
+            <div class="cupom-body">
+                <p>Use em qualquer compra acima de R$ 200,00</p>
+                <p class="cupom-codigo" id="cupom-4-codigo">Clique em "Pegar Cupom"</p>
+                <button class="btn-pegar-cupom" onclick="gerarCupom(4, 30, 200, 'fixed')">Pegar Cupom</button>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- Adicione isso logo abaixo do <h2>Nossos Livros</h2> -->
 <section class="produtos-container">
@@ -2246,6 +2304,155 @@ function debugCarrinhos() {
   } else {
     console.log('Nenhum usuário logado no momento');
   }
+}
+
+
+/* Seção de Cupons */
+
+// Função para gerar um cupom
+function gerarCupom(cupomId, desconto, valorMinimo, tipo = 'percent') {
+    // Verifica se o usuário está logado
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) {
+        alert('Você precisa estar logado para pegar um cupom!');
+        openModalLogin();
+        return;
+    }
+
+    // Gera um código de cupom aleatório
+    const codigoCupom = 'CUPOM' + Math.random().toString(36).substr(2, 8).toUpperCase();
+    
+    // Cria o objeto do cupom
+    const cupom = {
+        id: Date.now(), // Usa timestamp como ID único
+        codigo: codigoCupom,
+        desconto: desconto,
+        valorMinimo: valorMinimo,
+        tipo: tipo,
+        dataGeracao: new Date().toISOString(),
+        dataExpiracao: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expira em 30 dias
+        usado: false
+    };
+
+    console.log('Novo cupom gerado:', cupom); // Debug
+    
+    // Armazena o cupom no localStorage
+    armazenarCupom(clienteLogado.id, cupom);
+
+    // Atualiza a UI para mostrar o código do cupom
+    document.getElementById(`cupom-${cupomId}-codigo`).textContent = codigoCupom;
+    
+    // Desabilita o botão
+    const botao = document.querySelector(`.btn-pegar-cupom[onclick="gerarCupom(${cupomId}, ${desconto}, ${valorMinimo}${tipo === 'fixed' ? ", 'fixed'" : ''})"]`);
+    botao.disabled = true;
+    botao.textContent = 'Cupom Gerado!';
+    
+    alert(`Cupom gerado com sucesso! Código: ${codigoCupom}`);
+}
+
+// Função para armazenar o cupom no localStorage
+function armazenarCupom(userId, cupom) {
+    let cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+    
+    if (!cuponsPorUsuario[userId]) {
+        cuponsPorUsuario[userId] = [];
+    }
+    
+    // Verifica se o usuário já tem este cupom
+    const cupomExistente = cuponsPorUsuario[userId].find(c => c.id === cupom.id);
+    
+    if (!cupomExistente) {
+        cuponsPorUsuario[userId].push(cupom);
+        localStorage.setItem('cuponsPorUsuario', JSON.stringify(cuponsPorUsuario));
+    }
+}
+
+// Função para verificar cupons ao carregar a página
+function verificarCuponsUsuario() {
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) return;
+
+    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+    const cuponsUsuario = cuponsPorUsuario[clienteLogado.id] || [];
+
+    cuponsUsuario.forEach(cupom => {
+        const elementoCodigo = document.getElementById(`cupom-${cupom.id}-codigo`);
+        if (elementoCodigo) {
+            elementoCodigo.textContent = cupom.codigo;
+            
+            const botao = document.querySelector(`.btn-pegar-cupom[onclick="gerarCupom(${cupom.id}, ${cupom.desconto}, ${cupom.valorMinimo}${cupom.tipo === 'fixed' ? ", 'fixed'" : ''})"]`);
+            if (botao) {
+                botao.disabled = true;
+                botao.textContent = 'Cupom Gerado!';
+            }
+        }
+    });
+}
+
+// Adicione esta chamada no final do DOMContentLoaded
+window.addEventListener('DOMContentLoaded', () => {
+    carregarProdutos();
+    verificarCuponsUsuario();
+    
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    atualizarUI(clienteLogado);
+    atualizarContadorCarrinho();
+});
+
+// Função para validar um cupom no checkout
+function validarCupom(codigoCupom, valorTotal) {
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) return { valido: false, mensagem: 'Usuário não logado' };
+
+    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+    const cuponsUsuario = cuponsPorUsuario[clienteLogado.id] || [];
+
+    const cupom = cuponsUsuario.find(c => c.codigo === codigoCupom && !c.usado);
+    
+    if (!cupom) {
+        return { valido: false, mensagem: 'Cupom inválido ou já utilizado' };
+    }
+
+    // Verifica se o cupom expirou
+    if (new Date(cupom.dataExpiracao) < new Date()) {
+        return { valido: false, mensagem: 'Cupom expirado' };
+    }
+
+    // Verifica o valor mínimo
+    if (valorTotal < cupom.valorMinimo) {
+        return { 
+            valido: false, 
+            mensagem: `Valor mínimo não atingido (mínimo R$ ${cupom.valorMinimo.toFixed(2)})` 
+        };
+    }
+
+    // Calcula o desconto
+    let valorDesconto = 0;
+    if (cupom.tipo === 'percent') {
+        valorDesconto = valorTotal * (cupom.desconto / 100);
+    } else {
+        valorDesconto = cupom.desconto;
+    }
+
+    return {
+        valido: true,
+        cupom: cupom,
+        valorDesconto: valorDesconto,
+        valorFinal: valorTotal - valorDesconto
+    };
+}
+
+// Função para marcar um cupom como usado
+function marcarCupomComoUsado(userId, codigoCupom) {
+    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+    
+    if (cuponsPorUsuario[userId]) {
+        const cupom = cuponsPorUsuario[userId].find(c => c.codigo === codigoCupom);
+        if (cupom) {
+            cupom.usado = true;
+            localStorage.setItem('cuponsPorUsuario', JSON.stringify(cuponsPorUsuario));
+        }
+    }
 }
   </script>
 </body>

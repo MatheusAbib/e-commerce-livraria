@@ -215,6 +215,45 @@
     100% { opacity: 0; top: 0; }
   }
 
+  /* Estilos para o cupom */
+.cupom-container {
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.btn-aplicar-cupom {
+    background: #2ed573;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-aplicar-cupom:hover {
+    background: #20bf6b;
+}
+
+#input-cupom {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#cupom-aplicado {
+    border: 1px solid #2ed573;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
     /* Responsividade */
     @media (max-width: 600px) {
       .carrinho-item {

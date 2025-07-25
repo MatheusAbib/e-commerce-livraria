@@ -17,4 +17,6 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     @Transactional
     void deleteByCliente(Cliente cliente);  // <-- adicione a anotação @Transactional aqui
+
+    
 }

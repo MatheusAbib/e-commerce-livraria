@@ -12,10 +12,10 @@ public class ItemPedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-@ManyToOne
-@JoinColumn(name = "pedido_id", nullable = false)
-@JsonBackReference  // <<< ADICIONE ESTA LINHA
-private Pedido pedido;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pedido_id", nullable = false)
+    @JsonBackReference
+    private Pedido pedido;
 
     @ManyToOne
     @JoinColumn(name = "livro_id", nullable = false)
@@ -66,5 +66,9 @@ private Pedido pedido;
 
     public void setPrecoUnitario(BigDecimal precoUnitario) {
         this.precoUnitario = precoUnitario;
+    }
+
+        public void desvincularPedido() {
+        this.pedido = null;
     }
 }

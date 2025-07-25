@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gráfico de Vendas | Dashboard Moderno</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --dark-color: #2b2d42;
+            --light-color: #f8f9fa;
+            --success-color: #4caf50;
+            --success-hover: #3d8b40;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+        
+        h1 {
+            color: var(--dark-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        h1 i {
+            margin-right: 12px;
+            color: var(--primary-color);
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 3px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 15px;
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 12px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        select, button {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+        
+        select {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            min-width: 200px;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Efeito de onda animado no botão */
+        @keyframes wave {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        button .wave {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: wave 0.6s linear;
+            pointer-events: none;
+        }
+        
+        /* Tooltip personalizado */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: var(--dark-color);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+    header {
+      background-color: #0077b6;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .menu-icon {
+      font-size: 24px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+      .sidebar {
+      position: fixed;
+      top: 0;
+      left: -290px;
+      height: 100%;
+      width: 250px;
+      background-color: #023e8a;
+      color: white;
+      padding: 20px;
+      transition: left 0.3s ease;
+      z-index: 999;
+    }
+
+    .sidebar.show {
+      left: 0;
+    }
+
+    .sidebar h3 {
+      margin-bottom: 20px;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .sidebar a:hover {
+      background-color: #0077b6;
+    }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 15px;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            select, button {
+                width: 100%;
+            }
+            
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <h3>Menu</h3>
+    <a href="principal.html">Inicio</a>
+    <a href="clientes.html">Cadastrar</a>
+    <a href="usuarios.html">Gerenciamento de Usuários</a>
+    <a href="grafico.html" >Histórico de Vendas</a>
+    <a href="pedidos.html">Status do Pedido</a>
+    <a href="livros.html">Cadastrar Livro</a>
+
+  </div>
+
+<header>
+  <span class="menu-icon" onclick="toggleSidebar()">☰</span>
+
+  <div class="profile-icon" style="display:none" id="profile-icon">
+    <i class="fas fa-user-circle"></i>
+  </div>
+
+<div class="cart-icon" id="cart-icon" style="display: none;">
+  <a href="carrinho.html">
+    <i class="fas fa-shopping-cart"></i>
+  </a>
+  <span class="cart-count" id="cart-count">0</span>
+</div>
+
+</header>
+    <div class="container">
+        <h1><i class="fas fa-chart-line"></i> Histórico de Vendas</h1>
+        
+        <div class="filters">
+            <select id="time-period">
+                <option value="day">Por Dia</option>
+                <option value="week">Por Semana</option>
+                <option value="month" selected>Por Mês</option>
+                <option value="year">Por Ano</option>
+            </select>
+
+            <select id="status-filter">
+              <option value="todos" selected>Todos os Status</option>
+              <option value="ENTREGUE">Entregue</option>
+              <option value="TROCADO">Trocado</option>
+              <option value="EM_PROCESSAMENTO">Em Processamento</option>
+              <option value="CANCELADO">Cancelado</option>
+              <option value="DEVOLUCAO">Devolução</option>
+              <option value="DEVOLVIDO">Devolvido</option>
+            </select>
+
+            <select id="chart-type">
+                <option value="line" selected>Gráfico de Linha</option>
+                <option value="bar">Gráfico de Barras</option>
+            </select>
+            
+            <button onclick="loadData()" id="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Atualizar
+            </button>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let salesChart;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            
+            // Adiciona efeito de onda ao botão
+            const refreshBtn = document.getElementById('refresh-btn');
+            refreshBtn.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const wave = document.createElement('span');
+                wave.className = 'wave';
+                wave.style.left = x + 'px';
+                wave.style.top = y + 'px';
+                this.appendChild(wave);
+                
+                setTimeout(() => wave.remove(), 600);
+            });
+        });
+
+        async function loadData() {
+            try {
+                const statusSelecionado = document.getElementById('status-filter').value;
+
+                const response = await fetch('/api/pedidos/todos');
+                if (!response.ok) throw new Error('Erro ao carregar dados');
+                
+                const allPedidos = await response.json();
+                const filteredPedidos = statusSelecionado === 'todos' 
+                    ? allPedidos 
+                    : allPedidos.filter(p => p.status === statusSelecionado);
+                
+                processAndDisplayData(filteredPedidos);
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Não foi possível carregar os dados de vendas');
+            }
+        }
+
+        function processAndDisplayData(pedidos) {
+            const period = document.getElementById('time-period').value;
+            const chartType = document.getElementById('chart-type').value;
+            
+            // Agrupa os pedidos por período de tempo
+            const groupedData = groupDataByPeriod(pedidos, period);
+            
+            // Prepara os dados para o gráfico
+            const labels = Object.keys(groupedData);
+            const data = Object.values(groupedData).map(group => 
+                group.reduce((sum, pedido) => sum + (pedido.valorTotal || 0), 0)
+            );
+            
+            // Cria ou atualiza o gráfico
+            updateChart(labels, data, chartType, `Vendas (${getPeriodLabel(period)})`);
+        }
+
+        function groupDataByPeriod(pedidos, period) {
+            const groups = {};
+            
+            pedidos.forEach(pedido => {
+                const date = new Date(pedido.dataPedido);
+                let key;
+                
+                switch(period) {
+                    case 'day':
+                        key = date.toLocaleDateString('pt-BR');
+                        break;
+                    case 'week':
+                        const weekStart = new Date(date);
+                        weekStart.setDate(date.getDate() - date.getDay());
+                        key = `Semana ${weekStart.toLocaleDateString('pt-BR')}`;
+                        break;
+                    case 'month':
+                        key = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                        break;
+                    case 'year':
+                        key = date.getFullYear().toString();
+                        break;
+                }
+                
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(pedido);
+            });
+            
+            return groups;
+        }
+
+        function getPeriodLabel(period) {
+            switch(period) {
+                case 'day': return 'Dia';
+                case 'week': return 'Semana';
+                case 'month': return 'Mês';
+                case 'year': return 'Ano';
+                default: return '';
+            }
+        }
+
+        function updateChart(labels, data, chartType, label) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            if (salesChart) {
+                salesChart.destroy();
+            }
+            
+            // Configuração do gradiente para o gráfico
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(67, 97, 238, 0.8)');
+            gradient.addColorStop(1, 'rgba(76, 201, 240, 0.2)');
+            
+            salesChart = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: 'white',
+                        pointBorderColor: 'rgba(67, 97, 238, 1)',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    family: 'Poppins',
+                                    size: 14,
+                                    weight: '500'
+                                },
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(43, 45, 66, 0.9)',
+                            titleFont: {
+                                family: 'Poppins',
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: 'Poppins',
+                                size: 12
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'R$ ' + context.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Poppins',
+                                    size: 12
+                                },
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Valor Total (R$)',
+                                font: {
+                                    family: 'Poppins',
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                padding: {top: 20, bottom: 10}
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Poppins',
+                                    size: 12
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Período',
+                                font: {
+                                    family: 'Poppins',
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                padding: {top: 10, bottom: 20}
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    elements: {
+                        bar: {
+                            borderRadius: 8,
+                            borderSkipped: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('status-filter').addEventListener('change', () => {
+            loadData();
+        });
+
+          function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.toggle('show');
+  }
+
+  
+    </script>
+</body>
+</html>

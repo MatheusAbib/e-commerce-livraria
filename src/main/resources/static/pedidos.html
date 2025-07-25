@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -15,8 +15,8 @@
   <button id="tab-historico" class="tab">Entregas</button>
   <button id="tab-devolucao" class="tab">Pedidos em Devolução</button>
   <button id="tab-devolvidos" class="tab">Devolvidos</button>
-    <button id="tab-cancelado" class="tab">Cancelados</button> <!-- nova aba -->
-
+  <button id="tab-trocados" class="tab">Trocados</button>
+  <button id="tab-cancelado" class="tab">Cancelados</button>
 </div>
 
 
@@ -29,14 +29,12 @@
   </div>
 
 <script>
-
- let pedidosCache = []; // para armazenar todos os pedidos carregados
- let pedidosDevolucao = []; 
-
+let pedidosCache = []; // para armazenar todos os pedidos carregados
+let pedidosDevolucao = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   const devolucoesSalvas = localStorage.getItem('pedidosDevolucao');
-pedidosDevolucao = devolucoesSalvas ? JSON.parse(devolucoesSalvas) : [];
+  pedidosDevolucao = devolucoesSalvas ? JSON.parse(devolucoesSalvas) : [];
   let clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
 
   if (!clienteLogado || !clienteLogado.id) {
@@ -51,8 +49,8 @@ pedidosDevolucao = devolucoesSalvas ? JSON.parse(devolucoesSalvas) : [];
     if (!response.ok) throw new Error('Erro ao carregar pedidos');
 
     pedidosCache = await response.json();
-
-    // Exibir inicialmente só os pedidos em andamento (status != ENTREGUE)
+    console.log('Pedidos recebidos:', pedidosCache);
+    
     exibirPedidosFiltrados(pedidosCache, false);
   } catch (error) {
     console.error('Erro:', error);
@@ -60,16 +58,16 @@ pedidosDevolucao = devolucoesSalvas ? JSON.parse(devolucoesSalvas) : [];
       <div class="error-message">
         <i class="fas fa-exclamation-triangle"></i>
         <p>Não foi possível carregar seus pedidos.</p>
+        <p>Detalhes: ${error.message}</p>
       </div>
     `;
   }
 
-  // Adiciona eventos nas abas
-document.getElementById('tab-pedidos').addEventListener('click', () => {
-  setActiveTab('pedidos');
-  exibirPedidosFiltrados(pedidosCache, false); 
-});
-
+  // Eventos das abas
+  document.getElementById('tab-pedidos').addEventListener('click', () => {
+    setActiveTab('pedidos');
+    exibirPedidosFiltrados(pedidosCache, false); 
+  });
 
   document.getElementById('tab-historico').addEventListener('click', () => {
     setActiveTab('historico');
@@ -77,25 +75,27 @@ document.getElementById('tab-pedidos').addEventListener('click', () => {
   });
 
   document.getElementById('tab-devolucao').addEventListener('click', () => {
-  setActiveTab('devolucao');
-  const pedidosDevolucao = pedidosCache.filter(p => p.status === 'DEVOLUCAO');
-exibirPedidos(pedidosDevolucao);
+    setActiveTab('devolucao');
+    const pedidosDevolucao = pedidosCache.filter(p => p.status === 'DEVOLUCAO');
+    exibirPedidos(pedidosDevolucao);
+  });
 
+  document.getElementById('tab-devolvidos').addEventListener('click', () => {
+    setActiveTab('devolvidos');
+    const pedidosDevolvidos = pedidosCache.filter(p => p.status === 'DEVOLVIDO');
+    exibirPedidos(pedidosDevolvidos);
+  });
+
+  document.getElementById('tab-cancelado').addEventListener('click', () => {
+    setActiveTab('cancelado');
+    const pedidosCancelados = pedidosCache.filter(p => p.status === 'CANCELADO');
+    exibirPedidos(pedidosCancelados);
+  });
+  document.getElementById('tab-trocados').addEventListener('click', () => {
+  setActiveTab('trocados');
+  const pedidosTrocados = pedidosCache.filter(p => p.status === 'TROCADO');
+  exibirPedidos(pedidosTrocados);
 });
-
-document.getElementById('tab-devolvidos').addEventListener('click', () => {
-  setActiveTab('devolvidos');
-  const pedidosDevolvidos = pedidosCache.filter(p => p.status === 'DEVOLVIDO');
-  exibirPedidos(pedidosDevolvidos);
-});
-
-document.getElementById('tab-cancelado').addEventListener('click', () => {
-  setActiveTab('cancelado');
-  const pedidosCancelados = pedidosCache.filter(p => p.status === 'CANCELADO');
-  exibirPedidos(pedidosCancelados);
-});
-
-
 });
 
 function setActiveTab(tab) {
@@ -103,26 +103,22 @@ function setActiveTab(tab) {
   document.getElementById('tab-historico').classList.toggle('active', tab === 'historico');
   document.getElementById('tab-devolucao').classList.toggle('active', tab === 'devolucao');
   document.getElementById('tab-devolvidos').classList.toggle('active', tab === 'devolvidos');
-    document.getElementById('tab-cancelado').classList.toggle('active', tab === 'cancelado');
-
+  document.getElementById('tab-trocados').classList.toggle('active', tab === 'trocados'); // novo
+  document.getElementById('tab-cancelado').classList.toggle('active', tab === 'cancelado');
 }
 
-
-// Função para exibir pedidos filtrando se mostra só entregues ou só em andamento
 function exibirPedidosFiltrados(pedidos, mostrarEntregues) {
   const pedidosFiltrados = pedidos.filter(pedido => 
     mostrarEntregues 
       ? pedido.status === 'ENTREGUE' 
-      : (pedido.status !== 'ENTREGUE' 
+      : (pedido.status !== 'ENTREGUE'
           && pedido.status !== 'DEVOLUCAO' 
           && pedido.status !== 'DEVOLVIDO'
-          && pedido.status !== 'CANCELADO')  // <-- filtra cancelados fora aqui
+          && pedido.status !== 'CANCELADO'
+          && pedido.status !== 'TROCADO') // Adicione esta condição
   );
   exibirPedidos(pedidosFiltrados);
 }
-
-
-
 
 function exibirPedidos(pedidos) {
   const container = document.getElementById('pedidos-container');
@@ -138,11 +134,22 @@ function exibirPedidos(pedidos) {
     return;
   }
 
-  container.innerHTML = pedidos.map(pedido => `
+container.innerHTML = pedidos.map(pedido => {
+    // Cálculo correto do subtotal (soma de todos os itens)
+    const subtotal = (pedido.itens || []).reduce((total, item) => {
+      return total + (item.precoUnitario * item.quantidade);
+    }, 0);
+    
+    const frete = pedido.valorFrete || 0;
+    const desconto = pedido.valorDesconto || 0;
+    const total = pedido.valorTotal || subtotal + frete - desconto;
+    const codigoCupom = pedido.codigoCupom || '';
+
+    return `
     <div class="pedido-card" data-id="${pedido.id}">
       <div class="pedido-header">
         <div>
-          <span class="pedido-id">Seu Pedido</span>
+          <span class="pedido-id">Pedido</span>
           <span class="pedido-data">${new Date(pedido.dataPedido).toLocaleDateString('pt-BR')}</span>
         </div>
         <span class="pedido-status ${getStatusClass(pedido.status)}">
@@ -151,60 +158,84 @@ function exibirPedidos(pedidos) {
       </div>
 
       <div class="pedido-produtos">
-        ${pedido.itens.map(item => `
+        ${(pedido.itens || []).map(item => `
           <div class="produto-item">
             <img src="${item.livro?.imagemUrl || 'img/livro-placeholder.jpg'}" class="produto-imagem" />
             <div class="produto-info">
               <div class="produto-nome">${item.livro?.titulo || 'Livro desconhecido'}</div>
-              <div>Quantidade: ${item.quantidade}</div>
-              <div class="produto-preco">R$ ${item.precoUnitario.toFixed(2)}</div>
+              <div>Quantidade: ${item.quantidade || 1}</div>
+              <div class="produto-preco">R$ ${(item.precoUnitario || 0).toFixed(2)}</div>
             </div>
           </div>
         `).join('')}
       </div>
 
       <div class="pedido-total">
-        Subtotal: R$ ${(pedido.valorTotal - pedido.valorFrete).toFixed(2)} <br />
-        Frete: R$ ${pedido.valorFrete.toFixed(2)} <br />
-        <strong>Total: R$ ${pedido.valorTotal.toFixed(2)}</strong>
+        Subtotal: R$ ${subtotal.toFixed(2)} <br />
+        Frete: R$ ${frete.toFixed(2)} <br />
+        ${desconto > 0 ? `
+          Desconto: -R$ ${desconto.toFixed(2)} ${codigoCupom ? `(Cupom: ${codigoCupom})` : ''} <br />
+        ` : ''}
+        <strong>Total: R$ ${total.toFixed(2)}</strong>
       </div>
 
-      <!-- Adicione esta seção de ações -->
-      <div class="pedido-acoes">
-        ${pedido.status !== 'ENTREGUE' && pedido.status !== 'DEVOLUCAO' && pedido.status !== 'DEVOLVIDO' && pedido.status !== 'CANCELADO' ? `
-          ${(pedido.status === 'EM_PROCESSAMENTO' || pedido.status === 'EM_TRANSITO') ? `
-            <button class="btn-acao btn-cancelar" onclick="cancelarPedido(${pedido.id})">
-              <i class="fas fa-times"></i> Cancelar Pedido
-            </button>
-          ` : ''}
-
-          <button class="btn-acao btn-entregue" onclick="atualizarStatusPedido(${pedido.id}, 'ENTREGUE')">
+<div class="pedido-acoes">
+  ${pedido.status !== 'ENTREGUE' && pedido.status !== 'DEVOLUCAO' && 
+    pedido.status !== 'DEVOLVIDO' && pedido.status !== 'CANCELADO' && 
+    pedido.status !== 'TROCADO' ? ` <!-- Adicionamos TROCADO aqui -->
+    ${(pedido.status === 'EM_PROCESSAMENTO' || pedido.status === 'EM_TRANSITO') ? `
+      <button class="btn-acao btn-cancelar" onclick="cancelarPedido('${pedido.id}')">
+        <i class="fas fa-times"></i> Cancelar Pedido
+      </button>
+    ` : ''}
+          <button class="btn-acao btn-entregue" onclick="atualizarStatusPedido('${pedido.id}', 'ENTREGUE')">
             <i class="fas fa-check"></i> Marcar como Entregue
           </button>
         ` : ''}
 
         ${pedido.status === 'ENTREGUE' ? `
-          <button class="btn-acao btn-devolucao" onclick="solicitarDevolucao(${pedido.id})">
+          <button class="btn-acao btn-devolucao" onclick="solicitarDevolucao('${pedido.id}')">
             <i class="fas fa-undo"></i> Solicitar Devolução
           </button>
         ` : ''}
 
         ${pedido.status === 'DEVOLUCAO' ? `
-          <button class="btn-acao btn-aprovar" onclick="atualizarStatusPedido(${pedido.id}, 'DEVOLVIDO')">
+          <button class="btn-acao btn-aprovar" onclick="atualizarStatusPedido('${pedido.id}', 'DEVOLVIDO')">
             <i class="fas fa-check-double"></i> Aprovar Devolução
           </button>
         ` : ''}
 
-        ${pedido.status === 'DEVOLVIDO' ? `
-          <button class="btn-acao btn-confirmar-troca" onclick="atualizarStatusPedido(${pedido.id}, 'ENTREGUE')">
-            <i class="fas fa-check"></i> Confirmar Troca
+    ${pedido.status === 'DEVOLVIDO' ? `
+      <button class="btn-acao btn-confirmar-troca" onclick="atualizarStatusPedido('${pedido.id}', 'TROCADO')">
+        <i class="fas fa-check"></i> Confirmar Troca
+      </button>
+    ` : ''}
+
+
+        ${pedido.status === 'CANCELADO' ? `
+          <button class="btn-acao btn-excluir" title="Excluir pedido" onclick="excluirPedidoCancelado('${pedido.id}')">
+            <i class="fas fa-trash"></i>
           </button>
         ` : ''}
+
+${pedido.status === 'TROCADO' ? `
+  <div class="troca-cupom-container">
+    <p style="margin-bottom: 10px;">Você tem direito a um cupom de troca:</p>
+    <button class="btn-gerar-cupom-troca" onclick="gerarCupomTroca('${pedido.id}')">
+      <i class="fas fa-tag"></i> Gerar Cupom de Troca (20% OFF)
+    </button>
+    <div id="cupom-troca-${pedido.id}" style="display: none; margin-top: 10px;">
+      <p>Cupom: <strong id="codigo-cupom-troca-${pedido.id}" style="color: #28a745;"></strong></p>
+      <p>Válido por 30 dias | Mínimo: R$ 50,00</p>
+    </div>
+  </div>
+` : ''}
+        
       </div>
     </div>
-  `).join('');
+    `;
+  }).join('');
 }
-
 
 async function solicitarDevolucao(pedidoId) {
   if (!confirm('Deseja realmente solicitar a devolução deste pedido?')) {
@@ -212,12 +243,13 @@ async function solicitarDevolucao(pedidoId) {
   }
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
+      headers: headers,
       body: JSON.stringify({ novoStatus: 'DEVOLUCAO' })
     });
 
@@ -235,7 +267,6 @@ async function solicitarDevolucao(pedidoId) {
   }
 }
 
-
 function formatStatus(status) {
   switch (status) {
     case 'EM_PROCESSAMENTO': return 'Em Processamento';
@@ -243,6 +274,7 @@ function formatStatus(status) {
     case 'ENTREGUE': return 'Entregue';
     case 'DEVOLUCAO': return 'Em Devolução';
     case 'DEVOLVIDO': return 'Devolvido';
+    case 'TROCADO': return 'Trocado';
 
     default: return status;
   }
@@ -254,73 +286,37 @@ function getStatusClass(status) {
     case 'EM_TRANSITO': return 'status-envio';
     case 'ENTREGUE': return 'status-entregue';
     case 'DEVOLUCAO': return 'status-devolucao';
-    case 'DEVOLVIDO': return 'status-devoldio'; // Se quiser um estilo diferente
-    case 'CANCELADO': return 'status-cancelado'; // <-- aqui
+    case 'DEVOLVIDO': return 'status-devolvido';
+    case 'CANCELADO': return 'status-cancelado';
+    case 'TROCADO': return 'status-trocado';
+
     default: return 'status-pendente';
   }
 }
 
-
-function renderPedido(pedido) {
-  const container = document.createElement('div');
-  container.classList.add('pedido');
-  container.innerHTML = `
-    <p><strong>ID:</strong> ${pedido.id}</p>
-    <p><strong>Status:</strong> ${pedido.status}</p>
-  `;
-
-  if (pedido.status === 'DEVOLUCAO') {
-    const btnAprovar = document.createElement('button');
-    btnAprovar.textContent = 'Aprovar Devolução';
-    btnAprovar.onclick = () => {
-      fetch(`/api/pedidos/${pedido.id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ novoStatus: 'DEVOLVIDO' })
-      })
-      .then(res => res.ok ? location.reload() : alert('Erro ao aprovar devolução'));
-    };
-    container.appendChild(btnAprovar);
-  }
-
-  return container;
-}
-
-
-
-async function atualizarStatusPedido(pedidoId, novoStatus) {
-  if (!confirm(`Tem certeza que deseja alterar o status do pedido para "${formatStatus(novoStatus)}"?`)) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({
-        novoStatus: novoStatus  // aqui precisa ser exatamente 'novoStatus'
-      })
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Erro ao atualizar status');
+function atualizarStatusPedido(pedidoId, novoStatus) {
+  fetch(`/api/pedidos/${pedidoId}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ novoStatus: novoStatus })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Erro ao atualizar status');
+    return res.json();
+  })
+  .then(updatedPedido => {
+    // Atualiza pedido na lista local
+    const index = pedidosCache.findIndex(p => p.id === updatedPedido.id);
+    if (index !== -1) {
+      pedidosCache[index] = updatedPedido;
+      exibirPedidosFiltrados(pedidosCache, false); // Atualiza a visualização
     }
-
-    const pedidoAtualizado = await response.json();
-    alert(`Status do pedido #${pedidoId} atualizado para ${formatStatus(novoStatus)}`);
-    
-    // Recarrega a lista de pedidos
-    document.dispatchEvent(new Event('DOMContentLoaded'));
-    
-  } catch (error) {
-    console.error('Erro ao atualizar status:', error);
-    alert(`Erro: ${error.message}`);
-  }
+  })
+  .catch(err => {
+    alert('Erro ao atualizar status: ' + err.message);
+  });
 }
+
 
 async function cancelarPedido(pedidoId) {
   if (!confirm('Deseja realmente cancelar este pedido?')) {
@@ -328,12 +324,13 @@ async function cancelarPedido(pedidoId) {
   }
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
+      headers: headers,
       body: JSON.stringify({ novoStatus: 'CANCELADO' })
     });
 
@@ -343,16 +340,137 @@ async function cancelarPedido(pedidoId) {
     }
 
     alert('Pedido cancelado com sucesso.');
-    document.dispatchEvent(new Event('DOMContentLoaded')); // recarrega os pedidos
-    setActiveTab('cancelado'); // muda para a aba Cancelados
+    document.dispatchEvent(new Event('DOMContentLoaded')); 
+    setActiveTab('cancelado');
   } catch (error) {
     console.error('Erro ao cancelar pedido:', error);
     alert(`Erro: ${error.message}`);
   }
 }
 
+async function excluirPedidoCancelado(pedidoId) {
+  if (!confirm('Deseja realmente excluir este pedido cancelado? Esta ação é irreversível.')) {
+    return;
+  }
+  try {
+    const token = localStorage.getItem('token');
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const response = await fetch(`/api/pedidos/${pedidoId}`, {
+      method: 'DELETE',
+      headers: headers
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Erro ao excluir pedido');
+    }
+    alert('Pedido cancelado excluído com sucesso.');
+    pedidosCache = pedidosCache.filter(p => p.id !== pedidoId);
+    setActiveTab('cancelado');
+    const pedidosCancelados = pedidosCache.filter(p => p.status === 'CANCELADO');
+    exibirPedidos(pedidosCancelados);
+  } catch (error) {
+    console.error('Erro ao excluir pedido:', error);
+    alert(`Erro: ${error.message}`);
+  }
+}
 
+// Função para gerar cupom de troca
+function gerarCupomTroca(pedidoId) {
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) {
+        alert('Você precisa estar logado para gerar um cupom de troca!');
+        return;
+    }
 
-  </script>
+    // Verifica se já existe cupom para este pedido
+    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+    const cuponsUsuario = cuponsPorUsuario[clienteLogado.id] || [];
+    
+    const cupomExistente = cuponsUsuario.find(c => 
+        c.origem === 'troca' && c.pedidoId === pedidoId
+    );
+    
+    if (cupomExistente) {
+        // Se já existe, apenas mostra o cupom existente
+        const cupomDiv = document.getElementById(`cupom-troca-${pedidoId}`);
+        const codigoSpan = document.getElementById(`codigo-cupom-troca-${pedidoId}`);
+        const botao = document.querySelector(`.btn-gerar-cupom-troca[onclick="gerarCupomTroca('${pedidoId}')"]`);
+        
+        if (cupomDiv && codigoSpan && botao) {
+            codigoSpan.textContent = cupomExistente.codigo;
+            cupomDiv.style.display = 'block';
+            botao.disabled = true;
+            botao.textContent = 'Cupom Gerado Anteriormente';
+        }
+        return;
+    }
+
+    // Restante do código para gerar novo cupom...
+    const codigoCupom = 'TROCA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    
+    const cupom = {
+        id: Date.now(),
+        codigo: codigoCupom,
+        desconto: 20,
+        valorMinimo: 50,
+        tipo: 'percent',
+        dataGeracao: new Date().toISOString(),
+        dataExpiracao: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        usado: false,
+        origem: 'troca',
+        pedidoId: pedidoId
+    };
+
+    cuponsUsuario.push(cupom);
+    cuponsPorUsuario[clienteLogado.id] = cuponsUsuario;
+    localStorage.setItem('cuponsPorUsuario', JSON.stringify(cuponsPorUsuario));
+
+    // Atualiza a UI
+    const cupomDiv = document.getElementById(`cupom-troca-${pedidoId}`);
+    const codigoSpan = document.getElementById(`codigo-cupom-troca-${pedidoId}`);
+    const botao = document.querySelector(`.btn-gerar-cupom-troca[onclick="gerarCupomTroca('${pedidoId}')"]`);
+    
+    codigoSpan.textContent = codigoCupom;
+    cupomDiv.style.display = 'block';
+    botao.disabled = true;
+    botao.textContent = 'Cupom Gerado!';
+    
+    alert(`Cupom de troca gerado com sucesso! Código: ${codigoCupom}`);
+}
+
+// Função para verificar cupons de troca ao carregar a página
+function verificarCuponsTroca() {
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) return;
+
+    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+    const cuponsUsuario = cuponsPorUsuario[clienteLogado.id] || [];
+
+    // Para cada pedido com status TROCADO
+    document.querySelectorAll('.pedido-card[data-id]').forEach(card => {
+        const pedidoId = card.getAttribute('data-id');
+        const cupomDiv = document.getElementById(`cupom-troca-${pedidoId}`);
+        const codigoSpan = document.getElementById(`codigo-cupom-troca-${pedidoId}`);
+        const botao = document.querySelector(`.btn-gerar-cupom-troca[onclick="gerarCupomTroca('${pedidoId}')"]`);
+        
+        if (!cupomDiv || !codigoSpan || !botao) return;
+
+        // Verifica se já existe cupom para este pedido
+        const cupomExistente = cuponsUsuario.find(c => 
+            c.origem === 'troca' && c.pedidoId === pedidoId
+        );
+        
+        if (cupomExistente) {
+            codigoSpan.textContent = cupomExistente.codigo;
+            cupomDiv.style.display = 'block';
+            botao.disabled = true;
+            botao.textContent = 'Cupom Gerado';
+        }
+    });
+}
+</script>
 </body>
 </html>
