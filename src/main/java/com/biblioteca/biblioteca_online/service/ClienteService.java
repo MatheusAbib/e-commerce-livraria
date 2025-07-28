@@ -3,6 +3,7 @@ package com.biblioteca.biblioteca_online.service;
 import com.biblioteca.biblioteca_online.model.Cartao;
 import com.biblioteca.biblioteca_online.model.Cliente;
 import com.biblioteca.biblioteca_online.model.Endereco;
+import com.biblioteca.biblioteca_online.model.Log;
 import com.biblioteca.biblioteca_online.repository.CartaoRepository;
 import com.biblioteca.biblioteca_online.repository.ClienteRepository;
 import com.biblioteca.biblioteca_online.repository.EnderecoRepository;
@@ -23,6 +24,9 @@ import java.util.Optional;
 public class ClienteService {
 
     @Autowired
+    private LogService logService;
+
+    @Autowired
     private ClienteRepository clienteRepository;
 
     @Autowired
@@ -35,27 +39,29 @@ public class ClienteService {
 
     // Método para salvar cliente com endereços
 public Cliente salvarClienteComEnderecos(Cliente cliente) {
-    // Salva o cliente primeiro
     Cliente clienteSalvo = salvarCliente(cliente);
-    
-    // Associa e salva os endereços
+
     if (cliente.getEnderecos() != null) {
         for (Endereco endereco : cliente.getEnderecos()) {
             endereco.setCliente(clienteSalvo);
             enderecoRepository.save(endereco);
         }
     }
-    
-    // Associa e salva os cartões
+
     if (cliente.getCartoes() != null) {
         for (Cartao cartao : cliente.getCartoes()) {
             cartao.setCliente(clienteSalvo);
             cartaoRepository.save(cartao);
         }
     }
-    
+
+    // Log de cadastro
+    Log log = new Log(clienteSalvo.getId(), clienteSalvo.getNome(), "cadastro", "Cliente cadastrado", "success");
+    logService.salvarLog(log);
+
     return clienteSalvo;
 }
+
 
 @Transactional
 public Cliente atualizarClienteComEnderecos(Long id, Cliente clienteAtualizado) {
@@ -238,38 +244,50 @@ public List<Cliente> filtrarClientes(String nome, String email, String cpf, Stri
     });
 }
 
-    @Transactional
+@Transactional
 public void excluirCliente(Long id) {
     Cliente cliente = clienteRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
-    
-    // Remove os endereços explicitamente se quiser, mas o cascade já resolve
+
+    logService.salvarLog(new Log(cliente.getId(), cliente.getNome(), "exclusao", "Cliente excluído", "info"));
+
     clienteRepository.delete(cliente);
 }
+
 
 public Cliente login(String email, String senha) {
     Cliente cliente = clienteRepository.findByEmail(email);
 
     if (cliente != null && BCrypt.checkpw(senha, cliente.getSenha())) {
+        Log log = new Log(cliente.getId(), cliente.getNome(), "login", "Cliente logado com sucesso", "success");
+        logService.salvarLog(log);
         return cliente;
     }
 
     return null;
 }
+
 @Transactional
 public Cliente atualizarDadosPessoais(Long id, Cliente clienteAtualizado) {
-    return clienteRepository.findById(id).map(cliente -> {
-        cliente.setNome(clienteAtualizado.getNome());
-        cliente.setEmail(clienteAtualizado.getEmail());
-        cliente.setTelefone(clienteAtualizado.getTelefone());
-        cliente.setTipotelefone(clienteAtualizado.getTipotelefone());
-        cliente.setCpf(clienteAtualizado.getCpf());
-        cliente.setNascimento(clienteAtualizado.getNascimento());
-        cliente.setGenero(clienteAtualizado.getGenero());
-        
-        return clienteRepository.save(cliente);
-    }).orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+    Cliente clienteAtual = clienteRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+
+    clienteAtual.setNome(clienteAtualizado.getNome());
+    clienteAtual.setEmail(clienteAtualizado.getEmail());
+    clienteAtual.setTelefone(clienteAtualizado.getTelefone());
+    clienteAtual.setTipotelefone(clienteAtualizado.getTipotelefone());
+    clienteAtual.setCpf(clienteAtualizado.getCpf());
+    clienteAtual.setNascimento(clienteAtualizado.getNascimento());
+    clienteAtual.setGenero(clienteAtualizado.getGenero());
+
+    Cliente atualizado = clienteRepository.save(clienteAtual);
+
+    Log log = new Log(id, atualizado.getNome(), "atualizacao", "Dados do cliente atualizados", "info");
+    logService.salvarLog(log);
+
+    return atualizado;
 }
+
 
 public void deletarCliente(Long id) {
     Optional<Cliente> clienteOpt = clienteRepository.findById(id);

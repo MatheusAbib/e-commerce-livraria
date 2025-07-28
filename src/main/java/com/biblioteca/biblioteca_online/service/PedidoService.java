@@ -25,6 +25,11 @@ public class PedidoService {
     private final ClienteRepository clienteRepository;
 
     @Autowired
+private LogService logService;
+
+
+
+    @Autowired
     public PedidoService(PedidoRepository pedidoRepository,
                          LivroService livroService,
                          ClienteService clienteService,
@@ -35,64 +40,79 @@ public class PedidoService {
         this.clienteRepository = clienteRepository;
     }
 
-    @Transactional
-    public Pedido criarPedido(Long clienteId, List<ItemPedidoDTO> itensDTO,
-                              Long enderecoId, Long cartaoId,
-                              BigDecimal valorDesconto, String codigoCupom,
-                              BigDecimal valorSubtotalRecebido) {
+@Transactional
+public Pedido criarPedido(Long clienteId, List<ItemPedidoDTO> itensDTO,
+                          Long enderecoId, Long cartaoId,
+                          BigDecimal valorDesconto, String codigoCupom,
+                          BigDecimal valorSubtotalRecebido) {
 
-        Cliente cliente = clienteService.buscarPorId(clienteId)
-            .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+    Cliente cliente = clienteService.buscarPorId(clienteId)
+        .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        Pedido pedido = new Pedido();
-        pedido.setCliente(cliente);
+    Pedido pedido = new Pedido();
+    pedido.setCliente(cliente);
 
-        for (ItemPedidoDTO itemDTO : itensDTO) {
-            Livro livro = livroService.buscarPorId(itemDTO.getLivroId())
-                .orElseThrow(() -> new RuntimeException("Livro não encontrado: " + itemDTO.getLivroId()));
+    for (ItemPedidoDTO itemDTO : itensDTO) {
+        Livro livro = livroService.buscarPorId(itemDTO.getLivroId())
+            .orElseThrow(() -> new RuntimeException("Livro não encontrado: " + itemDTO.getLivroId()));
 
-            if (livro.getEstoque() < itemDTO.getQuantidade()) {
-                throw new RuntimeException("Estoque insuficiente para o livro: " + livro.getTitulo());
-            }
-
-            pedido.adicionarItem(livro, itemDTO.getQuantidade());
+        if (livro.getEstoque() < itemDTO.getQuantidade()) {
+            throw new RuntimeException("Estoque insuficiente para o livro: " + livro.getTitulo());
         }
 
-        Endereco endereco = cliente.getEnderecos().stream()
-            .filter(e -> e.getId().equals(enderecoId))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("Endereço não encontrado"));
-
-        Cartao cartao = cliente.getCartoes().stream()
-            .filter(c -> c.getId().equals(cartaoId))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
-
-        pedido.setEnderecoEntrega(endereco);
-        pedido.setCartao(cartao);
-
-        BigDecimal subtotal = valorSubtotalRecebido != null ? valorSubtotalRecebido :
-            pedido.getItens().stream()
-                  .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
-                  .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        pedido.setValorSubtotal(subtotal);
-
-        BigDecimal frete = calcularFrete(subtotal, endereco.getEstado());
-        pedido.setValorFrete(frete);
-
-        BigDecimal descontoAplicado = valorDesconto != null ? valorDesconto : BigDecimal.ZERO;
-        pedido.setValorDesconto(descontoAplicado);
-        pedido.setCodigoCupom(codigoCupom);
-
-        BigDecimal totalFinal = subtotal.subtract(descontoAplicado).add(frete);
-        pedido.setValorTotal(totalFinal);
-
-        Pedido pedidoSalvo = pedidoRepository.save(pedido);
-        atualizarEstoque(pedidoSalvo);
-
-        return pedidoSalvo;
+        pedido.adicionarItem(livro, itemDTO.getQuantidade());
     }
+
+    Endereco endereco = cliente.getEnderecos().stream()
+        .filter(e -> e.getId().equals(enderecoId))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Endereço não encontrado"));
+
+    Cartao cartao = cliente.getCartoes().stream()
+        .filter(c -> c.getId().equals(cartaoId))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
+
+    pedido.setEnderecoEntrega(endereco);
+    pedido.setCartao(cartao);
+
+    BigDecimal subtotal = valorSubtotalRecebido != null ? valorSubtotalRecebido :
+        pedido.getItens().stream()
+              .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
+              .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    pedido.setValorSubtotal(subtotal);
+
+    BigDecimal frete = calcularFrete(subtotal, endereco.getEstado());
+    pedido.setValorFrete(frete);
+
+    BigDecimal descontoAplicado = valorDesconto != null ? valorDesconto : BigDecimal.ZERO;
+    pedido.setValorDesconto(descontoAplicado);
+    pedido.setCodigoCupom(codigoCupom);
+
+    BigDecimal totalFinal = subtotal.subtract(descontoAplicado).add(frete);
+    pedido.setValorTotal(totalFinal);
+
+    Pedido pedidoSalvo = pedidoRepository.save(pedido);
+    atualizarEstoque(pedidoSalvo);
+
+    // 🔽 ADICIONANDO LOG DA COMPRA 🔽
+    try {
+Log log = new Log();
+log.setUserId(cliente.getId());      // ID do usuário que comprou
+log.setUserName(cliente.getNome());  // Nome do usuário que comprou
+log.setAction("compra");
+log.setDetails("Compra realizada no valor de R$ " + pedido.getValorTotal());
+log.setLevel("success");
+logService.salvarLog(log);
+
+    } catch (Exception e) {
+        System.err.println("Erro ao registrar log de compra: " + e.getMessage());
+    }
+
+    return pedidoSalvo;
+}
+
 
     private void atualizarEstoque(Pedido pedido) {
         for (ItemPedido item : pedido.getItens()) {

@@ -263,6 +263,7 @@
     <a href="principal.html">Inicio</a>
     <a href="clientes.html">Cadastrar</a>
     <a href="usuarios.html">Gerenciamento de Usuários</a>
+    <a href="log.html">Log de Transações</a>
     <a href="grafico.html" >Histórico de Vendas</a>
     <a href="pedidos.html">Status do Pedido</a>
     <a href="livros.html">Cadastrar Livro</a>
@@ -295,15 +296,16 @@
                 <option value="year">Por Ano</option>
             </select>
 
-            <select id="status-filter">
-              <option value="todos" selected>Todos os Status</option>
-              <option value="ENTREGUE">Entregue</option>
-              <option value="TROCADO">Trocado</option>
-              <option value="EM_PROCESSAMENTO">Em Processamento</option>
-              <option value="CANCELADO">Cancelado</option>
-              <option value="DEVOLUCAO">Devolução</option>
-              <option value="DEVOLVIDO">Devolvido</option>
-            </select>
+<select id="status-filter">
+  <option value="todos" selected>Todos os Status</option>
+  <option value="ENTREGUE">Entregue</option>
+  <option value="TROCADO">Trocado</option>
+  <option value="EM_PROCESSAMENTO">Em Processamento</option>
+  <option value="CANCELADO">Cancelado</option>
+  <option value="DEVOLUCAO">Devolução</option>
+  <option value="DEVOLVIDO">Devolvido</option>
+  <option value="EM_TRANSITO">Em Trânsito</option> <!-- Adicionado -->
+</select>
 
             <select id="chart-type">
                 <option value="line" selected>Gráfico de Linha</option>

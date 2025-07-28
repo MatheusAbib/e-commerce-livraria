@@ -6,13 +6,29 @@
   <link rel="stylesheet" href="styles.css">
   <script defer src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="css/Carrinho.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 </head>
 
 <body>
-  <header>
-    <h1>Seu Carrinho</h1>
+<header>
+  <h1>Seu Carrinho</h1>
+  <div class="header-actions">
     <a href="principal.html">← Voltar à loja</a>
-  </header>
+    <div class="notificacao-icon" id="notificacao-icon">
+      <i class="fas fa-bell"></i>
+      <span class="notificacao-badge" id="notificacao-badge" style="display: none;">0</span>
+    </div>
+  </div>
+</header>
+
+<div class="notificacao-dropdown" id="notificacao-dropdown">
+  <div class="notificacao-header">
+    <h3>Notificações</h3>
+    <button onclick="marcarTodasComoLidas()">Marcar todas como lidas</button>
+  </div>
+  <div class="notificacao-list" id="notificacao-list"></div>
+</div>
 
   <main>
     <div class="carrinho-container" id="carrinho-container">
@@ -77,6 +93,7 @@
     </div>
   </main>
 
+
   <script>
     // Funções para gerenciar carrinho por usuário
     function obterCarrinhoUsuario() {
@@ -121,22 +138,47 @@
       return freteBase + (acrescimosPorEstado[estado] || 0);
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      if (!clienteLogado) {
-        alert('Você precisa estar logado para acessar o carrinho');
-        window.location.href = 'principal.html';
-        return;
-      }
+window.addEventListener('DOMContentLoaded', () => {
+  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+  if (!clienteLogado) {
+    alert('Você precisa estar logado para acessar o carrinho');
+    window.location.href = 'principal.html';
+    return;
+  }
 
-      carrinho = obterCarrinhoUsuario();
-      carregarCarrinho();
-      carregarEnderecos();
-      carregarCartoes();
+  // Configura notificações
+const notificacaoIcon = document.getElementById('notificacao-icon');
+  if (notificacaoIcon) {
+    notificacaoIcon.addEventListener('click', exibirNotificacoes);
+  }
 
-      document.getElementById('select-endereco').addEventListener('change', mostrarDetalhesEndereco);
-      document.getElementById('select-cartao').addEventListener('change', mostrarDetalhesCartao);
+ document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('notificacao-dropdown');
+    const icon = document.getElementById('notificacao-icon');
+    
+    if (dropdown && !dropdown.contains(e.target) && !icon.contains(e.target)) {
+      dropdown.classList.remove('show');
+    }
+  });
+    const dropdown = document.getElementById('notificacao-dropdown');
+  if (dropdown) {
+    dropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
+  }
+
+  // Atualiza badge
+  atualizarBadgeNotificacao();
+
+  // Restante do código de inicialização do carrinho
+  carrinho = obterCarrinhoUsuario();
+  carregarCarrinho();
+  carregarEnderecos();
+  carregarCartoes();
+
+  document.getElementById('select-endereco').addEventListener('change', mostrarDetalhesEndereco);
+  document.getElementById('select-cartao').addEventListener('change', mostrarDetalhesCartao);
+});
 
  async function carregarCarrinho() {
     const carrinhoItens = document.getElementById('carrinho-itens');
@@ -251,7 +293,7 @@
       carregarCarrinho();
     }
 
-   async function finalizarCompra() {
+ async function finalizarCompra() {
     try {
         const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
         if (!cliente) {
@@ -280,7 +322,7 @@
             return;
         }
 
-        // Primeiro, carrega os detalhes completos dos produtos
+        // Carrega os detalhes completos dos produtos
         const itensCompletos = await Promise.all(
             carrinho.map(async item => {
                 const response = await fetch(`/api/livros/${item.id}`);
@@ -295,14 +337,10 @@
             })
         );
 
-        // Calcula subtotal
+        // Calcula valores
         const subtotal = itensCompletos.reduce((total, item) => total + (item.precoUnitario * item.quantidade), 0);
-        
-        // Obtém o frete
         const freteText = document.getElementById('frete').textContent;
         const frete = parseFloat(freteText.replace('R$', '').replace(',', '.'));
-        
-        // Obtém o total (já considerando cupom se aplicado)
         const totalText = document.getElementById('total').textContent;
         const total = parseFloat(totalText.replace('R$', '').replace(',', '.'));
 
@@ -315,14 +353,15 @@
             subtotal: subtotal,
             valorFrete: frete,
             valorTotal: total,
-            status: 'PENDENTE'
+            status: 'PENDENTE',
+            dataPedido: new Date().toISOString()
         };
 
         // Adiciona informações do cupom se aplicado
         if (cupomAplicado) {
             pedido.cupomId = cupomAplicado.id;
             pedido.codigoCupom = cupomAplicado.codigo;
-            pedido.valorDesconto = subtotal - (total - frete); // Calcula o desconto aplicado
+            pedido.valorDesconto = subtotal - (total - frete);
             
             // Marca o cupom como usado
             const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
@@ -331,11 +370,16 @@
                 if (cupom) {
                     cupom.usado = true;
                     localStorage.setItem('cuponsPorUsuario', JSON.stringify(cuponsPorUsuario));
+                    
+                    // Notificação de cupom utilizado
+                    adicionarNotificacao(
+                        'Cupom utilizado',
+                        `Cupom ${cupomAplicado.codigo} aplicado no pedido #${pedido.id}`,
+                        'cupom'
+                    );
                 }
             }
         }
-
-        console.log('Enviando pedido:', pedido); // Debug
 
         // Envia o pedido para a API
         const response = await fetch('/api/pedidos', {
@@ -353,12 +397,35 @@
         }
 
         const data = await response.json();
-        console.log('Pedido criado:', data); // Debug
 
-        // Mostra notificação de sucesso
+        // Notificações de sucesso
         const notificacao = document.getElementById('notificacao-sucesso');
         notificacao.style.display = 'block';
         
+        adicionarNotificacao(
+            'Compra realizada!', 
+            `Pedido #${data.id} confirmado. Total: R$ ${data.valorTotal.toFixed(2)}`,
+            'success'
+        );
+        
+        // Notificação de pagamento (simulada)
+        setTimeout(() => {
+            adicionarNotificacao(
+                'Pagamento aprovado', 
+                `Pagamento de R$ ${data.valorTotal.toFixed(2)} aprovado para pedido #${data.id}`,
+                'payment'
+            );
+            
+            // Atualização de status (simulada)
+            setTimeout(() => {
+                adicionarNotificacao(
+                    'Pedido em processamento', 
+                    `Seu pedido #${data.id} está sendo preparado para envio`,
+                    'pedido'
+                );
+            }, 1500);
+        }, 2000);
+
         // Limpa o carrinho
         const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
         delete carrinhosPorUsuario[cliente.id];
@@ -384,6 +451,12 @@
     } catch (error) {
         console.error('Erro ao finalizar compra:', error);
         
+        adicionarNotificacao(
+            'Falha na compra', 
+            'Não foi possível finalizar seu pedido. Tente novamente.',
+            'error'
+        );
+        
         let errorMessage = 'Erro ao finalizar compra';
         if (error.message.includes('Failed to fetch')) {
             errorMessage = 'Erro de conexão com o servidor';
@@ -392,6 +465,22 @@
         }
         
         alert(`${errorMessage}\n\nPor favor, tente novamente.`);
+    }
+}
+
+// Função auxiliar para atualizar status do pedido (simulação)
+async function atualizarStatusPedido(pedidoId, novoStatus) {
+    try {
+        // Esta é uma simulação - na prática você chamaria sua API
+        console.log(`Simulando atualização do pedido ${pedidoId} para status ${novoStatus}`);
+        
+        // Em um sistema real, seria algo como:
+        // await fetch(`/api/pedidos/${pedidoId}/status`, {
+        //     method: 'PATCH',
+        //     body: JSON.stringify({ status: novoStatus })
+        // });
+    } catch (error) {
+        console.error('Erro ao atualizar status:', error);
     }
 }
   
@@ -696,6 +785,181 @@ function debugCuponsUsuario() {
     
     return cuponsUsuario;
 }
+
+function adicionarNotificacao(titulo, mensagem, tipo = 'info') {
+  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+  if (!clienteLogado) return;
+  
+  const notificacoes = obterNotificacoesUsuario();
+  
+  const novaNotificacao = {
+    id: Date.now(),
+    titulo,
+    mensagem,
+    tipo,
+    data: new Date().toISOString(),
+    lida: false,
+    pedidoId: tipo === 'pedido' ? mensagem.match(/#(\d+)/)?.[1] : null
+  };
+  
+  notificacoes.unshift(novaNotificacao);
+  salvarNotificacoesUsuario(notificacoes);
+  atualizarBadgeNotificacao();
+  
+  if (document.visibilityState === 'visible') {
+    mostrarNotificacaoToast(novaNotificacao);
+  }
+  
+  return novaNotificacao;
+}
+
+// Função para atualizar o badge de notificações
+function atualizarBadgeNotificacao() {
+  const notificacoes = obterNotificacoesUsuario();
+  const naoLidas = notificacoes.filter(n => !n.lida).length;
+  const badge = document.getElementById('notificacao-badge');
+  
+  if (naoLidas > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = naoLidas > 9 ? '9+' : naoLidas.toString();
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function obterNotificacoesUsuario() {
+  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+  if (!clienteLogado) return [];
+  
+  const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario')) || {};
+  return notificacoesPorUsuario[clienteLogado.id] || [];
+}
+
+function salvarNotificacoesUsuario(notificacoes) {
+  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+  if (!clienteLogado) return;
+  
+  const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario')) || {};
+  notificacoesPorUsuario[clienteLogado.id] = notificacoes;
+  localStorage.setItem('notificacoesPorUsuario', JSON.stringify(notificacoesPorUsuario));
+}
+
+
+
+// Função para exibir notificações
+function exibirNotificacoes(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('notificacao-dropdown');
+  if (!dropdown) return;
+
+  if (dropdown.style.display === 'block') {
+    dropdown.style.display = 'none';
+  } else {
+    dropdown.style.display = 'block';
+    carregarListaNotificacoes();
+  }
+}
+
+function carregarListaNotificacoes() {
+  const list = document.getElementById('notificacao-list');
+  if (!list) return;
+  
+  // Pega notificações (pode ser vazio para teste)
+  const notificacoes = obterNotificacoesUsuario();
+
+  if (notificacoes.length === 0) {
+    list.innerHTML = '<p style="padding:10px;">Nenhuma notificação.</p>';
+    return;
+  }
+
+  list.innerHTML = notificacoes.map(n => `
+    <div class="notificacao-item ${n.lida ? '' : 'unread'}" 
+         onclick="marcarComoLida(${n.id}, this)">
+      <div class="notificacao-titulo">${n.titulo}</div>
+      <div class="notificacao-mensagem">${n.mensagem}</div>
+      <div class="notificacao-data">${formatarData(n.data)}</div>
+    </div>
+  `).join('');
+}
+
+// Função para formatar data
+function formatarData(dataISO) {
+  const data = new Date(dataISO);
+  return data.toLocaleString('pt-BR');
+}
+
+// Função para marcar notificação como lida
+function marcarComoLida(id, elemento) {
+  let notificacoes = obterNotificacoesUsuario();
+  
+  notificacoes = notificacoes.map(n => 
+    n.id === id ? {...n, lida: true} : n
+  );
+  
+  salvarNotificacoesUsuario(notificacoes);
+  
+  if (elemento) {
+    elemento.classList.remove('unread');
+  }
+  
+  atualizarBadgeNotificacao();
+}
+
+// Função para marcar todas como lidas
+function marcarTodasComoLidas() {
+  let notificacoes = obterNotificacoesUsuario();
+  
+  notificacoes = notificacoes.map(n => ({...n, lida: true}));
+  salvarNotificacoesUsuario(notificacoes);
+  
+  document.querySelectorAll('.notificacao-item.unread').forEach(item => {
+    item.classList.remove('unread');
+  });
+  
+  atualizarBadgeNotificacao();
+}
+
+// Adiciona evento de clique ao ícone de notificação
+document.addEventListener('DOMContentLoaded', () => {
+  const notificacaoIcon = document.getElementById('notificacao-icon');
+  if (notificacaoIcon) {
+    notificacaoIcon.addEventListener('click', exibirNotificacoes);
+  }
+  
+  document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('notificacao-dropdown');
+    const icon = document.getElementById('notificacao-icon');
+    if (dropdown && dropdown.style.display === 'block' && 
+        !dropdown.contains(e.target) && !icon.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  atualizarBadgeNotificacao();
+});
+
+
+function mostrarNotificacaoToast(notificacao) {
+  const toast = document.createElement('div');
+  toast.className = `notificacao-toast ${notificacao.tipo}`;
+  toast.innerHTML = `
+    <strong>${notificacao.titulo}</strong>
+    <p>${notificacao.mensagem}</p>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 100);
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 500);
+  }, 5000);
+}
+
+
   </script>
 </body>
 </html>

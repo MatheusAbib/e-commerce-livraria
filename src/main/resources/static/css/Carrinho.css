@@ -254,6 +254,127 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.notificacao-icon {
+  position: relative;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #ffe940;
+}
+
+.notificacao-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff4757;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notificacao-dropdown {
+  position: absolute;
+  top: 75px; /* fica exatamente abaixo do ícone */
+  right: 0; /* alinha a direita do ícone */
+  width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  display: none;
+  z-index: 10000;
+  box-sizing: border-box;
+}
+
+
+.notificacao-header {
+  padding: 10px 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notificacao-header button {
+  background: none;
+  border: none;
+  color: #3498db;
+  cursor: pointer;
+}
+
+.notificacao-list {
+  padding: 0;
+}
+
+.notificacao-item {
+  padding: 10px 15px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.notificacao-item.unread {
+  background-color: #f8f9fa;
+}
+
+.notificacao-item:hover {
+  background-color: #f1f1f1;
+}
+
+.notificacao-item .notificacao-titulo {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.notificacao-item .notificacao-data {
+  font-size: 0.8rem;
+  color: #777;
+  text-align: right;
+}
+
+.notificacao-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  max-width: 300px;
+}
+
+.notificacao-toast.show {
+  transform: translateX(0);
+}
+
+.notificacao-toast.success {
+  border-left: 4px solid #2ecc71;
+}
+
+.notificacao-toast.error {
+  border-left: 4px solid #e74c3c;
+}
+
+.notificacao-toast.info {
+  border-left: 4px solid #3498db;
+}
+
+
+
     /* Responsividade */
     @media (max-width: 600px) {
       .carrinho-item {

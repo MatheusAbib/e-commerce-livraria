@@ -7,17 +7,35 @@
   <link rel="stylesheet" href="css/Pedidos.css">
 </head>
 <body>
-  <div class="container">
+<header>
+  <div class="header-container">
     <a href="principal.html" class="voltar-link"><i class="fas fa-arrow-left"></i> Voltar à loja</a>
     <h1>Gerenciamento de Pedidos</h1>
-<div class="tabs">
-  <button id="tab-pedidos" class="tab active">Em Andamento</button>
-  <button id="tab-historico" class="tab">Entregas</button>
-  <button id="tab-devolucao" class="tab">Pedidos em Devolução</button>
-  <button id="tab-devolvidos" class="tab">Devolvidos</button>
-  <button id="tab-trocados" class="tab">Trocados</button>
-  <button id="tab-cancelado" class="tab">Cancelados</button>
-</div>
+    <div class="header-right">
+      <div class="notificacao-icon-container">
+        <div class="notificacao-icon" id="notificacao-icon">
+          <i class="fas fa-bell"></i>
+          <span class="notificacao-badge" id="notificacao-badge" style="display: none;">0</span>
+        </div>
+        <div class="notificacao-dropdown" id="notificacao-dropdown" style="display: none;">
+          <div class="notificacao-header">
+            <h3>Notificações</h3>
+            <button onclick="marcarTodasComoLidas()">Marcar todas como lidas</button>
+          </div>
+          <div class="notificacao-list" id="notificacao-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button id="tab-pedidos" class="tab active">Em Andamento</button>
+    <button id="tab-historico" class="tab">Entregas</button>
+    <button id="tab-devolucao" class="tab">Pedidos em Devolução</button>
+    <button id="tab-devolvidos" class="tab">Devolvidos</button>
+    <button id="tab-trocados" class="tab">Trocados</button>
+    <button id="tab-cancelado" class="tab">Cancelados</button>
+  </div>
+</header>
 
 
     <div id="pedidos-container">
@@ -29,7 +47,6 @@
   </div>
 
 <script>
-let pedidosCache = []; // para armazenar todos os pedidos carregados
 let pedidosDevolucao = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -134,8 +151,7 @@ function exibirPedidos(pedidos) {
     return;
   }
 
-container.innerHTML = pedidos.map(pedido => {
-    // Cálculo correto do subtotal (soma de todos os itens)
+  container.innerHTML = pedidos.map(pedido => {
     const subtotal = (pedido.itens || []).reduce((total, item) => {
       return total + (item.precoUnitario * item.quantidade);
     }, 0);
@@ -179,18 +195,28 @@ container.innerHTML = pedidos.map(pedido => {
         <strong>Total: R$ ${total.toFixed(2)}</strong>
       </div>
 
-<div class="pedido-acoes">
-  ${pedido.status !== 'ENTREGUE' && pedido.status !== 'DEVOLUCAO' && 
-    pedido.status !== 'DEVOLVIDO' && pedido.status !== 'CANCELADO' && 
-    pedido.status !== 'TROCADO' ? ` <!-- Adicionamos TROCADO aqui -->
-    ${(pedido.status === 'EM_PROCESSAMENTO' || pedido.status === 'EM_TRANSITO') ? `
-      <button class="btn-acao btn-cancelar" onclick="cancelarPedido('${pedido.id}')">
-        <i class="fas fa-times"></i> Cancelar Pedido
-      </button>
-    ` : ''}
-          <button class="btn-acao btn-entregue" onclick="atualizarStatusPedido('${pedido.id}', 'ENTREGUE')">
-            <i class="fas fa-check"></i> Marcar como Entregue
-          </button>
+      <div class="pedido-acoes">
+        ${pedido.status !== 'ENTREGUE' && pedido.status !== 'DEVOLUCAO' && 
+          pedido.status !== 'DEVOLVIDO' && pedido.status !== 'CANCELADO' && 
+          pedido.status !== 'TROCADO' ? `
+          
+          ${(pedido.status === 'EM_PROCESSAMENTO' || pedido.status === 'EM_TRANSITO') ? `
+            <button class="btn-acao btn-cancelar" onclick="cancelarPedido('${pedido.id}')">
+              <i class="fas fa-times"></i> Cancelar Pedido
+            </button>
+          ` : ''}
+
+          ${pedido.status === 'EM_PROCESSAMENTO' ? `
+            <button class="btn-acao btn-aprovar" onclick="atualizarStatusPedido('${pedido.id}', 'EM_TRANSITO')">
+              <i class="fas fa-truck"></i> Aprovar
+            </button>
+          ` : ''}
+
+          ${pedido.status === 'EM_TRANSITO' ? `
+            <button class="btn-acao btn-entregue" onclick="atualizarStatusPedido('${pedido.id}', 'ENTREGUE')">
+              <i class="fas fa-check"></i> Marcar como Entregue
+            </button>
+          ` : ''}
         ` : ''}
 
         ${pedido.status === 'ENTREGUE' ? `
@@ -205,12 +231,11 @@ container.innerHTML = pedidos.map(pedido => {
           </button>
         ` : ''}
 
-    ${pedido.status === 'DEVOLVIDO' ? `
-      <button class="btn-acao btn-confirmar-troca" onclick="atualizarStatusPedido('${pedido.id}', 'TROCADO')">
-        <i class="fas fa-check"></i> Confirmar Troca
-      </button>
-    ` : ''}
-
+        ${pedido.status === 'DEVOLVIDO' ? `
+          <button class="btn-acao btn-confirmar-troca" onclick="atualizarStatusPedido('${pedido.id}', 'TROCADO')">
+            <i class="fas fa-check"></i> Confirmar Troca
+          </button>
+        ` : ''}
 
         ${pedido.status === 'CANCELADO' ? `
           <button class="btn-acao btn-excluir" title="Excluir pedido" onclick="excluirPedidoCancelado('${pedido.id}')">
@@ -218,19 +243,18 @@ container.innerHTML = pedidos.map(pedido => {
           </button>
         ` : ''}
 
-${pedido.status === 'TROCADO' ? `
-  <div class="troca-cupom-container">
-    <p style="margin-bottom: 10px;">Você tem direito a um cupom de troca:</p>
-    <button class="btn-gerar-cupom-troca" onclick="gerarCupomTroca('${pedido.id}')">
-      <i class="fas fa-tag"></i> Gerar Cupom de Troca (20% OFF)
-    </button>
-    <div id="cupom-troca-${pedido.id}" style="display: none; margin-top: 10px;">
-      <p>Cupom: <strong id="codigo-cupom-troca-${pedido.id}" style="color: #28a745;"></strong></p>
-      <p>Válido por 30 dias | Mínimo: R$ 50,00</p>
-    </div>
-  </div>
-` : ''}
-        
+        ${pedido.status === 'TROCADO' ? `
+          <div class="troca-cupom-container">
+            <p style="margin-bottom: 10px;">Você tem direito a um cupom de troca:</p>
+            <button class="btn-gerar-cupom-troca" onclick="gerarCupomTroca('${pedido.id}')">
+              <i class="fas fa-tag"></i> Gerar Cupom de Troca (20% OFF)
+            </button>
+            <div id="cupom-troca-${pedido.id}" style="display: none; margin-top: 10px;">
+              <p>Cupom: <strong id="codigo-cupom-troca-${pedido.id}" style="color: #28a745;"></strong></p>
+              <p>Válido por 30 dias | Mínimo: R$ 50,00</p>
+            </div>
+          </div>
+        ` : ''}
       </div>
     </div>
     `;
@@ -258,8 +282,15 @@ async function solicitarDevolucao(pedidoId) {
       throw new Error(erro.message || 'Erro ao solicitar devolução');
     }
 
+    // Adiciona notificação de devolução solicitada
+    adicionarNotificacao(
+      'Devolução solicitada',
+      `Solicitação de devolução para o pedido #${pedidoId} foi registrada. Aguarde aprovação.`,
+      'devolucao'
+    );
+
     alert('Solicitação de devolução registrada com sucesso.');
-    document.dispatchEvent(new Event('DOMContentLoaded')); // recarrega pedidos
+    document.dispatchEvent(new Event('DOMContentLoaded'));
 
   } catch (error) {
     console.error('Erro ao solicitar devolução:', error);
@@ -294,27 +325,53 @@ function getStatusClass(status) {
   }
 }
 
-function atualizarStatusPedido(pedidoId, novoStatus) {
-  fetch(`/api/pedidos/${pedidoId}/status`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ novoStatus: novoStatus })
-  })
-  .then(res => {
-    if (!res.ok) throw new Error('Erro ao atualizar status');
-    return res.json();
-  })
-  .then(updatedPedido => {
+async function atualizarStatusPedido(pedidoId, novoStatus) {
+  try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
+      method: 'PUT',
+      headers: headers,
+      body: JSON.stringify({ novoStatus })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Erro ao atualizar status');
+    }
+
+    const updatedPedido = await response.json();
+    
     // Atualiza pedido na lista local
     const index = pedidosCache.findIndex(p => p.id === updatedPedido.id);
     if (index !== -1) {
       pedidosCache[index] = updatedPedido;
-      exibirPedidosFiltrados(pedidosCache, false); // Atualiza a visualização
     }
-  })
-  .catch(err => {
-    alert('Erro ao atualizar status: ' + err.message);
-  });
+    
+    // Dispara notificação
+    const mensagem = getMensagemStatus(novoStatus, pedidoId);
+    adicionarNotificacao(
+      'Status do pedido atualizado',
+      mensagem,
+      'pedido'
+    );
+    
+    // Recarrega a visualização
+    exibirPedidosFiltrados(pedidosCache, document.getElementById('tab-historico').classList.contains('active'));
+    
+    return updatedPedido;
+    
+  } catch (error) {
+    console.error('Erro ao atualizar status:', error);
+    adicionarNotificacao(
+      'Erro ao atualizar pedido',
+      `Não foi possível atualizar o status do pedido #${pedidoId}: ${error.message}`,
+      'error'
+    );
+    throw error;
+  }
 }
 
 
@@ -338,6 +395,13 @@ async function cancelarPedido(pedidoId) {
       const error = await response.json();
       throw new Error(error.message || 'Erro ao cancelar pedido');
     }
+
+    // Adiciona notificação de cancelamento
+    adicionarNotificacao(
+      'Pedido cancelado',
+      `Seu pedido #${pedidoId} foi cancelado com sucesso.`,
+      'pedido'
+    );
 
     alert('Pedido cancelado com sucesso.');
     document.dispatchEvent(new Event('DOMContentLoaded')); 
@@ -408,7 +472,6 @@ function gerarCupomTroca(pedidoId) {
         return;
     }
 
-    // Restante do código para gerar novo cupom...
     const codigoCupom = 'TROCA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
     
     const cupom = {
@@ -437,6 +500,13 @@ function gerarCupomTroca(pedidoId) {
     cupomDiv.style.display = 'block';
     botao.disabled = true;
     botao.textContent = 'Cupom Gerado!';
+    
+    // Adiciona notificação de cupom gerado
+    adicionarNotificacao(
+      'Cupom de troca gerado',
+      `Você gerou um cupom de troca (${codigoCupom}) para o pedido #${pedidoId}. Válido por 30 dias!`,
+      'cupom'
+    );
     
     alert(`Cupom de troca gerado com sucesso! Código: ${codigoCupom}`);
 }
@@ -470,6 +540,409 @@ function verificarCuponsTroca() {
             botao.textContent = 'Cupom Gerado';
         }
     });
+}
+// Variáveis globais
+let notificacoes = JSON.parse(localStorage.getItem('notificacoes')) || [];
+let pedidosCache = [];
+let intervaloMonitoramento = null;
+
+// Funções de notificação
+function adicionarNotificacao(titulo, mensagem, tipo = 'info') {
+  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+  if (!clienteLogado) return;
+  
+  const notificacoes = obterNotificacoesUsuario();
+  
+  const novaNotificacao = {
+    id: Date.now(),
+    titulo,
+    mensagem,
+    tipo,
+    data: new Date().toISOString(),
+    lida: false,
+    pedidoId: tipo === 'pedido' ? mensagem.match(/#(\d+)/)?.[1] : null
+  };
+  
+  notificacoes.unshift(novaNotificacao);
+  salvarNotificacoesUsuario(notificacoes);
+  atualizarBadgeNotificacao();
+  
+  if (document.visibilityState === 'visible') {
+    mostrarNotificacaoToast(novaNotificacao);
+  }
+  
+  return novaNotificacao;
+}
+
+function mostrarNotificacaoToast(notificacao) {
+  const toast = document.createElement('div');
+  toast.className = `notificacao-toast ${notificacao.tipo}`;
+  toast.innerHTML = `
+    <strong>${notificacao.titulo}</strong>
+    <p>${notificacao.mensagem}</p>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 100);
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 500);
+  }, 5000);
+}
+
+function atualizarBadgeNotificacao() {
+  const naoLidas = notificacoes.filter(n => !n.lida).length;
+  const badge = document.getElementById('notificacao-badge');
+  
+  if (naoLidas > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = naoLidas > 9 ? '9+' : naoLidas.toString();
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// Função para exibir notificações
+function exibirNotificacoes(event) {
+  event.stopPropagation();
+  
+  const dropdown = document.getElementById('notificacao-dropdown');
+  const list = document.getElementById('notificacao-list');
+  const notificacoes = obterNotificacoesUsuario();
+  
+  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+  
+  if (dropdown.style.display === 'block') {
+    const ordenadas = [...notificacoes].sort((a, b) => {
+      if (a.lida !== b.lida) return a.lida ? 1 : -1;
+      return new Date(b.data) - new Date(a.data);
+    });
+    
+    list.innerHTML = ordenadas.map(notificacao => `
+      <div class="notificacao-item ${notificacao.lida ? '' : 'unread'}" 
+           onclick="marcarComoLida(${notificacao.id}, this)">
+        <div class="notificacao-titulo">${notificacao.titulo}</div>
+        <div class="notificacao-mensagem">${notificacao.mensagem}</div>
+        <div class="notificacao-data">${formatarData(notificacao.data)}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// Inicialização corrigida
+document.addEventListener('DOMContentLoaded', async () => {
+  // Verifica se o usuário mudou desde a última sessão
+  const usuarioAnterior = localStorage.getItem('ultimoUsuarioLogado');
+  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+  
+  if (usuarioAnterior && usuarioAnterior !== (clienteLogado?.id || '')) {
+    console.log('Usuário alterado - carregando notificações específicas');
+  }
+  
+  if (clienteLogado?.id) {
+    localStorage.setItem('ultimoUsuarioLogado', clienteLogado.id);
+  }
+
+  // Verifica se o usuário está logado
+  if (!clienteLogado || !clienteLogado.id) {
+    alert('Você precisa estar logado para visualizar esta página.');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Inicializa variáveis
+  let pedidosCache = [];
+  let intervaloMonitoramento = null;
+  const devolucoesSalvas = localStorage.getItem('pedidosDevolucao');
+  let pedidosDevolucao = devolucoesSalvas ? JSON.parse(devolucoesSalvas) : [];
+
+  // Configura o ícone de notificação
+  const notificacaoIcon = document.getElementById('notificacao-icon');
+  if (notificacaoIcon) {
+    notificacaoIcon.addEventListener('click', function(e) {
+      exibirNotificacoes(e);
+    });
+  }
+
+  // Configura comportamento do dropdown de notificações
+  document.addEventListener('click', () => {
+    const dropdown = document.getElementById('notificacao-dropdown');
+    if (dropdown && dropdown.style.display === 'block') {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  const dropdown = document.getElementById('notificacao-dropdown');
+  if (dropdown) {
+    dropdown.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+  }
+
+  // Atualiza o badge de notificações
+  atualizarBadgeNotificacao();
+
+  // Carrega os pedidos do usuário
+  try {
+    const response = await fetch(`/api/pedidos?clienteId=${clienteLogado.id}`);
+    if (!response.ok) throw new Error('Erro ao carregar pedidos');
+
+    pedidosCache = await response.json();
+    console.log('Pedidos carregados:', pedidosCache);
+    
+    exibirPedidosFiltrados(pedidosCache, false);
+  } catch (error) {
+    console.error('Erro ao carregar pedidos:', error);
+    document.getElementById('pedidos-container').innerHTML = `
+      <div class="error-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>Não foi possível carregar seus pedidos.</p>
+        <p>${error.message}</p>
+      </div>
+    `;
+  }
+
+  // Configura eventos das abas
+  document.getElementById('tab-pedidos').addEventListener('click', () => {
+    setActiveTab('pedidos');
+    exibirPedidosFiltrados(pedidosCache, false); 
+  });
+
+  document.getElementById('tab-historico').addEventListener('click', () => {
+    setActiveTab('historico');
+    exibirPedidosFiltrados(pedidosCache, true);
+  });
+
+  document.getElementById('tab-devolucao').addEventListener('click', () => {
+    setActiveTab('devolucao');
+    const pedidosDevolucao = pedidosCache.filter(p => p.status === 'DEVOLUCAO');
+    exibirPedidos(pedidosDevolucao);
+  });
+
+  document.getElementById('tab-devolvidos').addEventListener('click', () => {
+    setActiveTab('devolvidos');
+    const pedidosDevolvidos = pedidosCache.filter(p => p.status === 'DEVOLVIDO');
+    exibirPedidos(pedidosDevolvidos);
+  });
+
+  document.getElementById('tab-cancelado').addEventListener('click', () => {
+    setActiveTab('cancelado');
+    const pedidosCancelados = pedidosCache.filter(p => p.status === 'CANCELADO');
+    exibirPedidos(pedidosCancelados);
+  });
+
+  document.getElementById('tab-trocados').addEventListener('click', () => {
+    setActiveTab('trocados');
+    const pedidosTrocados = pedidosCache.filter(p => p.status === 'TROCADO');
+    exibirPedidos(pedidosTrocados);
+  });
+
+  // Verifica cupons de troca
+  verificarCuponsTroca();
+
+  // Inicia o monitoramento de mudanças de status
+  monitorarMudancasStatus();
+  intervaloMonitoramento = setInterval(monitorarMudancasStatus, 120000);
+
+  // Funções auxiliares específicas para esta página
+  function setActiveTab(tab) {
+    document.getElementById('tab-pedidos').classList.toggle('active', tab === 'pedidos');
+    document.getElementById('tab-historico').classList.toggle('active', tab === 'historico');
+    document.getElementById('tab-devolucao').classList.toggle('active', tab === 'devolucao');
+    document.getElementById('tab-devolvidos').classList.toggle('active', tab === 'devolvidos');
+    document.getElementById('tab-trocados').classList.toggle('active', tab === 'trocados');
+    document.getElementById('tab-cancelado').classList.toggle('active', tab === 'cancelado');
+  }
+
+  function verificarCuponsTroca() {
+    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+    const cuponsUsuario = cuponsPorUsuario[clienteLogado.id] || [];
+
+    document.querySelectorAll('.pedido-card[data-id]').forEach(card => {
+      const pedidoId = card.getAttribute('data-id');
+      const cupomDiv = document.getElementById(`cupom-troca-${pedidoId}`);
+      const codigoSpan = document.getElementById(`codigo-cupom-troca-${pedidoId}`);
+      const botao = document.querySelector(`.btn-gerar-cupom-troca[onclick="gerarCupomTroca('${pedidoId}')"]`);
+      
+      if (!cupomDiv || !codigoSpan || !botao) return;
+
+      const cupomExistente = cuponsUsuario.find(c => 
+        c.origem === 'troca' && c.pedidoId === pedidoId
+      );
+      
+      if (cupomExistente) {
+        codigoSpan.textContent = cupomExistente.codigo;
+        cupomDiv.style.display = 'block';
+        botao.disabled = true;
+        botao.textContent = 'Cupom Gerado';
+      }
+    });
+  }
+});
+
+// Função para monitorar mudanças de status
+async function monitorarMudancasStatus() {
+  try {
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) return;
+    
+    const response = await fetch(`/api/pedidos?clienteId=${clienteLogado.id}`);
+    if (!response.ok) throw new Error('Erro ao verificar pedidos');
+    
+    const novosPedidos = await response.json();
+    
+    novosPedidos.forEach(novoPedido => {
+      const pedidoAntigo = pedidosCache.find(p => p.id === novoPedido.id);
+      
+      if (pedidoAntigo && pedidoAntigo.status !== novoPedido.status) {
+        const mensagem = getMensagemStatus(novoPedido.status, novoPedido.id);
+        adicionarNotificacao(
+          `Status do pedido atualizado`,
+          mensagem,
+          'pedido'
+        );
+      }
+    });
+    
+    pedidosCache = novosPedidos;
+    
+  } catch (error) {
+    console.error('Erro ao monitorar pedidos:', error);
+  }
+}
+
+function getMensagemStatus(status, pedidoId) {
+  switch (status) {
+    case 'EM_PROCESSAMENTO':
+      return `Pedido #${pedidoId} está em processamento`;
+    case 'EM_TRANSITO':
+      return `Pedido #${pedidoId} saiu para entrega`;
+    case 'ENTREGUE':
+      return `Pedido #${pedidoId} foi entregue`;
+    case 'CANCELADO':
+      return `Pedido #${pedidoId} foi cancelado`;
+    case 'DEVOLUCAO':
+      return `Devolução solicitada para o pedido #${pedidoId}`;
+    case 'DEVOLVIDO':
+      return `Pedido #${pedidoId} foi devolvido`;
+    case 'TROCADO':
+      return `Troca realizada para o pedido #${pedidoId}`;
+    default:
+      return `Status do pedido #${pedidoId} foi atualizado`;
+  }
+}
+
+// Adicione este estilo para as notificações toast
+const style = document.createElement('style');
+style.textContent = `
+  .notificacao-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    max-width: 300px;
+  }
+  
+  .notificacao-toast.show {
+    transform: translateX(0);
+  }
+  
+  .notificacao-toast.pedido {
+    border-left: 4px solid #3498db;
+  }
+  
+  .notificacao-toast.error {
+    border-left: 4px solid #e74c3c;
+  }
+  
+  .notificacao-toast.success {
+    border-left: 4px solid #2ecc71;
+  }
+`;
+document.head.appendChild(style);
+
+function formatarData(dataISO) {
+  const data = new Date(dataISO);
+  const options = { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric', 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  };
+  return data.toLocaleString('pt-BR', options);
+}
+
+function marcarComoLida(id, elemento) {
+  let notificacoes = obterNotificacoesUsuario();
+  
+  notificacoes = notificacoes.map(n => 
+    n.id === id ? {...n, lida: true} : n
+  );
+  
+  salvarNotificacoesUsuario(notificacoes);
+  
+  if (elemento) {
+    elemento.classList.remove('unread');
+  }
+  
+  atualizarBadgeNotificacao();
+}
+
+// Função para marcar todas como lidas
+function marcarTodasComoLidas() {
+  let notificacoes = obterNotificacoesUsuario();
+  
+  notificacoes = notificacoes.map(n => ({...n, lida: true}));
+  salvarNotificacoesUsuario(notificacoes);
+  
+  document.querySelectorAll('.notificacao-item.unread').forEach(item => {
+    item.classList.remove('unread');
+  });
+  
+  atualizarBadgeNotificacao();
+}
+
+function atualizarBadgeNotificacao() {
+  const notificacoes = obterNotificacoesUsuario();
+  const naoLidas = notificacoes.filter(n => !n.lida).length;
+  const badge = document.getElementById('notificacao-badge');
+  
+  if (naoLidas > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = naoLidas > 9 ? '9+' : naoLidas.toString();
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// Função para obter notificações do usuário atual
+function obterNotificacoesUsuario() {
+  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+  if (!clienteLogado) return [];
+  
+  const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario')) || {};
+  return notificacoesPorUsuario[clienteLogado.id] || [];
+}
+
+// Função para salvar notificações do usuário atual
+function salvarNotificacoesUsuario(notificacoes) {
+  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+  if (!clienteLogado) return;
+  
+  const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario')) || {};
+  notificacoesPorUsuario[clienteLogado.id] = notificacoes;
+  localStorage.setItem('notificacoesPorUsuario', JSON.stringify(notificacoesPorUsuario));
 }
 </script>
 </body>
