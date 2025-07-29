@@ -7,24 +7,26 @@
   <link rel="stylesheet" href="css/usuarios.css">
 </head>
 <body>
- <div class="sidebar" id="sidebar">
-    <h3>Menu</h3>
-    <a href="principal.html">Inicio</a>
-    <a href="clientes.html">Cadastrar</a>
-    <a href="usuarios.html">Gerenciamento de Usuários</a>
-    <a href="log.html">Log de Transações</a>
-    <a href="grafico.html" >Histórico de Vendas</a>
-    <a href="pedidos.html">Status do Pedido</a>
-    <a href="livros.html">Cadastrar Livro</a>
-  </div>
+<div id="header-container"></div>
 
-   <header>
-    <span class="menu-icon" onclick="toggleSidebar()">☰</span>
-    <span class="cliente-nome" id="nome-cliente">Gerenciamento de Usuários</span>
-    <div class="profile-icon" onclick="toggleProfileForm()">
-      <i class="fas fa-user-circle"></i>
-    </div>
-  </header>
+<script>
+  fetch('header.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('header-container').innerHTML = data;
+
+      // Aguarde um microtempo para o DOM do header carregar
+      setTimeout(() => {
+        const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+        if (clienteLogado) {
+          const nomeSpan = document.getElementById('nome-cliente');
+          if (nomeSpan) nomeSpan.textContent = clienteLogado.nome;
+        }
+      }, 50);
+    });
+</script>
+
+
   <div id="info-contagem"></div>
 
   <form id="form-filtro-clientes" style="margin-bottom: 20px;">

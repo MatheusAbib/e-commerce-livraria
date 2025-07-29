@@ -2,98 +2,164 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Seu Carrinho</title>
-  <link rel="stylesheet" href="styles.css">
-  <script defer src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <!-- Fontes -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/Carrinho.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
 </head>
 
 <body>
-<header>
-  <h1>Seu Carrinho</h1>
-  <div class="header-actions">
-    <a href="principal.html">← Voltar à loja</a>
-    <div class="notificacao-icon" id="notificacao-icon">
-      <i class="fas fa-bell"></i>
-      <span class="notificacao-badge" id="notificacao-badge" style="display: none;">0</span>
-    </div>
-  </div>
-</header>
+  <header>
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 style="font-size: 1.5rem;">Seu Carrinho</h1>
+        <div class="header-actions">
+          <a href="principal.html"><i class="bi bi-arrow-left me-1"></i> Voltar à loja</a>
+          <div class="notificacao-icon" id="notificacao-icon">
+            <i class="bi bi-bell-fill"></i>
 
-<div class="notificacao-dropdown" id="notificacao-dropdown">
-  <div class="notificacao-header">
-    <h3>Notificações</h3>
-    <button onclick="marcarTodasComoLidas()">Marcar todas como lidas</button>
-  </div>
-  <div class="notificacao-list" id="notificacao-list"></div>
-</div>
-
-  <main>
-    <div class="carrinho-container" id="carrinho-container">
-      <div class="carrinho-vazio" id="carrinho-vazio">
-        Seu carrinho está vazio
-      </div>
-      <div class="carrinho-itens" id="carrinho-itens" style="display: none;"></div>
-    </div>
-
-    <div class="carrinho-total" id="carrinho-total" style="display: none;">
-      <hr>
-      <div style="display: flex; justify-content: space-between; margin: 15px 0;">
-        <strong>Subtotal:</strong>
-        <span id="subtotal">R$ 0,00</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; margin: 15px 0;">
-        <strong>Frete:</strong>
-        <span id="frete">R$ 10,00</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; margin: 15px 0; font-weight: bold;">
-        <strong>Total:</strong>
-        <span id="total">R$ 0,00</span>
-      </div>
-
-      <div class="cupom-container" style="margin: 15px 0;">
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" id="input-cupom" placeholder="Digite seu cupom" style="flex-grow: 1; padding: 8px;">
-        <button class="btn-aplicar-cupom" onclick="aplicarCupom()">Aplicar</button>
-    </div>
-    <div id="cupom-aplicado" style="display: none; margin-top: 10px; padding: 10px; background: #f0fff0; border-radius: 4px;">
-        <div style="display: flex; justify-content: space-between;">
-            <span>Cupom aplicado: <strong id="cupom-codigo"></strong></span>
-            <button onclick="removerCupom()" style="background: none; border: none; color: #ff4757; cursor: pointer;">Remover</button>
+            <span class="notificacao-badge" id="notificacao-badge" style="display: none;">0</span>
+          </div>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-            <span>Desconto:</span>
-            <span id="valor-desconto" style="color: #2ed573; font-weight: bold;"></span>
-        </div>
+      </div>
     </div>
-</div>
+  </header>
 
-      <div class="form-group">
-        <label for="select-endereco">Escolha o endereço de entrega:</label>
-        <select id="select-endereco" required>
-          <option value="">-- Selecione um endereço --</option>
-        </select>
-        <div id="detalhes-endereco" class="detalhes-box" style="display:none;"></div>
+  <div class="notificacao-dropdown" id="notificacao-dropdown">
+    <div class="notificacao-header">
+      <h3>Notificações</h3>
+      <button onclick="marcarTodasComoLidas()">Marcar todas como lidas</button>
+    </div>
+    <div class="notificacao-list" id="notificacao-list"></div>
+  </div>
+
+  <main class="container my-5">
+    <div class="cart-header">
+      <h1>Meu Carrinho</h1>
+      <p>Revise seus itens antes de finalizar a compra</p>
+    </div>
+    
+    <div class="cart-steps">
+      <div class="step completed">
+        <div class="step-number">1</div>
+        <div class="step-title">Carrinho</div>
       </div>
-
-      <div class="form-group">
-        <label for="select-cartao">Escolha o cartão de pagamento:</label>
-        <select id="select-cartao" required>
-          <option value="">-- Selecione um cartão --</option>
-        </select>
-        <div id="detalhes-cartao" class="detalhes-box" style="display:none;"></div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-title">Pagamento</div>
       </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-title">Confirmação</div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="table-responsive">
+          <table class="cart-table" id="cart-items">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Preço</th>
+                <th>Quantidade</th>
+                <th>Subtotal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="carrinho-itens" style="display: none;">
+              <!-- Itens serão adicionados dinamicamente aqui -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="carrinho-vazio" id="carrinho-vazio">
+          <i class="bi bi-cart-x"></i>
+          <h3>Seu carrinho está vazio</h3>
+          <p>Adicione produtos para continuar com sua compra</p>
+          <a href="principal.html" class="btn-voltar">Voltar às Compras</a>
+        </div>
+        
+        <div class="cart-actions" id="cart-actions" style="display: none;">
+          <a href="principal.html" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Continuar Comprando
+          </a>
+          <button class="btn btn-outline-danger" onclick="limparCarrinho()">
+            <i class="bi bi-trash me-2"></i>Limpar Carrinho
+          </button>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="carrinho-total" id="carrinho-total" style="display: none;">
+          <h4>Resumo do Pedido</h4>
+          
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span id="subtotal">R$ 0,00</span>
+          </div>
+          <div class="summary-row">
+            <span>Frete</span>
+            <span id="frete">R$ 0,00</span>
+          </div>
+          <div class="summary-row" id="cupom-line" style="display: none;">
+            <span>Desconto</span>
+            <span class="text-success" id="valor-desconto">-R$ 0,00</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span id="total">R$ 0,00</span>
+          </div>
+          
+          <div class="cupom-container">
+            <div class="d-flex gap-2 mb-2">
+              <input type="text" id="input-cupom" class="form-control" placeholder="Digite seu cupom">
+              <button class="btn-aplicar-cupom" onclick="aplicarCupom()">Aplicar</button>
+            </div>
+            <div id="cupom-aplicado" style="display: none;">
+              <div class="d-flex justify-content-between">
+                <span>Cupom aplicado: <strong id="cupom-codigo"></strong></span>
+                <button onclick="removerCupom()" style="background: none; border: none; color: #ff4757; cursor: pointer;">Remover</button>
+              </div>
+            </div>
+          </div>
 
-      <button class="btn-finalizar" id="btn-finalizar" onclick="finalizarCompra()">Finalizar Compra</button>
-<div id="notificacao-sucesso" class="notificacao" style="display: none;">
-  Compra realizada com sucesso!
-</div>
+          <div class="form-group">
+            <label for="select-endereco">Escolha o endereço de entrega:</label>
+            <select id="select-endereco" class="form-control" required>
+              <option value="">-- Selecione um endereço --</option>
+            </select>
+            <div id="detalhes-endereco" class="detalhes-box" style="display:none;"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="select-cartao">Escolha o cartão de pagamento:</label>
+            <select id="select-cartao" class="form-control" required>
+              <option value="">-- Selecione um cartão --</option>
+            </select>
+            <div id="detalhes-cartao" class="detalhes-box" style="display:none;"></div>
+          </div>
+
+          <button class="btn-finalizar" id="btn-finalizar" onclick="finalizarCompra()">
+            <i class="bi bi-credit-card me-2"></i>Finalizar Compra
+          </button>
+        </div>
+      </div>
     </div>
   </main>
 
+  <div id="notificacao-sucesso" class="notificacao-sucesso">
+    <i class="bi bi-check-circle me-2"></i> Compra realizada com sucesso!
+  </div>
 
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+  
   <script>
     // Funções para gerenciar carrinho por usuário
     function obterCarrinhoUsuario() {
@@ -113,9 +179,17 @@
       localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhosPorUsuario));
     }
 
+    function limparCarrinho() {
+      if (confirm('Tem certeza que deseja limpar seu carrinho?')) {
+        carrinho = [];
+        atualizarCarrinho();
+      }
+    }
+
     let carrinho = obterCarrinhoUsuario();
     let enderecos = [];
     let cartoes = [];
+    let cupomAplicado = null;
 
     function calcularFrete(valorSubtotal, estado) {
       const acrescimosPorEstado = {
@@ -138,91 +212,108 @@
       return freteBase + (acrescimosPorEstado[estado] || 0);
     }
 
-window.addEventListener('DOMContentLoaded', () => {
-  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-  if (!clienteLogado) {
-    alert('Você precisa estar logado para acessar o carrinho');
-    window.location.href = 'principal.html';
-    return;
-  }
+    window.addEventListener('DOMContentLoaded', () => {
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!clienteLogado) {
+        alert('Você precisa estar logado para acessar o carrinho');
+        window.location.href = 'principal.html';
+        return;
+      }
 
-  // Configura notificações
-const notificacaoIcon = document.getElementById('notificacao-icon');
-  if (notificacaoIcon) {
-    notificacaoIcon.addEventListener('click', exibirNotificacoes);
-  }
+      // Configura notificações
+      const notificacaoIcon = document.getElementById('notificacao-icon');
+      if (notificacaoIcon) {
+        notificacaoIcon.addEventListener('click', exibirNotificacoes);
+      }
 
- document.addEventListener('click', (e) => {
-    const dropdown = document.getElementById('notificacao-dropdown');
-    const icon = document.getElementById('notificacao-icon');
-    
-    if (dropdown && !dropdown.contains(e.target) && !icon.contains(e.target)) {
-      dropdown.classList.remove('show');
-    }
-  });
-    const dropdown = document.getElementById('notificacao-dropdown');
-  if (dropdown) {
-    dropdown.addEventListener('click', (e) => {
-      e.stopPropagation();
+      document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('notificacao-dropdown');
+        const icon = document.getElementById('notificacao-icon');
+        
+        if (dropdown && !dropdown.contains(e.target) && !icon.contains(e.target)) {
+          dropdown.classList.remove('show');
+        }
+      });
+      
+      const dropdown = document.getElementById('notificacao-dropdown');
+      if (dropdown) {
+        dropdown.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+
+      // Atualiza badge
+      atualizarBadgeNotificacao();
+
+      // Restante do código de inicialização do carrinho
+      carrinho = obterCarrinhoUsuario();
+      carregarCarrinho();
+      carregarEnderecos();
+      carregarCartoes();
+
+      document.getElementById('select-endereco').addEventListener('change', mostrarDetalhesEndereco);
+      document.getElementById('select-cartao').addEventListener('change', mostrarDetalhesCartao);
     });
-  }
 
-  // Atualiza badge
-  atualizarBadgeNotificacao();
+    async function carregarCarrinho() {
+      const carrinhoItens = document.getElementById('carrinho-itens');
+      const carrinhoVazio = document.getElementById('carrinho-vazio');
+      const carrinhoTotal = document.getElementById('carrinho-total');
+      const cartActions = document.getElementById('cart-actions');
 
-  // Restante do código de inicialização do carrinho
-  carrinho = obterCarrinhoUsuario();
-  carregarCarrinho();
-  carregarEnderecos();
-  carregarCartoes();
-
-  document.getElementById('select-endereco').addEventListener('change', mostrarDetalhesEndereco);
-  document.getElementById('select-cartao').addEventListener('change', mostrarDetalhesCartao);
-});
-
- async function carregarCarrinho() {
-    const carrinhoItens = document.getElementById('carrinho-itens');
-    const carrinhoVazio = document.getElementById('carrinho-vazio');
-    const carrinhoTotal = document.getElementById('carrinho-total');
-
-    // Verifica se o carrinho está vazio
-    if (carrinho.length === 0) {
+      // Verifica se o carrinho está vazio
+      if (carrinho.length === 0) {
         carrinhoItens.style.display = 'none';
         carrinhoVazio.style.display = 'block';
         carrinhoTotal.style.display = 'none';
+        cartActions.style.display = 'none';
         return;
-    }
+      }
 
-    carrinhoVazio.style.display = 'none';
-    carrinhoItens.style.display = 'block';
-    carrinhoTotal.style.display = 'block';
+      carrinhoVazio.style.display = 'none';
+      carrinhoItens.style.display = 'contents';
+      carrinhoTotal.style.display = 'block';
+      cartActions.style.display = 'flex';
 
-    try {
+      try {
         // Carrega os detalhes dos produtos
         const itensDetalhados = await Promise.all(
-            carrinho.map(async item => {
-                const res = await fetch(`/api/livros/${item.id}`);
-                if (!res.ok) throw new Error(`Erro ao buscar produto ${item.id}: ${res.status}`);
-                const produto = await res.json();
-                return { ...item, produto };
-            })
+          carrinho.map(async item => {
+            const res = await fetch(`/api/livros/${item.id}`);
+            if (!res.ok) throw new Error(`Erro ao buscar produto ${item.id}: ${res.status}`);
+            const produto = await res.json();
+            return { ...item, produto };
+          })
         );
 
         // Atualiza a lista de itens no carrinho
         carrinhoItens.innerHTML = itensDetalhados.map(item => `
-            <div class="carrinho-item" data-id="${item.id}">
-                <img src="${item.produto.imagemUrl || 'img/livro-placeholder.jpg'}" alt="${item.produto.titulo}" class="carrinho-item-imagem">
-                <div class="carrinho-item-info">
-                    <div class="carrinho-item-titulo">${item.produto.titulo}</div>
-                    <div class="carrinho-item-preco">R$ ${item.produto.precoVenda.toFixed(2)}</div>
-                    <div class="carrinho-item-controles">
-                        <button onclick="alterarQuantidadeCarrinho(${item.id}, -1)">-</button>
-                        <input type="number" class="carrinho-item-quantidade" value="${item.quantidade}" min="1" max="${item.produto.estoque}" onchange="atualizarQuantidadeCarrinho(${item.id}, this.value, ${item.produto.estoque})">
-                        <button onclick="alterarQuantidadeCarrinho(${item.id}, 1, ${item.produto.estoque})">+</button>
-                        <button class="carrinho-item-remover" onclick="removerDoCarrinho(${item.id})"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            </div>
+          <tr class="carrinho-item" data-id="${item.id}">
+            <td data-label="Produto">
+              <div class="d-flex align-items-center">
+                <img src="${item.produto.imagemUrl || 'img/livro-placeholder.jpg'}" 
+                     alt="${item.produto.titulo}" 
+                     class="carrinho-item-imagem me-3">
+                <div class="carrinho-item-titulo">${item.produto.titulo}</div>
+              </div>
+            </td>
+            <td data-label="Preço">R$ ${item.produto.precoVenda.toFixed(2)}</td>
+            <td data-label="Quantidade">
+              <div class="quantity-control">
+                <button class="quantity-btn" onclick="alterarQuantidadeCarrinho(${item.id}, -1)">-</button>
+                <input type="number" class="carrinho-item-quantidade" 
+                       value="${item.quantidade}" min="1" max="${item.produto.estoque}" 
+                       onchange="atualizarQuantidadeCarrinho(${item.id}, this.value, ${item.produto.estoque})">
+                <button class="quantity-btn" onclick="alterarQuantidadeCarrinho(${item.id}, 1, ${item.produto.estoque})">+</button>
+              </div>
+            </td>
+            <td data-label="Subtotal">R$ ${(item.produto.precoVenda * item.quantidade).toFixed(2)}</td>
+            <td>
+              <button class="carrinho-item-remover" onclick="removerDoCarrinho(${item.id})">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
         `).join('');
 
         // Calcula subtotal e frete
@@ -235,37 +326,33 @@ const notificacaoIcon = document.getElementById('notificacao-icon');
         // Verifica se há cupom aplicado
         const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
         if (cupomAplicado && clienteLogado) {
-            const validacao = validarCupom(cupomAplicado.codigo, subtotal, clienteLogado.id);
+          const validacao = validarCupom(cupomAplicado.codigo, subtotal, clienteLogado.id);
+          
+          if (validacao.valido) {
+            // Atualiza a UI do cupom
+            document.getElementById('cupom-codigo').textContent = cupomAplicado.codigo;
+            document.getElementById('cupom-aplicado').style.display = 'block';
+            document.getElementById('input-cupom').value = cupomAplicado.codigo;
             
-            if (validacao.valido) {
-                // Atualiza a UI do cupom
-                document.getElementById('cupom-codigo').textContent = cupomAplicado.codigo;
-                document.getElementById('valor-desconto').textContent = 
-                    cupomAplicado.tipo === 'percent' 
-                        ? `${cupomAplicado.desconto}% (R$ ${validacao.valorDesconto.toFixed(2)})`
-                        : `R$ ${validacao.valorDesconto.toFixed(2)}`;
-                document.getElementById('cupom-aplicado').style.display = 'block';
-                document.getElementById('input-cupom').value = cupomAplicado.codigo;
-                
-                // Atualiza o total com desconto
-                atualizarTotalComCupom(subtotal, validacao.valorDesconto);
-            } else {
-                // Cupom inválido (pode ter expirado ou valor mínimo não atingido)
-                removerCupom();
-                document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
-            }
-        } else {
-            // Sem cupom aplicado
+            // Atualiza o total com desconto
+            atualizarTotalComCupom(subtotal, validacao.valorDesconto);
+          } else {
+            // Cupom inválido (pode ter expirado ou valor mínimo não atingido)
+            removerCupom();
             document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+          }
+        } else {
+          // Sem cupom aplicado
+          document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
         }
 
-    } catch (error) {
+      } catch (error) {
         console.error('Erro ao carregar itens:', error);
-        carrinhoItens.innerHTML = '<p>Erro ao carregar os produtos. Tente novamente mais tarde.</p>';
+        carrinhoItens.innerHTML = '<tr><td colspan="5" class="text-center py-4">Erro ao carregar os produtos. Tente novamente mais tarde.</td></tr>';
+      }
     }
-}
 
-    function alterarQuantidadeCarrinho(idProduto, delta, estoqueMax = Infinity) {
+   function alterarQuantidadeCarrinho(idProduto, delta, estoqueMax = Infinity) {
       const item = carrinho.find(i => i.id === idProduto);
       if (!item) return;
       const novaQtd = item.quantidade + delta;
@@ -293,19 +380,19 @@ const notificacaoIcon = document.getElementById('notificacao-icon');
       carregarCarrinho();
     }
 
- async function finalizarCompra() {
-    try {
+    async function finalizarCompra() {
+      try {
         const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
         if (!cliente) {
-            alert('Faça login para finalizar sua compra.');
-            window.location.href = 'principal.html';
-            return;
+          alert('Faça login para finalizar sua compra.');
+          window.location.href = 'principal.html';
+          return;
         }
 
         // Verifica se há itens no carrinho
         if (carrinho.length === 0) {
-            alert('Seu carrinho está vazio!');
-            return;
+          alert('Seu carrinho está vazio!');
+          return;
         }
 
         // Valida endereço e cartão selecionados
@@ -313,28 +400,28 @@ const notificacaoIcon = document.getElementById('notificacao-icon');
         const cartaoId = parseInt(document.getElementById('select-cartao').value);
         
         if (!enderecoId) {
-            alert('Selecione um endereço de entrega');
-            return;
+          alert('Selecione um endereço de entrega');
+          return;
         }
         
         if (!cartaoId) {
-            alert('Selecione um cartão de pagamento');
-            return;
+          alert('Selecione um cartão de pagamento');
+          return;
         }
 
         // Carrega os detalhes completos dos produtos
         const itensCompletos = await Promise.all(
-            carrinho.map(async item => {
-                const response = await fetch(`/api/livros/${item.id}`);
-                if (!response.ok) throw new Error(`Erro ao buscar produto ${item.id}`);
-                const produto = await response.json();
-                return {
-                    livroId: item.id,
-                    quantidade: item.quantidade,
-                    precoUnitario: produto.precoVenda,
-                    titulo: produto.titulo
-                };
-            })
+          carrinho.map(async item => {
+            const response = await fetch(`/api/livros/${item.id}`);
+            if (!response.ok) throw new Error(`Erro ao buscar produto ${item.id}`);
+            const produto = await response.json();
+            return {
+              livroId: item.id,
+              quantidade: item.quantidade,
+              precoUnitario: produto.precoVenda,
+              titulo: produto.titulo
+            };
+          })
         );
 
         // Calcula valores
@@ -346,54 +433,54 @@ const notificacaoIcon = document.getElementById('notificacao-icon');
 
         // Monta o objeto do pedido
         const pedido = {
-            clienteId: cliente.id,
-            itens: itensCompletos,
-            enderecoId: enderecoId,
-            cartaoId: cartaoId,
-            subtotal: subtotal,
-            valorFrete: frete,
-            valorTotal: total,
-            status: 'PENDENTE',
-            dataPedido: new Date().toISOString()
+          clienteId: cliente.id,
+          itens: itensCompletos,
+          enderecoId: enderecoId,
+          cartaoId: cartaoId,
+          subtotal: subtotal,
+          valorFrete: frete,
+          valorTotal: total,
+          status: 'PENDENTE',
+          dataPedido: new Date().toISOString()
         };
 
         // Adiciona informações do cupom se aplicado
         if (cupomAplicado) {
-            pedido.cupomId = cupomAplicado.id;
-            pedido.codigoCupom = cupomAplicado.codigo;
-            pedido.valorDesconto = subtotal - (total - frete);
-            
-            // Marca o cupom como usado
-            const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
-            if (cuponsPorUsuario[cliente.id]) {
-                const cupom = cuponsPorUsuario[cliente.id].find(c => c.id === cupomAplicado.id);
-                if (cupom) {
-                    cupom.usado = true;
-                    localStorage.setItem('cuponsPorUsuario', JSON.stringify(cuponsPorUsuario));
-                    
-                    // Notificação de cupom utilizado
-                    adicionarNotificacao(
-                        'Cupom utilizado',
-                        `Cupom ${cupomAplicado.codigo} aplicado no pedido #${pedido.id}`,
-                        'cupom'
-                    );
-                }
+          pedido.cupomId = cupomAplicado.id;
+          pedido.codigoCupom = cupomAplicado.codigo;
+          pedido.valorDesconto = subtotal - (total - frete);
+          
+          // Marca o cupom como usado
+          const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+          if (cuponsPorUsuario[cliente.id]) {
+            const cupom = cuponsPorUsuario[cliente.id].find(c => c.id === cupomAplicado.id);
+            if (cupom) {
+              cupom.usado = true;
+              localStorage.setItem('cuponsPorUsuario', JSON.stringify(cuponsPorUsuario));
+              
+              // Notificação de cupom utilizado
+              adicionarNotificacao(
+                'Cupom utilizado',
+                `Cupom ${cupomAplicado.codigo} aplicado no pedido #${pedido.id}`,
+                'cupom'
+              );
             }
+          }
         }
 
         // Envia o pedido para a API
         const response = await fetch('/api/pedidos', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-            },
-            body: JSON.stringify(pedido)
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          },
+          body: JSON.stringify(pedido)
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Erro ao processar pedido');
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Erro ao processar pedido');
         }
 
         const data = await response.json();
@@ -403,27 +490,27 @@ const notificacaoIcon = document.getElementById('notificacao-icon');
         notificacao.style.display = 'block';
         
         adicionarNotificacao(
-            'Compra realizada!', 
-            `Pedido #${data.id} confirmado. Total: R$ ${data.valorTotal.toFixed(2)}`,
-            'success'
+          'Compra realizada!', 
+          `Pedido #${data.id} confirmado. Total: R$ ${data.valorTotal.toFixed(2)}`,
+          'success'
         );
         
         // Notificação de pagamento (simulada)
         setTimeout(() => {
+          adicionarNotificacao(
+            'Pagamento aprovado', 
+            `Pagamento de R$ ${data.valorTotal.toFixed(2)} aprovado para pedido #${data.id}`,
+            'payment'
+          );
+          
+          // Atualização de status (simulada)
+          setTimeout(() => {
             adicionarNotificacao(
-                'Pagamento aprovado', 
-                `Pagamento de R$ ${data.valorTotal.toFixed(2)} aprovado para pedido #${data.id}`,
-                'payment'
+              'Pedido em processamento', 
+              `Seu pedido #${data.id} está sendo preparado para envio`,
+              'pedido'
             );
-            
-            // Atualização de status (simulada)
-            setTimeout(() => {
-                adicionarNotificacao(
-                    'Pedido em processamento', 
-                    `Seu pedido #${data.id} está sendo preparado para envio`,
-                    'pedido'
-                );
-            }, 1500);
+          }, 1500);
         }, 2000);
 
         // Limpa o carrinho
@@ -440,50 +527,34 @@ const notificacaoIcon = document.getElementById('notificacao-icon');
         const btnFinalizar = document.getElementById('btn-finalizar');
         btnFinalizar.textContent = 'Ver Compras';
         btnFinalizar.onclick = function() {
-            window.location.href = `pedidos.html?clienteId=${cliente.id}`;
+          window.location.href = `pedidos.html?clienteId=${cliente.id}`;
         };
 
         // Esconde a notificação após 3 segundos
         setTimeout(() => {
-            notificacao.style.display = 'none';
+          notificacao.style.display = 'none';
         }, 3000);
 
-    } catch (error) {
+      } catch (error) {
         console.error('Erro ao finalizar compra:', error);
         
         adicionarNotificacao(
-            'Falha na compra', 
-            'Não foi possível finalizar seu pedido. Tente novamente.',
-            'error'
+          'Falha na compra', 
+          'Não foi possível finalizar seu pedido. Tente novamente.',
+          'error'
         );
         
         let errorMessage = 'Erro ao finalizar compra';
         if (error.message.includes('Failed to fetch')) {
-            errorMessage = 'Erro de conexão com o servidor';
+          errorMessage = 'Erro de conexão com o servidor';
         } else if (error.message) {
-            errorMessage = error.message;
+          errorMessage = error.message;
         }
         
         alert(`${errorMessage}\n\nPor favor, tente novamente.`);
+      }
     }
-}
 
-// Função auxiliar para atualizar status do pedido (simulação)
-async function atualizarStatusPedido(pedidoId, novoStatus) {
-    try {
-        // Esta é uma simulação - na prática você chamaria sua API
-        console.log(`Simulando atualização do pedido ${pedidoId} para status ${novoStatus}`);
-        
-        // Em um sistema real, seria algo como:
-        // await fetch(`/api/pedidos/${pedidoId}/status`, {
-        //     method: 'PATCH',
-        //     body: JSON.stringify({ status: novoStatus })
-        // });
-    } catch (error) {
-        console.error('Erro ao atualizar status:', error);
-    }
-}
-  
     async function carregarEnderecos() {
       const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
       if (!cliente) return;
@@ -533,18 +604,18 @@ async function atualizarStatusPedido(pedidoId, novoStatus) {
     }
 
     function mostrarDetalhesEndereco() {
-    const select = document.getElementById('select-endereco');
-    const detalhesDiv = document.getElementById('detalhes-endereco');
-    const endereco = enderecos.find(e => e.id == select.value);
+      const select = document.getElementById('select-endereco');
+      const detalhesDiv = document.getElementById('detalhes-endereco');
+      const endereco = enderecos.find(e => e.id == select.value);
 
-    if (!endereco) {
+      if (!endereco) {
         detalhesDiv.style.display = 'none';
         detalhesDiv.innerHTML = '';
         return;
-    }
+      }
 
-    detalhesDiv.style.display = 'block';
-    detalhesDiv.innerHTML = `
+      detalhesDiv.style.display = 'block';
+      detalhesDiv.innerHTML = `
         <strong>${endereco.nomeEndereco || 'Endereço de Entrega'}</strong>
         <div class="detalhes-row"><strong>Rua:</strong> ${endereco.tipoLogradouro ? endereco.tipoLogradouro + ' ' : ''}${endereco.rua}, Nº ${endereco.numero}${endereco.complemento ? ' - ' + endereco.complemento : ''}</div>
         <div class="detalhes-row"><strong>Bairro:</strong> ${endereco.bairro}</div>
@@ -552,13 +623,13 @@ async function atualizarStatusPedido(pedidoId, novoStatus) {
         <div class="detalhes-row"><strong>CEP:</strong> ${endereco.cep}</div>
         <div class="detalhes-row"><strong>Tipo Residência:</strong> ${endereco.tipoResidencia || 'Não informado'}</div>
         <div class="detalhes-row"><strong>País:</strong> ${endereco.pais || 'Brasil'}</div>
-    `;
+      `;
 
-    const subtotalSpan = document.getElementById('subtotal');
-    const freteSpan = document.getElementById('frete');
-    const totalSpan = document.getElementById('total');
+      const subtotalSpan = document.getElementById('subtotal');
+      const freteSpan = document.getElementById('frete');
+      const totalSpan = document.getElementById('total');
 
-    if (subtotalSpan && freteSpan && totalSpan) {
+      if (subtotalSpan && freteSpan && totalSpan) {
         const subtotal = parseFloat(subtotalSpan.textContent.replace('R$', '').replace(',', '.'));
         const frete = calcularFrete(subtotal, endereco.estado);
 
@@ -566,18 +637,18 @@ async function atualizarStatusPedido(pedidoId, novoStatus) {
         
         // Recalcula o total considerando o cupom se existir
         if (cupomAplicado) {
-            const validacao = validarCupom(cupomAplicado.codigo, subtotal, JSON.parse(localStorage.getItem('clienteLogado')).id);
-            if (validacao.valido) {
-                atualizarTotalComCupom(subtotal, validacao.valorDesconto);
-            } else {
-                removerCupom();
-                totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
-            }
-        } else {
+          const validacao = validarCupom(cupomAplicado.codigo, subtotal, JSON.parse(localStorage.getItem('clienteLogado')).id);
+          if (validacao.valido) {
+            atualizarTotalComCupom(subtotal, validacao.valorDesconto);
+          } else {
+            removerCupom();
             totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+          }
+        } else {
+          totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
         }
+      }
     }
-}
 
     function mostrarDetalhesCartao() {
       const select = document.getElementById('select-cartao');
@@ -598,368 +669,276 @@ async function atualizarStatusPedido(pedidoId, novoStatus) {
       `;
     }
 
-/* Seção de Cupons */
-// Variável para armazenar o cupom aplicado
-let cupomAplicado = null;
-
-// Função para aplicar um cupom
-function aplicarCupom() {
-    const codigoCupom = document.getElementById('input-cupom').value.trim();
-    if (!codigoCupom) {
+    /* Seção de Cupons */
+    function aplicarCupom() {
+      const codigoCupom = document.getElementById('input-cupom').value.trim();
+      if (!codigoCupom) {
         alert('Por favor, digite um código de cupom');
         return;
-    }
+      }
 
-    // Verifica se o usuário está logado
-    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-    if (!clienteLogado) {
+      // Verifica se o usuário está logado
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!clienteLogado) {
         alert('Você precisa estar logado para usar um cupom');
         openModalLogin();
         return;
-    }
+      }
 
-    // Obtém o subtotal atual
-    const subtotalText = document.getElementById('subtotal').textContent;
-    const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
+      // Obtém o subtotal atual
+      const subtotalText = document.getElementById('subtotal').textContent;
+      const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
 
-    console.log('Validando cupom:', codigoCupom); // Debug
-    
-    // Verifica o cupom
-    const validacao = validarCupom(codigoCupom, subtotal, clienteLogado.id);
-    
-    console.log('Resultado validação:', validacao); // Debug
-    
-    if (!validacao.valido) {
+      // Verifica o cupom
+      const validacao = validarCupom(codigoCupom, subtotal, clienteLogado.id);
+      
+      if (!validacao.valido) {
         alert(validacao.mensagem);
         return;
+      }
+
+      // Armazena o cupom aplicado
+      cupomAplicado = validacao.cupom;
+      
+      // Atualiza a UI para mostrar o cupom aplicado
+      document.getElementById('cupom-codigo').textContent = cupomAplicado.codigo;
+      document.getElementById('cupom-aplicado').style.display = 'block';
+      
+      // Atualiza o total
+      atualizarTotalComCupom(subtotal, validacao.valorDesconto);
     }
 
-    // Armazena o cupom aplicado
-    cupomAplicado = validacao.cupom;
-    
-    // Atualiza a UI para mostrar o cupom aplicado
-    document.getElementById('cupom-codigo').textContent = cupomAplicado.codigo;
-    document.getElementById('valor-desconto').textContent = 
-        cupomAplicado.tipo === 'percent' 
-            ? `${cupomAplicado.desconto}% (R$ ${validacao.valorDesconto.toFixed(2)})`
-            : `R$ ${validacao.valorDesconto.toFixed(2)}`;
-    
-    document.getElementById('cupom-aplicado').style.display = 'block';
-    
-    // Atualiza o total
-    atualizarTotalComCupom(subtotal, validacao.valorDesconto);
-}
-
-// Função para validar um cupom
-function validarCupom(codigoCupom, valorSubtotal, userId) {
-    // Verifica se o código do cupom está no formato esperado
-    if (!codigoCupom || (!codigoCupom.startsWith('CUPOM') && !codigoCupom.startsWith('TROCA-'))) {
+    function validarCupom(codigoCupom, valorSubtotal, userId) {
+      // Verifica se o código do cupom está no formato esperado
+      if (!codigoCupom || (!codigoCupom.startsWith('CUPOM') && !codigoCupom.startsWith('TROCA-'))) {
         return { valido: false, mensagem: 'Formato de cupom inválido' };
-    }
+      }
 
-
-    // Obtém todos os cupons do usuário
-    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
-    const cuponsUsuario = cuponsPorUsuario[userId] || [];
-    
-    console.log('Cupons do usuário:', cuponsUsuario); // Debug
-    
-    // Encontra o cupom pelo código (case insensitive)
-    const cupom = cuponsUsuario.find(c => 
+      // Obtém todos os cupons do usuário
+      const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
+      const cuponsUsuario = cuponsPorUsuario[userId] || [];
+      
+      // Encontra o cupom pelo código (case insensitive)
+      const cupom = cuponsUsuario.find(c => 
         c.codigo.toUpperCase() === codigoCupom.toUpperCase()
-    );
-    
-    if (!cupom) {
-        console.log('Cupom não encontrado para o usuário'); // Debug
+      );
+      
+      if (!cupom) {
         return { valido: false, mensagem: 'Cupom não encontrado' };
-    }
-    
-    console.log('Cupom encontrado:', cupom); // Debug
-    
-    // Verifica se já foi usado
-    if (cupom.usado) {
+      }
+      
+      // Verifica se já foi usado
+      if (cupom.usado) {
         return { valido: false, mensagem: 'Este cupom já foi utilizado' };
-    }
-    
-    // Verifica se expirou
-    const dataExpiracao = new Date(cupom.dataExpiracao);
-    const hoje = new Date();
-    if (dataExpiracao < hoje) {
+      }
+      
+      // Verifica se expirou
+      const dataExpiracao = new Date(cupom.dataExpiracao);
+      const hoje = new Date();
+      if (dataExpiracao < hoje) {
         return { valido: false, mensagem: 'Este cupom está expirado' };
-    }
-    
-    // Verifica o valor mínimo
-    if (valorSubtotal < cupom.valorMinimo) {
+      }
+      
+      // Verifica o valor mínimo
+      if (valorSubtotal < cupom.valorMinimo) {
         return { 
-            valido: false, 
-            mensagem: `Este cupom requer um valor mínimo de R$ ${cupom.valorMinimo.toFixed(2)}` 
+          valido: false, 
+          mensagem: `Este cupom requer um valor mínimo de R$ ${cupom.valorMinimo.toFixed(2)}` 
         };
-    }
-    
-    // Calcula o desconto
-    let valorDesconto = 0;
-    if (cupom.tipo === 'percent') {
+      }
+      
+      // Calcula o desconto
+      let valorDesconto = 0;
+      if (cupom.tipo === 'percent') {
         valorDesconto = valorSubtotal * (cupom.desconto / 100);
-    } else {
+      } else {
         valorDesconto = cupom.desconto;
-    }
-    
-    // Não permite desconto maior que o subtotal
-    if (valorDesconto > valorSubtotal) {
+      }
+      
+      // Não permite desconto maior que o subtotal
+      if (valorDesconto > valorSubtotal) {
         valorDesconto = valorSubtotal;
-    }
-    
-    return {
+      }
+      
+      return {
         valido: true,
         cupom: cupom,
         valorDesconto: valorDesconto,
         valorFinal: valorSubtotal - valorDesconto
-    };
-}
-// Função para atualizar o total com o cupom aplicado
-function atualizarTotalComCupom(subtotal, desconto) {
-    const freteText = document.getElementById('frete').textContent;
-    const frete = parseFloat(freteText.replace('R$', '').replace(',', '.'));
-    
-    const total = (subtotal - desconto) + frete;
-    document.getElementById('total').textContent = `R$ ${total.toFixed(2)}`;
-    
-    // Adiciona/atualiza a linha de desconto
-    let cupomLine = document.querySelector('.cupom-line');
-    if (!cupomLine) {
-        const totalDiv = document.querySelector('.carrinho-total');
-        const hr = document.createElement('hr');
-        cupomLine = document.createElement('div');
-        cupomLine.className = 'cupom-line';
-        cupomLine.style.display = 'flex';
-        cupomLine.style.justifyContent = 'space-between';
-        cupomLine.style.margin = '15px 0';
-        cupomLine.innerHTML = `
-            <strong>Desconto:</strong>
-            <span style="color: #2ed573; font-weight: bold;">- R$ ${desconto.toFixed(2)}</span>
-        `;
-        totalDiv.insertBefore(hr, totalDiv.querySelector('.form-group'));
-        totalDiv.insertBefore(cupomLine, hr.nextSibling);
-    } else {
-        cupomLine.querySelector('span').textContent = `- R$ ${desconto.toFixed(2)}`;
+      };
     }
-}
 
-// Função para remover o cupom aplicado
-function removerCupom() {
-    cupomAplicado = null;
-    document.getElementById('cupom-aplicado').style.display = 'none';
-    document.getElementById('input-cupom').value = '';
-    
-    // Remove a linha de desconto
-    const cupomLine = document.querySelector('.cupom-line');
-    if (cupomLine) {
-        const hr = cupomLine.previousElementSibling;
-        if (hr && hr.tagName === 'HR') {
-            hr.remove();
-        }
-        cupomLine.remove();
+    function atualizarTotalComCupom(subtotal, desconto) {
+      const freteText = document.getElementById('frete').textContent;
+      const frete = parseFloat(freteText.replace('R$', '').replace(',', '.'));
+      
+      const total = (subtotal - desconto) + frete;
+      document.getElementById('total').textContent = `R$ ${total.toFixed(2)}`;
+      
+      // Mostra a linha de desconto
+      const cupomLine = document.getElementById('cupom-line');
+      cupomLine.style.display = 'flex';
+      document.getElementById('valor-desconto').textContent = `-R$ ${desconto.toFixed(2)}`;
     }
-    
-    // Recalcula o total sem desconto
-    const subtotalText = document.getElementById('subtotal').textContent;
-    const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
-    const freteText = document.getElementById('frete').textContent;
-    const frete = parseFloat(freteText.replace('R$', '').replace(',', '.'));
-    
-    document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
-}
 
-function debugCuponsUsuario() {
-    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-    if (!clienteLogado) {
-        console.log('Nenhum usuário logado');
+    function removerCupom() {
+      cupomAplicado = null;
+      document.getElementById('cupom-aplicado').style.display = 'none';
+      document.getElementById('input-cupom').value = '';
+      document.getElementById('cupom-line').style.display = 'none';
+      
+      // Recalcula o total sem desconto
+      const subtotalText = document.getElementById('subtotal').textContent;
+      const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
+      const freteText = document.getElementById('frete').textContent;
+      const frete = parseFloat(freteText.replace('R$', '').replace(',', '.'));
+      
+      document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+    }
+
+    /* Notificações */
+    function adicionarNotificacao(titulo, mensagem, tipo = 'info') {
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!clienteLogado) return;
+      
+      const notificacoes = obterNotificacoesUsuario();
+      
+      const novaNotificacao = {
+        id: Date.now(),
+        titulo,
+        mensagem,
+        tipo,
+        data: new Date().toISOString(),
+        lida: false,
+        pedidoId: tipo === 'pedido' ? mensagem.match(/#(\d+)/)?.[1] : null
+      };
+      
+      notificacoes.unshift(novaNotificacao);
+      salvarNotificacoesUsuario(notificacoes);
+      atualizarBadgeNotificacao();
+      
+      if (document.visibilityState === 'visible') {
+        mostrarNotificacaoToast(novaNotificacao);
+      }
+      
+      return novaNotificacao;
+    }
+
+    function atualizarBadgeNotificacao() {
+      const notificacoes = obterNotificacoesUsuario();
+      const naoLidas = notificacoes.filter(n => !n.lida).length;
+      const badge = document.getElementById('notificacao-badge');
+      
+      if (naoLidas > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = naoLidas > 9 ? '9+' : naoLidas.toString();
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    function obterNotificacoesUsuario() {
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!clienteLogado) return [];
+      
+      const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario')) || {};
+      return notificacoesPorUsuario[clienteLogado.id] || [];
+    }
+
+    function salvarNotificacoesUsuario(notificacoes) {
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      if (!clienteLogado) return;
+      
+      const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario')) || {};
+      notificacoesPorUsuario[clienteLogado.id] = notificacoes;
+      localStorage.setItem('notificacoesPorUsuario', JSON.stringify(notificacoesPorUsuario));
+    }
+
+    function exibirNotificacoes(event) {
+      event.stopPropagation();
+      const dropdown = document.getElementById('notificacao-dropdown');
+      if (!dropdown) return;
+
+      dropdown.classList.toggle('show');
+      if (dropdown.classList.contains('show')) {
+        carregarListaNotificacoes();
+      }
+    }
+
+    function carregarListaNotificacoes() {
+      const list = document.getElementById('notificacao-list');
+      if (!list) return;
+      
+      const notificacoes = obterNotificacoesUsuario();
+
+      if (notificacoes.length === 0) {
+        list.innerHTML = '<p style="padding:10px;">Nenhuma notificação.</p>';
         return;
+      }
+
+      list.innerHTML = notificacoes.map(n => `
+        <div class="notificacao-item ${n.lida ? '' : 'unread'}" 
+             onclick="marcarComoLida(${n.id}, this)">
+          <div class="notificacao-titulo">${n.titulo}</div>
+          <div class="notificacao-mensagem">${n.mensagem}</div>
+          <div class="notificacao-data">${formatarData(n.data)}</div>
+        </div>
+      `).join('');
     }
 
-    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
-    const cuponsUsuario = cuponsPorUsuario[clienteLogado.id] || [];
-    
-    console.log('Cupons do usuário atual:');
-    console.table(cuponsUsuario);
-    
-    return cuponsUsuario;
-}
-
-function adicionarNotificacao(titulo, mensagem, tipo = 'info') {
-  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-  if (!clienteLogado) return;
-  
-  const notificacoes = obterNotificacoesUsuario();
-  
-  const novaNotificacao = {
-    id: Date.now(),
-    titulo,
-    mensagem,
-    tipo,
-    data: new Date().toISOString(),
-    lida: false,
-    pedidoId: tipo === 'pedido' ? mensagem.match(/#(\d+)/)?.[1] : null
-  };
-  
-  notificacoes.unshift(novaNotificacao);
-  salvarNotificacoesUsuario(notificacoes);
-  atualizarBadgeNotificacao();
-  
-  if (document.visibilityState === 'visible') {
-    mostrarNotificacaoToast(novaNotificacao);
-  }
-  
-  return novaNotificacao;
-}
-
-// Função para atualizar o badge de notificações
-function atualizarBadgeNotificacao() {
-  const notificacoes = obterNotificacoesUsuario();
-  const naoLidas = notificacoes.filter(n => !n.lida).length;
-  const badge = document.getElementById('notificacao-badge');
-  
-  if (naoLidas > 0) {
-    badge.style.display = 'flex';
-    badge.textContent = naoLidas > 9 ? '9+' : naoLidas.toString();
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
-function obterNotificacoesUsuario() {
-  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-  if (!clienteLogado) return [];
-  
-  const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario')) || {};
-  return notificacoesPorUsuario[clienteLogado.id] || [];
-}
-
-function salvarNotificacoesUsuario(notificacoes) {
-  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-  if (!clienteLogado) return;
-  
-  const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario')) || {};
-  notificacoesPorUsuario[clienteLogado.id] = notificacoes;
-  localStorage.setItem('notificacoesPorUsuario', JSON.stringify(notificacoesPorUsuario));
-}
-
-
-
-// Função para exibir notificações
-function exibirNotificacoes(event) {
-  event.stopPropagation();
-  const dropdown = document.getElementById('notificacao-dropdown');
-  if (!dropdown) return;
-
-  if (dropdown.style.display === 'block') {
-    dropdown.style.display = 'none';
-  } else {
-    dropdown.style.display = 'block';
-    carregarListaNotificacoes();
-  }
-}
-
-function carregarListaNotificacoes() {
-  const list = document.getElementById('notificacao-list');
-  if (!list) return;
-  
-  // Pega notificações (pode ser vazio para teste)
-  const notificacoes = obterNotificacoesUsuario();
-
-  if (notificacoes.length === 0) {
-    list.innerHTML = '<p style="padding:10px;">Nenhuma notificação.</p>';
-    return;
-  }
-
-  list.innerHTML = notificacoes.map(n => `
-    <div class="notificacao-item ${n.lida ? '' : 'unread'}" 
-         onclick="marcarComoLida(${n.id}, this)">
-      <div class="notificacao-titulo">${n.titulo}</div>
-      <div class="notificacao-mensagem">${n.mensagem}</div>
-      <div class="notificacao-data">${formatarData(n.data)}</div>
-    </div>
-  `).join('');
-}
-
-// Função para formatar data
-function formatarData(dataISO) {
-  const data = new Date(dataISO);
-  return data.toLocaleString('pt-BR');
-}
-
-// Função para marcar notificação como lida
-function marcarComoLida(id, elemento) {
-  let notificacoes = obterNotificacoesUsuario();
-  
-  notificacoes = notificacoes.map(n => 
-    n.id === id ? {...n, lida: true} : n
-  );
-  
-  salvarNotificacoesUsuario(notificacoes);
-  
-  if (elemento) {
-    elemento.classList.remove('unread');
-  }
-  
-  atualizarBadgeNotificacao();
-}
-
-// Função para marcar todas como lidas
-function marcarTodasComoLidas() {
-  let notificacoes = obterNotificacoesUsuario();
-  
-  notificacoes = notificacoes.map(n => ({...n, lida: true}));
-  salvarNotificacoesUsuario(notificacoes);
-  
-  document.querySelectorAll('.notificacao-item.unread').forEach(item => {
-    item.classList.remove('unread');
-  });
-  
-  atualizarBadgeNotificacao();
-}
-
-// Adiciona evento de clique ao ícone de notificação
-document.addEventListener('DOMContentLoaded', () => {
-  const notificacaoIcon = document.getElementById('notificacao-icon');
-  if (notificacaoIcon) {
-    notificacaoIcon.addEventListener('click', exibirNotificacoes);
-  }
-  
-  document.addEventListener('click', (e) => {
-    const dropdown = document.getElementById('notificacao-dropdown');
-    const icon = document.getElementById('notificacao-icon');
-    if (dropdown && dropdown.style.display === 'block' && 
-        !dropdown.contains(e.target) && !icon.contains(e.target)) {
-      dropdown.style.display = 'none';
+    function formatarData(dataISO) {
+      const data = new Date(dataISO);
+      return data.toLocaleString('pt-BR');
     }
-  });
 
-  atualizarBadgeNotificacao();
-});
+    function marcarComoLida(id, elemento) {
+      let notificacoes = obterNotificacoesUsuario();
+      
+      notificacoes = notificacoes.map(n => 
+        n.id === id ? {...n, lida: true} : n
+      );
+      
+      salvarNotificacoesUsuario(notificacoes);
+      
+      if (elemento) {
+        elemento.classList.remove('unread');
+      }
+      
+      atualizarBadgeNotificacao();
+    }
 
+    function marcarTodasComoLidas() {
+      let notificacoes = obterNotificacoesUsuario();
+      
+      notificacoes = notificacoes.map(n => ({...n, lida: true}));
+      salvarNotificacoesUsuario(notificacoes);
+      
+      document.querySelectorAll('.notificacao-item.unread').forEach(item => {
+        item.classList.remove('unread');
+      });
+      
+      atualizarBadgeNotificacao();
+    }
 
-function mostrarNotificacaoToast(notificacao) {
-  const toast = document.createElement('div');
-  toast.className = `notificacao-toast ${notificacao.tipo}`;
-  toast.innerHTML = `
-    <strong>${notificacao.titulo}</strong>
-    <p>${notificacao.mensagem}</p>
-  `;
-  
-  document.body.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 100);
-  
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 500);
-  }, 5000);
-}
-
-
+    function mostrarNotificacaoToast(notificacao) {
+      const toast = document.createElement('div');
+      toast.className = `notificacao-toast ${notificacao.tipo}`;
+      toast.innerHTML = `
+        <strong>${notificacao.titulo}</strong>
+        <p>${notificacao.mensagem}</p>
+      `;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 100);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+      }, 5000);
+    }
   </script>
 </body>
 </html>

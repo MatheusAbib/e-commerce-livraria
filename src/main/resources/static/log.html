@@ -5,63 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Log de Transações</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Montserrat', sans-serif;
       margin: 0;
       padding: 0;
       background-color: #f5f5f5;
       color: #333;
     }
     
-    header {
-      background-color: #2c3e50;
-      color: white;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    .sidebar {
-      width: 250px;
-      background-color: #34495e;
-      color: white;
-      position: fixed;
-      height: 100%;
-      padding: 20px 0;
-      transition: all 0.3s;
-    }
-    
-    .sidebar a {
-      color: white;
-      padding: 10px 20px;
-      text-decoration: none;
-      display: block;
-      transition: 0.3s;
-    }
-    
-    .sidebar a:hover {
-      background-color: #2c3e50;
-    }
-    
-    .sidebar h3 {
-      padding: 10px 20px;
-      margin-top: 0;
-      border-bottom: 1px solid #2c3e50;
-    }
-    
     main {
-      margin-left: 250px;
+      margin-top: 100px;
+      margin-left: 10px;
       padding: 20px;
     }
     
-    .menu-icon {
-      font-size: 24px;
-      cursor: pointer;
-      display: none;
-    }
+
     
     .log-container {
       background-color: white;
@@ -166,14 +127,6 @@
     }
     
     @media (max-width: 768px) {
-      .sidebar {
-        width: 0;
-        overflow: hidden;
-      }
-      
-      .sidebar.show {
-        width: 250px;
-      }
       
       main {
         margin-left: 0;
@@ -190,22 +143,36 @@
   </style>
 </head>
 <body>
-  <div class="sidebar" id="sidebar">
-    <h3>Menu</h3>
-    <a href="principal.html">Início</a>
-    <a href="clientes.html">Cadastrar Cliente</a>
-    <a href="usuarios.html">Gerenciamento de Usuários</a>
-    <a href="grafico.html">Histórico de Vendas</a>
-    <a href="pedidos.html">Status do Pedido</a>
-    <a href="livros.html">Cadastrar Livro</a>
-    <a href="log.html" class="active">Log de Transações</a>
-  </div>
+  <div id="header-container"></div>
 
-  <header>
-    <span class="menu-icon" onclick="toggleSidebar()">☰</span>
-    <h1>Log de Transações</h1>
-    <div id="user-info"></div>
-  </header>
+  <script>
+fetch('header.html')
+  .then(response => response.text())
+  .then(data => {
+    const container = document.getElementById('header-container');
+    container.innerHTML = data;
+
+    // Executar scripts do header.html
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script');
+      if (oldScript.src) {
+        newScript.src = oldScript.src;
+      } else {
+        newScript.textContent = oldScript.textContent;
+      }
+      document.body.appendChild(newScript);
+    });
+
+    // Atualiza nome do cliente
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    const nomeSpan = document.getElementById('nome-cliente');
+    if (nomeSpan && clienteLogado) {
+      nomeSpan.textContent = clienteLogado.nome;
+    }
+  });
+
+</script>
 
   <main>
     <div class="log-container">

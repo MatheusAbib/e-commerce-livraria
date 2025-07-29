@@ -5,7 +5,7 @@ import com.biblioteca.biblioteca_online.model.Pedido;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;  // <-- importar aqui
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
@@ -16,7 +16,16 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findPedidosPorClienteOrdenadosPorData(@Param("clienteId") Long clienteId);
 
     @Transactional
-    void deleteByCliente(Cliente cliente);  // <-- adicione a anotação @Transactional aqui
+    void deleteByCliente(Cliente cliente);
 
-    
+    // método para calcular lucros por livro - Lucro Total = (Preço de Venda - Preço de Custo) × Quantidade Vendida
+@Query("SELECT i.livro.titulo, " +
+       "SUM(i.quantidade) as quantidadeVendida, " +
+       "SUM(i.quantidade * (i.precoUnitario - i.livro.precoCusto)) as lucroTotal " +
+       "FROM ItemPedido i " +
+       "JOIN i.pedido p " +
+       "WHERE p.status IN ('ENTREGUE', 'EM_TRANSITO', 'TROCADO') " +  // Alterado aqui
+       "GROUP BY i.livro.titulo " +
+       "ORDER BY lucroTotal DESC")
+List<Object[]> calcularLucrosPorLivro();
 }

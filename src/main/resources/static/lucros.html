@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lucros</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<style>
+  main{
+    margin-top: 100px;
+  }
+</style>
+<div id="header-container"></div>
+
+<main style="padding: 20px;">
+  <h2>Lucros dos Livros</h2>
+
+  <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Quantidade Vendida</th>
+        <th>Lucro Total (R$)</th>
+      </tr>
+    </thead>
+    <tbody id="lucros-tbody">
+      <!-- Conteúdo será preenchido dinamicamente -->
+    </tbody>
+  </table>
+</main>
+
+<script>
+// Carrega o header
+fetch('header.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('header-container').innerHTML = data;
+
+    // Executar scripts do header.html
+    const scripts = document.querySelectorAll('#header-container script');
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script');
+      if (oldScript.src) {
+        newScript.src = oldScript.src;
+      } else {
+        newScript.textContent = oldScript.textContent;
+      }
+      document.body.appendChild(newScript);
+    });
+
+    // Atualiza nome do cliente
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    const nomeSpan = document.getElementById('nome-cliente');
+    if (nomeSpan && clienteLogado) {
+      nomeSpan.textContent = clienteLogado.nome;
+    }
+  });
+
+// Carrega os dados de lucros
+fetch('/api/vendas/lucros')
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.getElementById('lucros-tbody');
+    if (Array.isArray(data)) {
+      data.forEach(item => {
+        const tr = document.createElement('tr');
+        
+        // Os índices do array correspondem à query:
+        // 0 - título, 1 - quantidade, 2 - lucro total
+        tr.innerHTML = `
+          <td>${item[0]}</td>
+          <td>${item[1]}</td>
+          <td>R$ ${Number(item[2]).toFixed(2)}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    } else {
+      console.error("Formato inválido:", data);
+      tbody.innerHTML = '<tr><td colspan="3">Erro ao carregar dados</td></tr>';
+    }
+  })
+  .catch(err => {
+    console.error("Erro ao carregar lucros:", err);
+    document.getElementById('lucros-tbody').innerHTML = '<tr><td colspan="3">Erro ao carregar dados</td></tr>';
+  });
+</script>
+
+</body>
+</html>

@@ -4,12 +4,43 @@
   <meta charset="UTF-8">
   <title>Gerenciamento de Pedidos</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="css/Pedidos.css">
 </head>
 <body>
+    <div id="header-container"></div>
+
+  <script>
+fetch('header.html')
+  .then(response => response.text())
+  .then(data => {
+    const container = document.getElementById('header-container');
+    container.innerHTML = data;
+
+    // Executar scripts do header.html
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script');
+      if (oldScript.src) {
+        newScript.src = oldScript.src;
+      } else {
+        newScript.textContent = oldScript.textContent;
+      }
+      document.body.appendChild(newScript);
+    });
+
+    // Atualiza nome do cliente
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    const nomeSpan = document.getElementById('nome-cliente');
+    if (nomeSpan && clienteLogado) {
+      nomeSpan.textContent = clienteLogado.nome;
+    }
+  });
+
+</script>
 <header>
   <div class="header-container">
-    <a href="principal.html" class="voltar-link"><i class="fas fa-arrow-left"></i> Voltar à loja</a>
     <h1>Gerenciamento de Pedidos</h1>
     <div class="header-right">
       <div class="notificacao-icon-container">

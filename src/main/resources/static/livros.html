@@ -8,26 +8,36 @@
 <link rel="stylesheet" href="css/Livros.css">
 </head>
 <body>
+ <div id="header-container"></div>
 
-<div id="header-container"></div>
- <div class="sidebar" id="sidebar">
-    <h3>Menu</h3>
-    <a href="principal.html">Inicio</a>
-    <a href="clientes.html">Cadastrar</a>
-    <a href="usuarios.html">Gerenciamento de Usuários</a>
-    <a href="log.html">Log de Transações</a>
-    <a href="grafico.html" >Histórico de Vendas</a>
-    <a href="pedidos.html">Status do Pedido</a>
-    <a href="livros.html">Cadastrar Livro</a>
-  </div>
+  <script>
+fetch('header.html')
+  .then(response => response.text())
+  .then(data => {
+    const container = document.getElementById('header-container');
+    container.innerHTML = data;
 
-   <header>
-    <span class="menu-icon" onclick="toggleSidebar()">☰</span>
-    <span class="cliente-nome" id="nome-cliente">Gerenciamento de Livros</span>
-    <div class="profile-icon" onclick="toggleProfileForm()">
-      <i class="fas fa-user-circle"></i>
-    </div>
-  </header>
+    // Executar scripts do header.html
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script');
+      if (oldScript.src) {
+        newScript.src = oldScript.src;
+      } else {
+        newScript.textContent = oldScript.textContent;
+      }
+      document.body.appendChild(newScript);
+    });
+
+    // Atualiza nome do cliente
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    const nomeSpan = document.getElementById('nome-cliente');
+    if (nomeSpan && clienteLogado) {
+      nomeSpan.textContent = clienteLogado.nome;
+    }
+  });
+
+</script>
 
 <section id="tela-livros" style="padding:20px;">
   <div class="container">
