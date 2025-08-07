@@ -5,9 +5,10 @@
     <title>Gráfico de Vendas | Dashboard Moderno</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* ... SEU CSS EXISTENTE ... */
         :root {
             --primary-color: #4361ee;
             --secondary-color: #3f37c9;
@@ -88,12 +89,11 @@
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
         }
 
-            h1, h2, h3, h4 {
-      font-family: 'Playfair Display', serif;
-      font-weight: 700;
-    }
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
     
-        
         select, button {
             padding: 12px 20px;
             border-radius: 8px;
@@ -125,6 +125,8 @@
             align-items: center;
             gap: 8px;
             font-weight: 600;
+            position: relative;
+            overflow: hidden;
         }
         
         button:hover {
@@ -140,7 +142,6 @@
             background: white;
             border-radius: 12px;
             padding: 20px;
-            box-shadow: var(--shadow);
             border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
@@ -209,39 +210,124 @@
                 height: 400px;
             }
         }
+        
+/* Estilos da Notificação Toast */
+.notificacao-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid #4361ee;
+    transform: translateX(120%);
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 1000;
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notificacao-toast.show {
+    transform: translateX(0);
+}
+
+.notificacao-toast .toast-icon {
+    font-size: 20px;
+    color: #4361ee;
+}
+
+.notificacao-toast .toast-content {
+    flex: 1;
+}
+
+.notificacao-toast .toast-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #2b2d42;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.notificacao-toast .toast-message {
+    color: #4a5568;
+    font-size: 14px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.notificacao-toast.error {
+    border-left-color: #e53e3e;
+}
+
+.notificacao-toast.error .toast-icon {
+    color: #e53e3e;
+}
+
+.notificacao-toast.warning {
+    border-left-color: #dd6b20;
+}
+
+.notificacao-toast.warning .toast-icon {
+    color: #dd6b20;
+}
+
     </style>
 </head>
 <body>
     <div id="header-container"></div>
 
-  <script>
-fetch('header.html')
-  .then(response => response.text())
-  .then(data => {
-    const container = document.getElementById('header-container');
-    container.innerHTML = data;
+<script>
+  fetch('header.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('header-container').innerHTML = data;
 
-    // Executar scripts do header.html
-    const scripts = container.querySelectorAll('script');
-    scripts.forEach(oldScript => {
-      const newScript = document.createElement('script');
-      if (oldScript.src) {
-        newScript.src = oldScript.src;
-      } else {
-        newScript.textContent = oldScript.textContent;
-      }
-      document.body.appendChild(newScript);
+      setTimeout(() => {
+        const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+
+        if (clienteLogado) {
+          const nomeSpan = document.getElementById('nome-cliente');
+          if (nomeSpan) nomeSpan.textContent = clienteLogado.nome;
+
+          const linksAdmin = [
+            'link-log',
+            'link-usuarios',
+            'link-historico',
+            'link-lucros',
+            'link-livros',
+            'link-pedidosADMIN'
+          ];
+
+          if (clienteLogado.perfil !== 'ADMIN') {
+            linksAdmin.forEach(id => {
+              const el = document.getElementById(id);
+              if (el) el.style.display = 'none';
+            });
+          } else {
+            const statusClienteLink = document.getElementById('link-status-cliente');
+            if (statusClienteLink) statusClienteLink.style.display = 'none';
+          }
+
+        } else {
+          const linksParaOcultar = [
+            'link-log',
+            'link-usuarios',
+            'link-historico',
+            'link-lucros',
+            'link-livros',
+            'link-pedidosADMIN',
+            'link-status-cliente'
+          ];
+          linksParaOcultar.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+          });
+        }
+      }, 50);
     });
-
-    // Atualiza nome do cliente
-    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-    const nomeSpan = document.getElementById('nome-cliente');
-    if (nomeSpan && clienteLogado) {
-      nomeSpan.textContent = clienteLogado.nome;
-    }
-  });
-
 </script>
+
     <div class="container">
         <h1><i class="fas fa-chart-line"></i> Histórico de Vendas</h1>
         
@@ -253,16 +339,22 @@ fetch('header.html')
                 <option value="year">Por Ano</option>
             </select>
 
-<select id="status-filter">
-  <option value="todos" selected>Todos os Status</option>
-  <option value="ENTREGUE">Entregue</option>
-  <option value="TROCADO">Trocado</option>
-  <option value="EM_PROCESSAMENTO">Em Processamento</option>
-  <option value="CANCELADO">Cancelado</option>
-  <option value="DEVOLUCAO">Devolução</option>
-  <option value="DEVOLVIDO">Devolvido</option>
-  <option value="EM_TRANSITO">Em Trânsito</option> <!-- Adicionado -->
-</select>
+            <select id="status-filter">
+                <option value="todos" selected>Todos os Status</option>
+                <option value="ENTREGUE">Entregue</option>
+                <option value="TROCADO">Trocado</option>
+                <option value="EM_PROCESSAMENTO">Em Processamento</option>
+                <option value="CANCELADO">Cancelado</option>
+                <option value="DEVOLUCAO">Devolução</option>
+                <option value="DEVOLVIDO">Devolvido</option>
+                <option value="EM_TRANSITO">Em Trânsito</option>
+            </select>
+
+            <!-- NOVO SELECT DE LIVROS -->
+            <select id="livros-filter" title="Filtrar por livro">
+                <option value="" selected>Todos os Livros</option>
+                <!-- Opções serão adicionadas dinamicamente -->
+            </select>
 
             <select id="chart-type">
                 <option value="line" selected>Gráfico de Linha</option>
@@ -270,7 +362,7 @@ fetch('header.html')
             </select>
             
             <button onclick="loadData()" id="refresh-btn">
-                <i class="fas fa-sync-alt"></i> Atualizar
+                <i class="fas fa-check"></i> Aplicar Filtro
             </button>
         </div>
         
@@ -281,11 +373,13 @@ fetch('header.html')
 
     <script>
         let salesChart;
+        let allPedidosGlobal = [];
 
         document.addEventListener('DOMContentLoaded', () => {
+            carregarLivros();  // Carregar livros para o filtro
             loadData();
             
-            // Adiciona efeito de onda ao botão
+            // Efeito de onda no botão
             const refreshBtn = document.getElementById('refresh-btn');
             refreshBtn.addEventListener('click', function(e) {
                 const rect = this.getBoundingClientRect();
@@ -302,41 +396,116 @@ fetch('header.html')
             });
         });
 
-        async function loadData() {
+        // Função para carregar livros e preencher select
+        async function carregarLivros() {
             try {
-                const statusSelecionado = document.getElementById('status-filter').value;
+                const res = await fetch('/api/livros/consulta');
+                if (!res.ok) throw new Error('Erro ao carregar livros');
+                const data = await res.json();
+                const livros = data.livros || [];
+                const select = document.getElementById('livros-filter');
 
-                const response = await fetch('/api/pedidos/todos');
-                if (!response.ok) throw new Error('Erro ao carregar dados');
-                
-                const allPedidos = await response.json();
-                const filteredPedidos = statusSelecionado === 'todos' 
-                    ? allPedidos 
-                    : allPedidos.filter(p => p.status === statusSelecionado);
-                
-                processAndDisplayData(filteredPedidos);
+                // Limpa as opções antigas (exceto "Todos os Livros")
+                select.innerHTML = '<option value="" selected>Todos os Livros</option>';
+
+                livros.forEach(livro => {
+                    const option = document.createElement('option');
+                    option.value = livro.id;
+                    option.textContent = livro.titulo;
+                    select.appendChild(option);
+                });
             } catch (error) {
-                console.error('Erro:', error);
-                alert('Não foi possível carregar os dados de vendas');
+                console.error('Erro ao carregar livros:', error);
+                alert('Não foi possível carregar a lista de livros.');
             }
         }
 
-        function processAndDisplayData(pedidos) {
-            const period = document.getElementById('time-period').value;
-            const chartType = document.getElementById('chart-type').value;
+async function loadData() {
+    try {
+        const statusSelecionado = document.getElementById('status-filter').value;
+        const livroSelecionado = document.getElementById('livros-filter').value;
+
+        const response = await fetch('/api/pedidos/todos');
+        if (!response.ok) throw new Error('Erro ao carregar dados');
+        
+        allPedidosGlobal = await response.json();
+
+        // Filtra por status
+        let filteredPedidos = statusSelecionado === 'todos' 
+            ? allPedidosGlobal 
+            : allPedidosGlobal.filter(p => p.status === statusSelecionado);
+
+        // Filtra por livro se selecionado
+        if (livroSelecionado) {
+            filteredPedidos = filteredPedidos.filter(pedido => {
+                return pedido.itens && pedido.itens.some(item => {
+                    return item.livroId == livroSelecionado || 
+                           (item.livro && item.livro.id == livroSelecionado);
+                });
+            });
             
-            // Agrupa os pedidos por período de tempo
-            const groupedData = groupDataByPeriod(pedidos, period);
-            
-            // Prepara os dados para o gráfico
-            const labels = Object.keys(groupedData);
-            const data = Object.values(groupedData).map(group => 
-                group.reduce((sum, pedido) => sum + (pedido.valorTotal || 0), 0)
-            );
-            
-            // Cria ou atualiza o gráfico
-            updateChart(labels, data, chartType, `Vendas (${getPeriodLabel(period)})`);
+            console.log("Pedidos filtrados por livro:", filteredPedidos);
         }
+
+        processAndDisplayData(filteredPedidos, livroSelecionado);
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Não foi possível carregar os dados de vendas');
+    }
+}
+
+function processAndDisplayData(pedidos, livroSelecionado = null) {
+    const period = document.getElementById('time-period').value;
+    const chartType = document.getElementById('chart-type').value;
+    
+    const groupedData = groupDataByPeriod(pedidos, period);
+    
+    const labels = Object.keys(groupedData);
+    const data = Object.values(groupedData).map(group => {
+        return group.reduce((sum, pedido) => {
+            if (!livroSelecionado) {
+                return sum + (pedido.valorTotal || 0);
+            }
+            
+            if (pedido.itens) {
+                const valorItensFiltrados = pedido.itens
+                    .filter(item => {
+                        return item.livroId == livroSelecionado || 
+                               (item.livro && item.livro.id == livroSelecionado);
+                    })
+                    .reduce((itemSum, item) => {
+                        const preco = Number(item.preco || 
+                                      (item.livro && item.livro.precoVenda) || 
+                                      0);
+                        const quantidade = Number(item.quantidade || 1);
+                        return itemSum + (preco * quantidade);
+                    }, 0);
+                return sum + valorItensFiltrados;
+            }
+            return sum;
+        }, 0);
+    });
+    
+    // Verifica se há dados para mostrar
+    if (data.length === 0 || data.every(val => val === 0)) {
+        mostrarNotificacao(
+            'Filtro sem resultados', 
+            'Nenhum dado encontrado com os filtros selecionados', 
+            'warning'
+        );
+        // Não destrói o gráfico, apenas retorna
+        return;
+    }
+    
+    let label = `Vendas (${getPeriodLabel(period)})`;
+    if (livroSelecionado) {
+        const livroSelecionadoElement = document.getElementById('livros-filter');
+        const livroNome = livroSelecionadoElement.options[livroSelecionadoElement.selectedIndex].text;
+        label += ` - ${livroNome}`;
+    }
+    
+    updateChart(labels, data, chartType, label);
+}
 
         function groupDataByPeriod(pedidos, period) {
             const groups = {};
@@ -386,7 +555,6 @@ fetch('header.html')
                 salesChart.destroy();
             }
             
-            // Configuração do gradiente para o gráfico
             const gradient = ctx.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(67, 97, 238, 0.8)');
             gradient.addColorStop(1, 'rgba(76, 201, 240, 0.2)');
@@ -516,16 +684,63 @@ fetch('header.html')
             });
         }
 
-        document.getElementById('status-filter').addEventListener('change', () => {
-            loadData();
-        });
+        // Atualiza os dados ao mudar filtros
+        document.getElementById('status-filter').addEventListener('change', loadData);
+        document.getElementById('time-period').addEventListener('change', loadData);
+        document.getElementById('chart-type').addEventListener('change', loadData);
+        document.getElementById('livros-filter').addEventListener('change', loadData);
 
-          function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) sidebar.classList.toggle('show');
-  }
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.toggle('show');
+        }
 
-  
+        function mostrarNotificacao(titulo, mensagem, tipo = 'info') {
+    // Cria o elemento da notificação
+    const toast = document.createElement('div');
+    toast.className = `notificacao-toast ${tipo}`;
+    
+    // Ícone baseado no tipo
+    let iconClass;
+    switch(tipo) {
+        case 'error':
+            iconClass = 'fas fa-exclamation-circle';
+            break;
+        case 'warning':
+            iconClass = 'fas fa-exclamation-triangle';
+            break;
+        default:
+            iconClass = 'fas fa-info-circle';
+    }
+    
+    toast.innerHTML = `
+        <i class="${iconClass} toast-icon"></i>
+        <div class="toast-content">
+            <div class="toast-title">${titulo}</div>
+            <div class="toast-message">${mensagem}</div>
+        </div>
+    `;
+    
+    // Adiciona ao corpo do documento
+    document.body.appendChild(toast);
+    
+    // Mostra a notificação
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+    
+    // Remove após 5 segundos
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+    
+    // Fecha ao clicar
+    toast.addEventListener('click', () => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    });
+}
     </script>
 </body>
 </html>

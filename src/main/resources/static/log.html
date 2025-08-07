@@ -80,11 +80,6 @@
       flex-wrap: wrap;
     }
     
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-    }
-    
     label {
       margin-bottom: 5px;
       font-weight: 500;
@@ -140,6 +135,86 @@
         flex-direction: column;
       }
     }
+
+    .filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #4a6fa5;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+}
+  .btn-limpar {
+  background-color: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 8px 15px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.btn-limpar:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+button.btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button.btn.apply {
+  background-color: #4a6fa5;
+  color: white;
+}
+
+button.btn.apply:hover {
+  background-color: #3d5c88;
+}
+
+button.btn.clear {
+  background-color: #ccc;
+  color: #333;
+}
+
+button.btn.clear:hover {
+  background-color: #aaa;
+}
+
+ .loading-state {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+
   </style>
 </head>
 <body>
@@ -169,6 +244,14 @@ fetch('header.html')
     const nomeSpan = document.getElementById('nome-cliente');
     if (nomeSpan && clienteLogado) {
       nomeSpan.textContent = clienteLogado.nome;
+
+      // Se for ADMIN, esconde link "Status do Pedido"
+      if (clienteLogado.perfil === 'ADMIN') {
+        const statusPedidoLink = document.getElementById('link-status-cliente');
+        if (statusPedidoLink) {
+          statusPedidoLink.style.display = 'none';
+        }
+      }
     }
   });
 
@@ -187,37 +270,52 @@ fetch('header.html')
           </select>
         </div>
         
-        <div class="filter-group">
-          <label for="filter-action">Ação</label>
-          <select id="filter-action">
-            <option value="">Todas</option>
-            <option value="login">Login</option>
-            <option value="compra">Compra</option>
-            <option value="cadastro">Cadastro</option>
-            <option value="exclusao">Exclusão</option>
-          </select>
+       <div class="filters-container">
+  <div class="filter-group">
+    <label for="filter-action">Ação</label>
+    <select id="filter-action">
+      <option value="">Todas</option>
+      <option value="login">Login</option>
+      <option value="compra">Compra</option>
+      <option value="cadastro">Cadastro</option>
+      <option value="exclusao">Exclusão</option>
+      <option value="Em Trânsito">Em Trânsito</option>
+      <option value="Em Devolução">Em Devolução</option>
+      <option value="Devolvido">Devolvido</option>
+      <option value="Trocado">Trocado</option>
+      <option value="Cancelado">Cancelado</option>
+
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label for="filter-date">Data</label>
+    <input type="date" id="filter-date">
+  </div>
+
+  <div class="filter-group">
+    <label for="filter-level">Nível</label>
+    <select id="filter-level">
+      <option value="">Todos</option>
+      <option value="info">Informação</option>
+      <option value="warning">Aviso</option>
+      <option value="error">Erro</option>
+      <option value="success">Sucesso</option>
+    </select>
+  </div>
+
+  <div class="filter-buttons">
+   <div class="filtro-item full-width">
+            <button class="btn btn-filtrar" onclick="applyFilters()"><i class="fas fa-check"></i> Aplicar Filtros</button>
         </div>
-        
-        <div class="filter-group">
-          <label for="filter-date">Data</label>
-          <input type="date" id="filter-date">
-        </div>
-        
-        <div class="filter-group">
-          <label for="filter-level">Nível</label>
-          <select id="filter-level">
-            <option value="">Todos</option>
-            <option value="info">Informação</option>
-            <option value="warning">Aviso</option>
-            <option value="error">Erro</option>
-            <option value="success">Sucesso</option>
-          </select>
-        </div>
-        
-        <button onclick="applyFilters()">Aplicar Filtros</button>
-        <button onclick="clearFilters()">Limpar Filtros</button>
-      </div>
-      
+   <div class="filtro-header">
+        <button class="btn btn-outline btn-limpar"  onclick="clearFilters()"><i class="fas fa-broom"></i> Limpar Filtros</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal feedback -->
+
       <table id="log-table">
         <thead>
           <tr>
@@ -240,8 +338,7 @@ fetch('header.html')
   </main>
 
   <script>
-// Variáveis globais
-let allLogs = [];
+    let allLogs = [];
 let currentPage = 1;
 const logsPerPage = 10;
 let filteredLogs = [];
@@ -262,26 +359,40 @@ async function loadUsersMap() {
   }
 }
 
+// Mostra estado de carregamento
+function showLoadingState() {
+  const tbody = document.querySelector('#log-table tbody');
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Carregando dados...</p>
+      </td>
+    </tr>
+  `;
+}
+
 // Carrega os logs da API ou localStorage
 async function loadLogs() {
   try {
+    showLoadingState();
     await loadUsersMap();  // Garantir que usersMap está carregado
 
-    const response = await fetch('/api/logs');
-    if (response.ok) {
-      allLogs = await response.json();
-    } else {
-      allLogs = JSON.parse(localStorage.getItem('transactionLogs')) || [];
-    }
+    setTimeout(async () => {
+      const response = await fetch('/api/logs');
+      if (response.ok) {
+        allLogs = await response.json();
+      } else {
+        allLogs = JSON.parse(localStorage.getItem('transactionLogs')) || [];
+      }
 
-    allLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      allLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    filteredLogs = [...allLogs];
-    applyFilters();
-    populateUserFilter();
+      filteredLogs = [...allLogs];
+      applyFilters();
+      populateUserFilter();
 
-    // Atualiza os logs a cada 30 segundos
-    setInterval(loadLogs, 30000);
+    }, 1000);
   } catch (error) {
     console.error('Erro ao carregar logs:', error);
     allLogs = JSON.parse(localStorage.getItem('transactionLogs')) || [];
@@ -302,13 +413,16 @@ function populateUserFilter() {
   }
 
   uniqueUsers.forEach(userId => {
-    const userName = usersMap[userId] || userId || 'Sistema';
-    const option = document.createElement('option');
-    option.value = userId;
-    option.textContent = userName;
-    userFilter.appendChild(option);
+    const userName = usersMap[userId];
+    if (userName) {  // só adiciona se nome existe no usersMap
+      const option = document.createElement('option');
+      option.value = userId;
+      option.textContent = userName;
+      userFilter.appendChild(option);
+    }
   });
 }
+
 
 // Aplica filtros dos selects e inputs
 function applyFilters() {
@@ -317,20 +431,24 @@ function applyFilters() {
   const date = document.getElementById('filter-date').value;
   const level = document.getElementById('filter-level').value;
 
-  filteredLogs = allLogs.filter(log => {
-    if (userId && log.userId != userId) return false;
-    if (action && log.action !== action) return false;
-    if (date) {
-      const logDate = new Date(log.timestamp).toISOString().split('T')[0];
-      if (logDate !== date) return false;
-    }
-    if (level && log.level !== level) return false;
-    return true;
-  });
+  showLoadingState();
 
-  currentPage = 1;
-  renderLogs();
-  renderPagination();
+  setTimeout(() => {
+    filteredLogs = allLogs.filter(log => {
+      if (userId && log.userId != userId) return false;
+      if (action && log.action !== action) return false;
+      if (date) {
+        const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+        if (logDate !== date) return false;
+      }
+      if (level && log.level !== level) return false;
+      return true;
+    });
+
+    currentPage = 1;
+    renderLogs();
+    renderPagination();
+  }, 1000); // 1 segundo de atraso
 }
 
 // Limpa os filtros e reseta a listagem
@@ -340,10 +458,14 @@ function clearFilters() {
   document.getElementById('filter-date').value = '';
   document.getElementById('filter-level').value = '';
 
-  filteredLogs = [...allLogs];
-  currentPage = 1;
-  renderLogs();
-  renderPagination();
+  showLoadingState();
+
+  setTimeout(() => {
+    filteredLogs = [...allLogs];
+    currentPage = 1;
+    renderLogs();
+    renderPagination();
+  }, 1000);
 }
 
 // Renderiza os logs na tabela
@@ -361,27 +483,21 @@ function renderLogs() {
   }
 
   logsToShow.forEach(log => {
-  const userName = usersMap[log.userId] || log.userName || 'Sistema';
+    const userName = usersMap[log.userId] || log.userName || 'Sistema';
+    const date = new Date(log.timestamp);
+    const formattedDate = date.toLocaleString('pt-BR');
+    const levelClass = `log-level-${log.level || 'info'}`;
 
-  // Formata a data
-  const date = new Date(log.timestamp);
-  const formattedDate = date.toLocaleString('pt-BR');
-
-  // Classe CSS para o nível do log
-  const levelClass = `log-level-${log.level || 'info'}`;
-
-  // Cria a linha da tabela
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td>${formattedDate}</td>
-    <td>${userName}</td>
-    <td>${translateAction(log.action)}</td>
-    <td>${log.details || '-'}</td>
-    <td class="${levelClass}">${translateLevel(log.level)}</td>
-  `;
-  tbody.appendChild(row);
-});
-
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${formattedDate}</td>
+      <td>${userName}</td>
+      <td>${translateAction(log.action)}</td>
+      <td>${log.details || '-'}</td>
+      <td class="${levelClass}">${translateLevel(log.level)}</td>
+    `;
+    tbody.appendChild(row);
+  });
 }
 
 // Tradução das ações do log
@@ -391,6 +507,11 @@ function translateAction(action) {
     'compra': 'Compra',
     'cadastro': 'Cadastro',
     'exclusao': 'Exclusão',
+    'transito': 'Em Trânsito',
+    'devolucao': 'Em Devolução',
+    'devolvido': 'Devolvido',
+    'trocado': 'Trocado',
+    'cancelado': 'Cancelado',
   };
   return actions[action] || action;
 }
@@ -484,53 +605,58 @@ function renderPagination() {
 
   // Botão Próximo
   const nextButton = document.createElement('button');
-  nextButton.innerHTML = '&raquo;';
-  nextButton.disabled = currentPage === totalPages;
-  nextButton.onclick = () => {
-    if (currentPage < totalPages) {
-      currentPage++;
-      renderLogs();
-      renderPagination();
-    }
-  };
-  pagination.appendChild(nextButton);
-}
+    nextButton.innerHTML = '&raquo;';
+    nextButton.disabled = currentPage === totalPages;
+    nextButton.onclick = () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderLogs();
+        renderPagination();
+      }
+    };
+    pagination.appendChild(nextButton);
+  }
 
-// Inicialização ao carregar a página
-document.addEventListener('DOMContentLoaded', () => {
-  loadLogs();
-
-  window.logAction = logAction;
-});
-
-function finalizarCompra(pedido) {
-  fetch('/api/pedidos/finalizar', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(pedido)
-  })
-  .then(res => {
-    if (!res.ok) throw new Error('Erro na finalização');
-    return res.json();
-  })
-  .then(data => {
-    logAction('COMPRA_FINALIZADA', `Compra finalizada com sucesso. Valor: R$ ${data.valorTotal}`, data.usuarioId);
-    alert('Compra finalizada com sucesso!');
-    // redirecionar ou atualizar interface
-  })
-  .catch(err => {
-    alert('Erro ao finalizar compra');
-    console.error(err);
+  // Inicialização ao carregar a página
+  document.addEventListener('DOMContentLoaded', () => {
+    loadLogs();
+    window.logAction = logAction;
   });
-}
 
-function logAction(tipo, mensagem, usuarioId) {
-  fetch('/api/logs', {
+  function finalizarCompra(pedido) {
+    fetch('/api/pedidos/finalizar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pedido)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Erro na finalização');
+      return res.json();
+    })
+    .then(data => {
+      logAction('COMPRA_FINALIZADA', `Compra finalizada com sucesso. Valor: R$ ${data.valorTotal}`, data.usuarioId);
+      alert('Compra finalizada com sucesso!');
+      // redirecionar ou atualizar interface
+    })
+    .catch(err => {
+      alert('Erro ao finalizar compra');
+      console.error(err);
+    });
+  }
+
+function logAction(action, details, userId, level = 'info') {
+  fetch('/api/logs/registrar', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ tipo, mensagem, usuarioId })
+    body: JSON.stringify({
+      timestamp: new Date().toISOString(),
+      action,
+      details,
+      userId,
+      level
+    })
   }).catch(error => console.error('Erro ao registrar log:', error));
 }
 

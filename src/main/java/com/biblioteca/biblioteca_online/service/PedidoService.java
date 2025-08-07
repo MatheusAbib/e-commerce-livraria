@@ -3,7 +3,9 @@ package com.biblioteca.biblioteca_online.service;
 import com.biblioteca.biblioteca_online.dto.ItemPedidoDTO;
 import com.biblioteca.biblioteca_online.model.*;
 import com.biblioteca.biblioteca_online.repository.ClienteRepository;
+import com.biblioteca.biblioteca_online.repository.LivroRepository;
 import com.biblioteca.biblioteca_online.repository.PedidoRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ import static java.util.Map.entry;
 public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
+    @Autowired
+private LivroRepository livroRepository;
+
     private final LivroService livroService;
     private final ClienteService clienteService;
     private final ClienteRepository clienteRepository;
@@ -43,8 +48,9 @@ private LogService logService;
 @Transactional
 public Pedido criarPedido(Long clienteId, List<ItemPedidoDTO> itensDTO,
                           Long enderecoId, Long cartaoId,
+                          List<Long> cartoesAdicionaisIds, // nova lista de cartões extras
                           BigDecimal valorDesconto, String codigoCupom,
-                          BigDecimal valorSubtotalRecebido) {
+                          BigDecimal valorSubtotalRecebido) throws Exception {
 
     Cliente cliente = clienteService.buscarPorId(clienteId)
         .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
@@ -68,13 +74,24 @@ public Pedido criarPedido(Long clienteId, List<ItemPedidoDTO> itensDTO,
         .findFirst()
         .orElseThrow(() -> new RuntimeException("Endereço não encontrado"));
 
-    Cartao cartao = cliente.getCartoes().stream()
+    Cartao cartaoPrincipal = cliente.getCartoes().stream()
         .filter(c -> c.getId().equals(cartaoId))
         .findFirst()
-        .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
+        .orElseThrow(() -> new RuntimeException("Cartão principal não encontrado"));
 
     pedido.setEnderecoEntrega(endereco);
-    pedido.setCartao(cartao);
+    pedido.setCartao(cartaoPrincipal);
+
+    // Salvar cartões adicionais (exceto o principal)
+    if (cartoesAdicionaisIds != null && !cartoesAdicionaisIds.isEmpty()) {
+        List<Cartao> cartoesExtras = cliente.getCartoes().stream()
+            .filter(c -> cartoesAdicionaisIds.contains(c.getId()))
+            .toList();
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonCartoesExtras = mapper.writeValueAsString(cartoesExtras);
+        pedido.setCartoesAdicionais(jsonCartoesExtras);
+    }
 
     BigDecimal subtotal = valorSubtotalRecebido != null ? valorSubtotalRecebido :
         pedido.getItens().stream()
@@ -123,14 +140,64 @@ logService.salvarLog(log);
         }
     }
 
-    @Transactional
-    public Pedido atualizarStatus(Long pedidoId, StatusPedido novoStatus) {
-        Pedido pedido = pedidoRepository.findById(pedidoId)
-            .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+@Transactional
+public Pedido atualizarStatus(Long pedidoId, StatusPedido novoStatus, String motivoDevolucao) {
+    Pedido pedido = pedidoRepository.findById(pedidoId)
+        .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
 
-        pedido.setStatus(novoStatus);
-        return pedidoRepository.save(pedido);
+    // Validação para devolução
+    if (novoStatus == StatusPedido.DEVOLUCAO && (motivoDevolucao == null || motivoDevolucao.trim().isEmpty())) {
+        throw new IllegalArgumentException("Motivo da devolução é obrigatório");
     }
+
+    // Se for trocado ou cancelado, reentrar produtos no estoque
+    if (novoStatus == StatusPedido.TROCADO || novoStatus == StatusPedido.CANCELADO) {
+        for (ItemPedido item : pedido.getItens()) {
+            Livro livro = item.getLivro();
+            livro.setEstoque(livro.getEstoque() + item.getQuantidade());
+            livroRepository.save(livro);
+        }
+    }
+
+    // Atualiza status e motivo (se for devolução)
+    pedido.setStatus(novoStatus);
+
+    if (novoStatus == StatusPedido.DEVOLUCAO) {
+        pedido.setMotivoDevolucao(motivoDevolucao);
+    } else if (novoStatus != StatusPedido.DEVOLVIDO) {
+        pedido.setMotivoDevolucao(null);
+    }
+
+    Pedido pedidoAtualizado = pedidoRepository.save(pedido);
+
+    // ✅ REGISTRA O LOG DA ALTERAÇÃO DE STATUS
+    try {
+        Log log = new Log();
+        log.setUserId(pedido.getCliente().getId());
+        log.setUserName(pedido.getCliente().getNome());
+        log.setAction(mapearStatusParaAcao(novoStatus));
+        log.setDetails("Status do pedido #" + pedido.getId() + " alterado para " + novoStatus.name());
+        log.setLevel("info");
+        logService.salvarLog(log);
+    } catch (Exception e) {
+        System.err.println("Erro ao registrar log de status: " + e.getMessage());
+    }
+
+    return pedidoAtualizado;
+}
+
+private String mapearStatusParaAcao(StatusPedido status) {
+    return switch (status) {
+        case EM_TRANSITO -> "Em Trânsito";
+        case DEVOLUCAO -> "Em Devolução";
+        case DEVOLVIDO -> "Devolvido";
+        case TROCADO -> "Trocado";
+        case CANCELADO -> "Cancelado";
+        default -> status.name(); // fallback para outros casos
+    };
+}
+
+
 
     public List<Pedido> listarPedidosPorCliente(Long clienteId) {
         return pedidoRepository.findPedidosPorClienteOrdenadosPorData(clienteId);
@@ -195,13 +262,30 @@ logService.salvarLog(log);
         return freteBase.add(acrescimoEstado);
     }
 
-    @Transactional
-    public void cancelarPedido(Long id) {
-        Pedido pedido = pedidoRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
-        pedido.setStatus(StatusPedido.CANCELADO);
-        pedidoRepository.save(pedido);
+@Transactional
+public void cancelarPedido(Long id) {
+    Pedido pedido = pedidoRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+
+    if (pedido.getStatus() == StatusPedido.CANCELADO) {
+        throw new RuntimeException("Pedido já está cancelado.");
     }
+
+    // Repor estoque e salvar os livros
+    for (ItemPedido item : pedido.getItens()) {
+      Livro livro = livroRepository.findById(item.getLivro().getId())
+    .orElseThrow(() -> new RuntimeException("Livro não encontrado ao cancelar pedido"));
+
+        livro.setEstoque(livro.getEstoque() + item.getQuantidade());
+        item.setLivro(livroRepository.save(livro));
+
+    }
+
+    pedido.setStatus(StatusPedido.CANCELADO);
+    pedidoRepository.save(pedido);
+}
+
+
 
     @Transactional
     public void excluirPedido(Long id) {
@@ -210,7 +294,7 @@ logService.salvarLog(log);
         pedidoRepository.delete(pedido);
     }
 public List<Pedido> listarTodosPedidos() {
-    return pedidoRepository.findAll();
+    return pedidoRepository.findAllComCliente(); // ✅ já traz cliente com nome
 }
 
     

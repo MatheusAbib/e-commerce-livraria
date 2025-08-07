@@ -28,4 +28,8 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
        "GROUP BY i.livro.titulo " +
        "ORDER BY lucroTotal DESC")
 List<Object[]> calcularLucrosPorLivro();
+
+@Query("SELECT p FROM Pedido p JOIN FETCH p.cliente")
+List<Pedido> findAllComCliente();
 }
+

@@ -1,5 +1,6 @@
 package com.biblioteca.biblioteca_online.service;
 
+import com.biblioteca.biblioteca_online.dto.ClienteRankingDTO;
 import com.biblioteca.biblioteca_online.model.Cartao;
 import com.biblioteca.biblioteca_online.model.Cliente;
 import com.biblioteca.biblioteca_online.model.Endereco;
@@ -301,5 +302,11 @@ public void deletarCliente(Long id) {
         clienteRepository.delete(cliente); // o cascade agora vai funcionar
     }
 }
+public List<ClienteRankingDTO> obterRankingClientes() {
+    List<ClienteRankingDTO> ranking = clienteRepository.buscarRankingClientes();
+    ranking.forEach(r -> System.out.println(r.getNome() + " - " + r.getValorTotalGasto()));
+    return ranking;
+}
+
 
 }

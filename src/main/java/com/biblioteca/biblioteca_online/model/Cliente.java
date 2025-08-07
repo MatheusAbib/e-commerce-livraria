@@ -3,6 +3,8 @@ package com.biblioteca.biblioteca_online.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
@@ -25,6 +27,8 @@ public class Cliente {
 
     private LocalDate nascimento;
     private String genero;
+    private String perfil = "CLIENTE";
+
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
@@ -34,15 +38,25 @@ public class Cliente {
     @JsonManagedReference
     private List<Cartao> cartoes;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JsonManagedReference(value = "cliente-pedidos")
-    private List<Pedido> pedidos;
+@OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+@JsonIgnoreProperties("cliente") // evita loops
+private List<Pedido> pedidos;
+
 
     // Getters e Setters
 
     public Long getId() {
         return id;
     }
+
+    public String getPerfil() {
+    return perfil;
+}
+
+public void setPerfil(String perfil) {
+    this.perfil = perfil;
+}
+
 
     public void setId(Long id) {
         this.id = id;

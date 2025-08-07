@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
@@ -16,10 +16,12 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne
-    @JoinColumn(name = "cliente_id", nullable = false)
-    @JsonBackReference(value = "cliente-pedidos")
-    private Cliente cliente;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "cliente_id", nullable = false)
+@JsonIgnoreProperties(value = {"enderecos", "cartoes", "pedidos"}, allowSetters = true)
+private Cliente cliente;
+
+
     
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -55,6 +57,12 @@ public class Pedido {
     @Column(name = "valor_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorTotal;
 
+    @Column(name = "cartoes_adicionais", columnDefinition = "TEXT")
+    private String cartoesAdicionais;
+
+    @Column(name = "motivo_devolucao", columnDefinition = "TEXT")
+    private String motivoDevolucao;
+
     // Métodos auxiliares
     public void adicionarItem(Livro livro, Integer quantidade) {
         ItemPedido item = new ItemPedido();
@@ -65,13 +73,13 @@ public class Pedido {
         this.itens.add(item);
     }
 
-        public void limparItens() {
+    public void limparItens() {
         this.itens.forEach(ItemPedido::desvincularPedido);
         this.itens.clear();
     }
+    
 
     // Getters e Setters
-
     public Long getId() {
         return id;
     }
@@ -166,5 +174,21 @@ public class Pedido {
 
     public void setValorTotal(BigDecimal valorTotal) {
         this.valorTotal = valorTotal;
+    }
+
+    public String getCartoesAdicionais() {
+        return cartoesAdicionais;
+    }
+
+    public void setCartoesAdicionais(String cartoesAdicionais) {
+        this.cartoesAdicionais = cartoesAdicionais;
+    }
+
+    public String getMotivoDevolucao() {
+        return motivoDevolucao;
+    }
+
+    public void setMotivoDevolucao(String motivoDevolucao) {
+        this.motivoDevolucao = motivoDevolucao;
     }
 }

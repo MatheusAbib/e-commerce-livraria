@@ -4,9 +4,14 @@ import com.biblioteca.biblioteca_online.model.Cliente;
 import com.biblioteca.biblioteca_online.model.Endereco;
 import com.biblioteca.biblioteca_online.service.ClienteService;
 import com.biblioteca.biblioteca_online.service.EnderecoService;
+
+import jakarta.servlet.http.HttpSession;
+
+import com.biblioteca.biblioteca_online.dto.ClienteRankingDTO;
 import com.biblioteca.biblioteca_online.dto.LoginRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -143,4 +148,29 @@ public ResponseEntity<List<Cliente>> consultarClientes(
             return ResponseEntity.status(500).body(Map.of("message", "Erro no servidor"));
         }
     }
+
+@GetMapping("/ranking")
+public ResponseEntity<?> buscarRankingClientes() {
+    try {
+        List<ClienteRankingDTO> ranking = clienteService.obterRankingClientes();
+        return ResponseEntity.ok(ranking);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body("Erro ao buscar ranking: " + e.getMessage());
+    }
+}
+
+    @GetMapping("/logado")
+    public ResponseEntity<?> obterClienteLogado(HttpSession session) {
+        Cliente clienteLogado = (Cliente) session.getAttribute("clienteLogado");
+
+        if (clienteLogado == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Cliente não está logado.");
+        }
+
+        return ResponseEntity.ok(clienteLogado);
+    }
+
+
 }

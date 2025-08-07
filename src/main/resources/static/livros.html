@@ -4,49 +4,75 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Biblioteca Online</title>
-  <link rel="stylesheet" href="css/style.css" />
-<link rel="stylesheet" href="css/Livros.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/Livros.css">
 </head>
 <body>
  <div id="header-container"></div>
+<script>
+  fetch('header.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('header-container').innerHTML = data;
 
-  <script>
-fetch('header.html')
-  .then(response => response.text())
-  .then(data => {
-    const container = document.getElementById('header-container');
-    container.innerHTML = data;
+      // Aguarde o DOM do header carregar
+      setTimeout(() => {
+        const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
 
-    // Executar scripts do header.html
-    const scripts = container.querySelectorAll('script');
-    scripts.forEach(oldScript => {
-      const newScript = document.createElement('script');
-      if (oldScript.src) {
-        newScript.src = oldScript.src;
-      } else {
-        newScript.textContent = oldScript.textContent;
-      }
-      document.body.appendChild(newScript);
+        if (clienteLogado) {
+          const nomeSpan = document.getElementById('nome-cliente');
+          if (nomeSpan) nomeSpan.textContent = clienteLogado.nome;
+
+          // Links que apenas ADMIN pode ver
+          const linksAdmin = [
+            'link-log',
+            'link-usuarios',
+            'link-lucros',
+            'link-livros',
+            'link-pedidosADMIN'
+          ];
+
+          // Se não for ADMIN, oculta os links do admin
+          if (clienteLogado.perfil !== 'ADMIN') {
+            linksAdmin.forEach(id => {
+              const el = document.getElementById(id);
+              if (el) el.style.display = 'none';
+            });
+          } else {
+            // Se for ADMIN, oculta o link de status do cliente
+            const statusClienteLink = document.getElementById('link-status-cliente');
+            if (statusClienteLink) statusClienteLink.style.display = 'none';
+          }
+
+        } else {
+          // Usuário não logado: oculta links de ADMIN e CLIENTE
+          const linksParaOcultar = [
+            'link-log',
+            'link-usuarios',
+            'link-lucros',
+            'link-livros',
+            'link-pedidosADMIN',
+            'link-status-cliente'
+          ];
+          linksParaOcultar.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+          });
+        }
+      }, 50);
     });
-
-    // Atualiza nome do cliente
-    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-    const nomeSpan = document.getElementById('nome-cliente');
-    if (nomeSpan && clienteLogado) {
-      nomeSpan.textContent = clienteLogado.nome;
-    }
-  });
-
 </script>
+
 
 <section id="tela-livros" style="padding:20px;">
   <div class="container">
-    <h1></h1>
-    <button onclick="abrirFormulario()">➕ Novo Livro</button>
+    <h1>Biblioteca de Livros</h1>
+    <button onclick="abrirFormulario()"><i class="fas fa-plus"></i> Novo Livro</button>
 
     <!-- Formulário -->
     <div id="form-container">
-      <h2>📘 Cadastro de Livro</h2>
+      <h2><i class="fas fa-book"></i> Cadastro de Livro</h2>
      <form id="form-livro">
   <input type="hidden" id="livro-id" />
 
@@ -134,18 +160,18 @@ fetch('header.html')
     <input type="date" id="dataEntrada" required />
   </div>
 
-  <button type="submit">Salvar</button>
-  <button type="button" onclick="fecharFormulario()">Cancelar</button>
+  <div class="form-actions">
+    <button type="button" onclick="fecharFormulario()"><i class="fas fa-times"></i> Cancelar</button>
+    <button type="submit"><i class="fas fa-save"></i> Salvar</button>
+  </div>
 </form>
+</div>
 
-    </div>
-
-
-<!-- Por este novo painel de filtros -->
+<!-- Painel de filtros -->
 <div class="filtros-container">
     <div class="filtro-header">
-        <h3>Filtrar Livros</h3>
-        <button class="btn-limpar" onclick="limparFiltros()">Limpar Filtros</button>
+        <h3><i class="fas fa-filter"></i> Filtrar Livros</h3>
+        <button class="btn btn-outline btn-limpar"  onclick="limparFiltros()"><i class="fas fa-broom"></i> Limpar Filtros</button>
     </div>
     
     <div class="filtros-grid">
@@ -213,12 +239,12 @@ fetch('header.html')
         
         <!-- Botão de Aplicar Filtros -->
         <div class="filtro-item full-width">
-            <button class="btn-filtrar" onclick="aplicarFiltros()">Aplicar Filtros</button>
+            <button class="btn btn-filtrar" onclick="aplicarFiltros()"><i class="fas fa-check"></i> Aplicar Filtros</button>
         </div>
     </div>
 </div>
 
-    <div id="info-contagem" style="margin-bottom: 10px; font-weight: bold;"></div>
+    <div id="info-contagem"></div>
 
     <table>
       <thead>
@@ -241,41 +267,79 @@ fetch('header.html')
 </section>
 
 <!-- Modais -->
-<div id="modal-excluir" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
-  <div style="background:white; padding:20px; border-radius:10px; max-width:400px; text-align:center;">
-    <p id="modal-msg"></p>
-    <button id="btn-confirmar-excluir">Sim, excluir</button>
-    <button onclick="fecharModal()">Cancelar</button>
+<div id="modal-excluir" class="modal-overlay">
+  <div class="modal-content fade-in">
+    <div class="modal-header">
+      <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h3>
+      <button class="modal-close" onclick="fecharModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="modal-msg"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModal()"><i class="fas fa-times"></i> Cancelar</button>
+      <button class="btn btn-danger" id="btn-confirmar-excluir"><i class="fas fa-trash"></i> Confirmar</button>
+    </div>
   </div>
 </div>
 
 <!-- Modal Detalhes -->
-<div id="modal-detalhes" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
-  <div style="background:white; padding:20px; max-width:600px; border-radius:8px; overflow-y:auto; max-height:90vh;">
-    <h3>Detalhes do Livro</h3>
-    <div id="detalhes-conteudo"></div>
-    <button onclick="fecharModalDetalhes()">Fechar</button>
+<div id="modal-detalhes" class="modal-overlay">
+  <div class="modal-content fade-in">
+    <div class="modal-header">
+      <h3><i class="fas fa-book-open"></i> Detalhes do Livro</h3>
+      <button class="modal-close" onclick="fecharModalDetalhes()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="detalhes-conteudo"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="fecharModalDetalhes()"><i class="fas fa-times"></i> Fechar</button>
+    </div>
   </div>
 </div>
 
 <!-- Modal de Confirmação de Ação (Ativar/Inativar) -->
-<div id="modal-confirmacao" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
-  <div style="background:white; padding:20px; border-radius:10px; max-width:400px; text-align:center;">
-    <h3 id="modal-titulo"></h3>
-    <p id="modal-mensagem"></p>
-    <label for="motivoInput" style="display:block; margin-top:10px;">Motivo:</label>
-    <input type="text" id="motivoInput" style="width:100%; padding:8px; margin-bottom:15px;" />
-    <button id="btn-confirmar-acao">Confirmar</button>
-    <button onclick="fecharModalConfirmacao()">Cancelar</button>
+<div id="modal-confirmacao" class="modal-overlay">
+  <div class="modal-content fade-in">
+    <div class="modal-header">
+      <h3 id="modal-titulo"></h3>
+      <button class="modal-close" onclick="fecharModalConfirmacao()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="modal-mensagem"></p>
+      <div class="filtro-item">
+        <label for="motivoInput">Motivo:</label>
+        <input type="text" id="motivoInput" class="form-control" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModalConfirmacao()"><i class="fas fa-times"></i> Cancelar</button>
+      <button class="btn btn-primary" id="btn-confirmar-acao"><i class="fas fa-check"></i> Confirmar</button>
+    </div>
   </div>
 </div>
 
+<div id="modalErro" class="modal-overlay">
+  <div class="modal-content fade-in">
+    <div class="modal-header">
+      <h3><i class="fas fa-exclamation-circle"></i> Erro</h3>
+      <button class="modal-close" onclick="fecharModalErro()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="mensagemErro"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="fecharModalErro()"><i class="fas fa-times"></i> Fechar</button>
+    </div>
+  </div>
+</div>
 
-<script src="js/script.js"></script>
 <script>
-  function abrirFormulario(id = null) {
+    function abrirFormulario(id = null) {
     document.getElementById('form-container').style.display = 'block';
     if (id) carregarLivro(id);
+    window.scrollTo({top: 0, behavior: 'smooth'});
   }
 
   function fecharFormulario() {
@@ -333,18 +397,24 @@ fetch('header.html')
     const metodo = id ? 'PUT' : 'POST';
     const url = id ? `/api/livros/${id}` : '/api/livros';
 
-    const response = await fetch(url, {
-      method: metodo,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(livro)
-    });
+    try {
+      const response = await fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(livro)
+      });
 
-    if (response.ok) {
-      alert('Livro salvo com sucesso!');
-      fecharFormulario();
-      location.reload();
-    } else {
-      alert('Erro ao salvar livro.');
+      if (response.ok) {
+        exibirNotificacao('Livro salvo com sucesso!', 'success');
+        fecharFormulario();
+        carregarLivros();
+      } else {
+        const erro = await response.json();
+        exibirNotificacao(erro.message || 'Erro ao salvar livro', 'error');
+      }
+    } catch (error) {
+      exibirNotificacao('Erro na comunicação com o servidor', 'error');
+      console.error('Erro:', error);
     }
   });
 
@@ -393,7 +463,7 @@ async function carregarLivros(filtros = {}) {
         
     } catch (error) {
         console.error('Erro ao carregar livros:', error);
-        alert('Não foi possível carregar os livros. Tente novamente mais tarde.');
+        exibirNotificacao('Não foi possível carregar os livros. Tente novamente mais tarde.', 'error');
     }
 }
 
@@ -401,13 +471,30 @@ function preencherTabelaLivros(livros) {
     const tbody = document.getElementById('livros-tbody');
     tbody.innerHTML = '';
 
+    if (!livros || livros.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10" style="text-align: center; padding: 20px;">
+                    Nenhum livro encontrado
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     livros.forEach(livro => {
         const tr = document.createElement('tr');
-        const status = livro.ativo ? 'Ativo' : 'Inativo';
+        const statusClass = livro.ativo ? 'status-ativo' : 'status-inativo';
+        const statusIcon = livro.ativo ? 'fa-check-circle' : 'fa-times-circle';
+        const statusText = livro.ativo ? 'Ativo' : 'Inativo';
 
         const btnAcao = livro.ativo
-            ? `<button onclick="abrirModalConfirmacao(${livro.id}, 'inativar')">Inativar</button>`
-            : `<button onclick="abrirModalConfirmacao(${livro.id}, 'ativar')">Ativar</button>`;
+            ? `<button class="btn-icon btn-status" onclick="abrirModalConfirmacao(${livro.id}, 'inativar')" title="Inativar">
+                  <i class="fas fa-toggle-on"></i>
+               </button>`
+            : `<button class="btn-icon btn-status" onclick="abrirModalConfirmacao(${livro.id}, 'ativar')" title="Ativar">
+                  <i class="fas fa-toggle-off"></i>
+               </button>`;
 
         tr.innerHTML = `
             <td>${livro.id}</td>
@@ -418,12 +505,18 @@ function preencherTabelaLivros(livros) {
             <td>${livro.categoria ?? '-'}</td>
             <td>R$ ${livro.precoVenda?.toFixed(2) ?? '0,00'}</td>
             <td>${livro.estoque ?? 0}</td>
-            <td>${status}</td>
-            <td>
-                <button onclick="editarLivro(${livro.id})">Editar</button>
+            <td class="${statusClass}"><i class="fas ${statusIcon}"></i> ${statusText}</td>
+            <td class="acoes-cell">
                 ${btnAcao}
-                <button onclick="abrirModalDetalhes(${livro.id})">Ver</button>
-                <button onclick="abrirModalExclusao(${livro.id}, '${livro.titulo.replace(/'/g, "\\'")}')">Excluir</button>
+                <button class="btn-icon btn-view" onclick="abrirModalDetalhes(${livro.id})" title="Visualizar">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn-icon btn-edit" onclick="editarLivro(${livro.id})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon btn-delete" onclick="abrirModalExclusao(${livro.id}, '${livro.titulo.replace(/'/g, "\\'")}')" title="Excluir">
+                    <i class="fas fa-trash"></i>
+                </button>
             </td>
         `;
 
@@ -456,46 +549,38 @@ function aplicarFiltros() {
   if (estoqueMax) url += `estoqueMax=${encodeURIComponent(estoqueMax)}&`;
   if (status) url += `status=${encodeURIComponent(status)}&`;
 
-  // Remover o último '&'
+  // Remove o último '&'
   url = url.slice(0, -1);
 
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      mostrarLivros(data.livros);
-      document.getElementById('info-contagem').innerText = `Mostrando ${data.countFiltered} de ${data.countTotal} livros.`;
-    })
-    .catch(err => console.error('Erro ao carregar livros:', err));
-}
-
-function mostrarLivros(livros) {
   const tbody = document.getElementById('livros-tbody');
-  tbody.innerHTML = '';
+  // Mostra mensagem de carregando, ocupando todas as colunas da tabela
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="10" style="text-align:center; font-style: italic; padding: 15px;">
+        <i class="fas fa-spinner fa-spin"></i> Carregando resultados...
+      </td>
+    </tr>
+  `;
 
-  if (!livros || livros.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10">Nenhum livro encontrado.</td></tr>';
-    return;
-  }
-
-  livros.forEach(livro => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${livro.id}</td>
-      <td>${livro.titulo}</td>
-      <td>${livro.autor}</td>
-      <td>${livro.edicao || ''}</td>
-      <td>${livro.editora || ''}</td>
-      <td>${livro.categoria || ''}</td>
-      <td>R$ ${livro.precoVenda.toFixed(2)}</td>
-      <td>${livro.estoque}</td>
-      <td>${livro.ativo ? 'Ativo' : 'Inativo'}</td>
-      <td><!-- botões editar/excluir --></td>
-    `;
-    tbody.appendChild(tr);
-  });
+  setTimeout(() => {
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        preencherTabelaLivros(data.livros);
+        document.getElementById('info-contagem').innerText = `Mostrando ${data.countFiltered} de ${data.countTotal} livros.`;
+      })
+      .catch(err => {
+        console.error('Erro ao carregar livros:', err);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" style="text-align:center; color: red;">
+              <i class="fas fa-exclamation-triangle"></i> Erro ao carregar dados.
+            </td>
+          </tr>
+        `;
+      });
+  }, 1000);
 }
-
-
 
 function limparFiltros() {
     // Limpa todos os campos de filtro
@@ -523,34 +608,35 @@ window.addEventListener('DOMContentLoaded', () => {
     carregarLivros();
 });
 
-
 // Função para abrir modal de detalhes do livro
 async function abrirModalDetalhes(id) {
   const res = await fetch(`/api/livros/${id}`);
   if (!res.ok) {
-    alert('Erro ao buscar detalhes do livro');
+    exibirNotificacao('Erro ao buscar detalhes do livro', 'error');
     return;
   }
   const livro = await res.json();
 
   const conteudo = `
-    <p><strong>ID:</strong> ${livro.id}</p>
-    <p><strong>Título:</strong> ${livro.titulo}</p>
-    <p><strong>Autor:</strong> ${livro.autor}</p>
-    <p><strong>Editora:</strong> ${livro.editora ?? '-'}</p>
-    <p><strong>Categoria:</strong> ${livro.categoria ?? '-'}</p>
-    <p><strong>Edição:</strong> ${livro.edicao ?? '-'}</p>
-    <p><strong>ISBN:</strong> ${livro.isbn ?? '-'}</p>
-    <p><strong>Páginas:</strong> ${livro.paginas ?? '-'}</p>
-    <p><strong>Sinopse:</strong> ${livro.sinopse ?? '-'}</p>
-    <p><strong>Dimensões:</strong> ${livro.altura ?? '-'} x ${livro.largura ?? '-'} x ${livro.profundidade ?? '-'} cm</p>
-    <p><strong>Peso:</strong> ${livro.peso ?? '-'} g</p>
-    <p><strong>Código de Barras:</strong> ${livro.codigoBarras ?? '-'}</p>
-    <p><strong>Preço de Venda:</strong> R$ ${livro.precoVenda?.toFixed(2) ?? '-'}</p>
-    <p><strong>Preço de Custo:</strong> R$ ${livro.precoCusto?.toFixed(2) ?? '-'}</p>
-    <p><strong>Estoque:</strong> ${livro.estoque}</p>
-    <p><strong>Data de Entrada:</strong> ${livro.dataEntrada ?? '-'}</p>
-    <p><strong>Status:</strong> ${livro.ativo ? 'Ativo' : 'Inativo'}</p>
+    <div class="detalhes-grid">
+      <div><strong>ID:</strong> ${livro.id}</div>
+      <div><strong>Título:</strong> ${livro.titulo}</div>
+      <div><strong>Autor:</strong> ${livro.autor}</div>
+      <div><strong>Editora:</strong> ${livro.editora ?? '-'}</div>
+      <div><strong>Categoria:</strong> ${livro.categoria ?? '-'}</div>
+      <div><strong>Edição:</strong> ${livro.edicao ?? '-'}</div>
+      <div><strong>ISBN:</strong> ${livro.isbn ?? '-'}</div>
+      <div><strong>Páginas:</strong> ${livro.paginas ?? '-'}</div>
+      <div class="full-width"><strong>Sinopse:</strong><br> ${livro.sinopse ?? '-'}</div>
+      <div><strong>Dimensões:</strong> ${livro.altura ?? '-'} x ${livro.largura ?? '-'} x ${livro.profundidade ?? '-'} cm</div>
+      <div><strong>Peso:</strong> ${livro.peso ?? '-'} g</div>
+      <div><strong>Código de Barras:</strong> ${livro.codigoBarras ?? '-'}</div>
+      <div><strong>Preço de Venda:</strong> R$ ${livro.precoVenda?.toFixed(2) ?? '-'}</div>
+      <div><strong>Preço de Custo:</strong> R$ ${livro.precoCusto?.toFixed(2) ?? '-'}</div>
+      <div><strong>Estoque:</strong> ${livro.estoque}</div>
+      <div><strong>Data de Entrada:</strong> ${livro.dataEntrada ?? '-'}</div>
+      <div><strong>Status:</strong> ${livro.ativo ? '<span class="status-ativo">Ativo</span>' : '<span class="status-inativo">Inativo</span>'}</div>
+    </div>
   `;
 
   document.getElementById('detalhes-conteudo').innerHTML = conteudo;
@@ -566,7 +652,7 @@ let idParaExcluir = null;
 
 function abrirModalExclusao(id, titulo) {
   idParaExcluir = id;
-  document.getElementById('modal-msg').textContent = `Tem certeza que deseja excluir o livro "${titulo}"?`;
+  document.getElementById('modal-msg').textContent = `Tem certeza que deseja excluir permanentemente o livro "${titulo}"? Esta ação não pode ser desfeita.`;
   document.getElementById('modal-excluir').style.display = 'flex';
 }
 
@@ -577,49 +663,24 @@ function fecharModal() {
 
 document.getElementById('btn-confirmar-excluir').addEventListener('click', async () => {
   if (idParaExcluir) {
-    const res = await fetch(`/api/livros/${idParaExcluir}`, { method: 'DELETE' });
-    if (res.ok) {
-      fecharModal();
-      carregarLivros();
-    } else {
-      alert('Erro ao excluir livro');
+    try {
+      const res = await fetch(`/api/livros/${idParaExcluir}`, { method: 'DELETE' });
+      if (res.ok) {
+        exibirNotificacao('Livro excluído com sucesso', 'success');
+        fecharModal();
+        carregarLivros();
+      } else {
+        const erro = await res.json();
+        exibirNotificacao(erro.message || 'Erro ao excluir livro', 'error');
+      }
+    } catch (error) {
+      exibirNotificacao('Erro na comunicação com o servidor', 'error');
+      console.error('Erro:', error);
     }
   }
 });
 
 // Funções para ativar/inativar livro
-async function inativarLivro(id) {
-  const res = await fetch(`/api/livros/change-status/${id}`, {
-    method: 'POST', // ou PUT, dependendo do seu backend
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ativo: false }),
-  });
-  if (res.ok) {
-    carregarLivros(); // atualiza a lista
-  } else {
-    alert('Erro ao inativar livro');
-  }
-}
-
-
-async function ativarLivro(id) {
-  const res = await fetch(`/api/livros/change-status/${id}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ativo: true })
-  });
-  if (res.ok) carregarLivros();
-  else alert('Erro ao ativar livro');
-}
-
-// Função para iniciar edição (exemplo simples, você pode completar)
-async function editarLivro(id) {
-  await carregarLivro(id);
-}
-
-// Inicializa a lista ao carregar a página
-window.onload = () => carregarLivros();
-
 let acaoId = null;
 let acaoTipo = null; // 'ativar' ou 'inativar'
 
@@ -645,32 +706,28 @@ function fecharModalConfirmacao() {
   document.getElementById('modal-confirmacao').style.display = 'none';
 }
 
-
-function fecharModalConfirmacao() {
-  acaoId = null;
-  acaoTipo = null;
-  document.getElementById('modal-confirmacao').style.display = 'none';
-}
-
 document.getElementById('btn-confirmar-acao').addEventListener('click', async () => {
   const motivo = document.getElementById('motivoInput').value.trim();
   if (!motivo) {
-    alert('Por favor, informe o motivo.');
+    exibirNotificacao('Por favor, informe o motivo.', 'warning');
     return;
   }
 
   if (acaoId && acaoTipo) {
-    if (acaoTipo === 'inativar') {
-      await enviarStatus(acaoId, false, motivo);
-    } else {
-      await enviarStatus(acaoId, true, motivo);
+    try {
+      if (acaoTipo === 'inativar') {
+        await enviarStatus(acaoId, false, motivo);
+      } else {
+        await enviarStatus(acaoId, true, motivo);
+      }
+      fecharModalConfirmacao();
+      carregarLivros();
+    } catch (error) {
+      console.error('Erro:', error);
+      exibirNotificacao('Erro ao processar ação', 'error');
     }
   }
-
-  fecharModalConfirmacao();
-  carregarLivros();
 });
-
 
 async function enviarStatus(id, ativo, motivo) {
   const res = await fetch(`/api/livros/change-status/${id}`, {
@@ -679,102 +736,69 @@ async function enviarStatus(id, ativo, motivo) {
     body: JSON.stringify({ ativo, motivo })
   });
 
-  if (!res.ok) {
-    alert('Erro ao atualizar status do livro');
+  if (res.ok) {
+    exibirNotificacao(`Livro ${ativo ? 'ativado' : 'inativado'} com sucesso`, 'success');
+  } else {
+    const erro = await res.json();
+    exibirNotificacao(erro.message || 'Erro ao alterar status', 'error');
+    throw new Error(erro.message || 'Erro ao alterar status');
   }
 }
 
+// Função para iniciar edição
+async function editarLivro(id) {
+  await carregarLivro(id);
+}
 
-document.getElementById('form-filtros').addEventListener('submit', function(e) {
-  e.preventDefault();
-
-  const filtros = {
-    titulo: document.getElementById('filtro-titulo').value.trim(),
-    autor: document.getElementById('filtro-autor').value.trim(),
-    editora: document.getElementById('filtro-editora').value.trim(),
-    isbn: document.getElementById('filtro-isbn').value.trim(),
-    categoria: document.getElementById('filtro-categoria').value.trim(),
-    precoMin: parseFloat(document.getElementById('filtro-preco-min').value) || null,
-    precoMax: parseFloat(document.getElementById('filtro-preco-max').value) || null,
-    estoqueMin: parseInt(document.getElementById('filtro-estoque-min').value) || null,
-    estoqueMax: parseInt(document.getElementById('filtro-estoque-max').value) || null,
-    status: document.getElementById('filtro-status').value,
+// Função para exibir notificações
+function exibirNotificacao(mensagem, tipo = 'info') {
+  const tipos = {
+    success: { icon: 'fa-check-circle', color: 'var(--success-color)' },
+    error: { icon: 'fa-exclamation-circle', color: 'var(--danger-color)' },
+    warning: { icon: 'fa-exclamation-triangle', color: 'var(--warning-color)' },
+    info: { icon: 'fa-info-circle', color: 'var(--info-color)' }
   };
 
-  carregarLivros(filtros);
-});
+  const notificacao = document.createElement('div');
+  notificacao.style.position = 'fixed';
+  notificacao.style.bottom = '20px';
+  notificacao.style.right = '20px';
+  notificacao.style.padding = '15px 20px';
+  notificacao.style.backgroundColor = 'white';
+  notificacao.style.borderLeft = `5px solid ${tipos[tipo].color}`;
+  notificacao.style.borderRadius = 'var(--border-radius)';
+  notificacao.style.boxShadow = 'var(--box-shadow)';
+  notificacao.style.display = 'flex';
+  notificacao.style.alignItems = 'center';
+  notificacao.style.gap = '10px';
+  notificacao.style.zIndex = '10000';
+  notificacao.style.animation = 'fadeIn 0.3s ease-in-out';
+  notificacao.innerHTML = `
+    <i class="fas ${tipos[tipo].icon}" style="color: ${tipos[tipo].color}; font-size: 1.2em;"></i>
+    <span>${mensagem}</span>
+  `;
 
+  document.body.appendChild(notificacao);
 
-document.getElementById('btn-limpar').addEventListener('click', function() {
-  document.getElementById('filtro-autor').value = '';
-  document.getElementById('filtro-editora').value = '';
-  document.getElementById('filtro-categoria').value = '';
-
-  carregarLivros();
-});
-
-// Carrega a lista ao abrir a página sem filtros
-if (document.getElementById('livros-tbody')) {
-  carregarLivros();
+  setTimeout(() => {
+    notificacao.style.animation = 'fadeOut 0.3s ease-in-out';
+    setTimeout(() => {
+      notificacao.remove();
+    }, 300);
+  }, 3000);
 }
 
-function mostrarTela(tela) {
-  const telas = ['livros', 'clientes'];
+// Inicializa a lista ao carregar a página
+window.onload = () => carregarLivros();
 
-  telas.forEach(t => {
-    const sec = document.getElementById(`tela-${t}`);
-    if (sec) {
-      sec.style.display = (t === tela) ? 'block' : 'none';
-    }
-  });
+function exibirModalErro(mensagem) {
+  document.getElementById('mensagemErro').innerText = mensagem;
+  document.getElementById('modalErro').style.display = 'flex';
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Captura o clienteId da URL e salva no localStorage
-  const params = new URLSearchParams(window.location.search);
-  const clienteId = params.get('clienteId');
-
-  if (clienteId) {
-    localStorage.setItem('clienteId', clienteId);
-  }
-
-  const storedClienteId = localStorage.getItem('clienteId');
-
-  // 2. Atualiza o link da barra lateral de pedidos.html
-  if (storedClienteId) {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-      const links = sidebar.getElementsByTagName('a');
-      for (let i = 0; i < links.length; i++) {
-        if (links[i].href.includes('pedidos.html')) {
-          links[i].href = `pedidos.html?clienteId=${storedClienteId}`;
-        }
-      }
-    }
-
-    // 3. Buscar nome do cliente e colocar no header
-    try {
-      const response = await fetch(`http://localhost:8080/api/clientes/${storedClienteId}`);
-      if (response.ok) {
-        const cliente = await response.json();
-        const nomeCliente = cliente.nome || 'Cliente';
-
-        const nomeElemento = document.getElementById('nome-cliente');
-        if (nomeElemento) {
-          nomeElemento.textContent = `${nomeCliente}`;
-        }
-      } else {
-        console.warn('Erro ao buscar cliente:', response.status);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar cliente:', error);
-    }
-  }
-
-  
-});
-
-
+function fecharModalErro() {
+  document.getElementById('modalErro').style.display = 'none';
+}
 </script>
 </body>
 </html>

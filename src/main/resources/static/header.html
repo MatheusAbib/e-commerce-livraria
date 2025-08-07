@@ -391,12 +391,17 @@
     <h3>Livros Online</h3>
     <a href="principal.html"><i class="fas fa-home"></i> Inicio</a>
     <a href="clientes.html"><i class="fas fa-user-plus"></i> Cadastrar</a>
-    <a href="usuarios.html"><i class="fas fa-users-cog"></i> Gerenciamento de Usuários</a>
-    <a href="log.html"><i class="fas fa-clipboard-list"></i> Log de Transações</a>
+    <a href="usuarios.html" id="link-usuarios"><i class="fas fa-users-cog"></i> Gerenciamento de Usuários</a>
+    <a href="ranking.html"><i class="fas fa-trophy"></i> Ranking de Usuários</a>
+    <a href="log.html" id="link-log"><i class="fas fa-clipboard-list"></i> Log de Transações</a>
+    <a href="logCliente.html"><i class="fas fa-clipboard-list"></i> Minhas Transações</a>
     <a href="grafico.html"><i class="fas fa-chart-line"></i> Histórico de Vendas</a>
-    <a href="pedidos.html"><i class="fas fa-truck"></i> Status do Pedido</a>
-    <a href="lucros.html"><i class="fas fa-chart-bar"></i> Total Vendas</a>
-    <a href="livros.html"><i class="fas fa-book"></i> Cadastrar Livro</a>
+    <a href="pedidos.html" id="link-status-cliente"><i class="fas fa-truck"></i> Status do Pedido</a>
+    <a href="pedidosADMIN.html"id="link-pedidosADMIN"><i class="fas fa-truck"></i> Gerenciamento de Pedidos</a>
+    <a href="livros.html" id="link-livros"><i class="fas fa-book"></i> Cadastrar Livro</a>
+    <a href="lucros.html" id="link-lucros"><i class="fas fa-chart-bar"></i> Lucro dos Livros</a>
+
+    
   </div>
 
   <!-- Header -->
@@ -500,11 +505,32 @@
     }
 
     // Inicializações quando a página carrega
-    window.addEventListener('DOMContentLoaded', () => {
-      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      atualizarUI(clienteLogado);
-      atualizarContadorCarrinho();
-    });
+window.addEventListener('DOMContentLoaded', () => {
+  const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+
+  console.log('Cliente Logado:', clienteLogado);
+  console.log('Perfil:', clienteLogado ? clienteLogado.perfil : 'não definido');
+
+  atualizarUI(clienteLogado);
+
+const linksRestritos = [
+  'link-log',
+  'link-usuarios',
+  'link-lucros',
+  'link-livros',
+  'link-pedidosADMIN'
+];
+
+// Se o perfil não for ADMIN, oculta os links restritos
+if (!clienteLogado || clienteLogado.perfil !== 'ADMIN') {
+  linksRestritos.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+
+});
+
 
     
   </script>

@@ -2,6 +2,7 @@ package com.biblioteca.biblioteca_online.controller;
 
 import com.biblioteca.biblioteca_online.dto.AtualizarStatusDTO;
 import com.biblioteca.biblioteca_online.dto.CriarPedidoDTO;
+import com.biblioteca.biblioteca_online.dto.PagamentoDTO;
 import com.biblioteca.biblioteca_online.model.Pedido;
 import com.biblioteca.biblioteca_online.service.PedidoService;
 
@@ -33,30 +34,55 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.listarPedidosPorCliente(clienteId));
     }
 
-    @PostMapping
-    public ResponseEntity<?> criarPedido(@RequestBody CriarPedidoDTO pedidoDTO) {
-        try {
-            Pedido pedido = pedidoService.criarPedido(
-                pedidoDTO.getClienteId(),
-                pedidoDTO.getItens(),
-                pedidoDTO.getEnderecoId(),
-                pedidoDTO.getCartaoId(),
-                pedidoDTO.getValorDesconto(),
-                pedidoDTO.getCodigoCupom(),
-                pedidoDTO.getValorSubtotal()
-            );
-            return ResponseEntity.ok(pedido);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(
-                Map.of("mensagem", e.getMessage(), "status", "erro")
-            );
-        }
-    }
+@PostMapping
+public ResponseEntity<?> criarPedido(@RequestBody CriarPedidoDTO pedidoDTO) {
+    try {
+        Long cartaoId = null;
+        List<Long> cartoesAdicionais = null;
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<Pedido> atualizarStatus(@PathVariable Long id, @RequestBody AtualizarStatusDTO statusDTO) {
-        return ResponseEntity.ok(pedidoService.atualizarStatus(id, statusDTO.getNovoStatus()));
+        if (pedidoDTO.getPagamentos() != null && !pedidoDTO.getPagamentos().isEmpty()) {
+            cartaoId = pedidoDTO.getPagamentos().get(0).getCartaoId();
+
+            // Todos os cartões extras além do primeiro
+            cartoesAdicionais = pedidoDTO.getPagamentos().stream()
+                .skip(1)
+                .map(PagamentoDTO::getCartaoId)
+                .toList();
+        }
+
+        Pedido pedido = pedidoService.criarPedido(
+            pedidoDTO.getClienteId(),
+            pedidoDTO.getItens(),
+            pedidoDTO.getEnderecoId(),
+            cartaoId,
+            cartoesAdicionais,
+            pedidoDTO.getValorDesconto(),
+            pedidoDTO.getCodigoCupom(),
+            pedidoDTO.getValorSubtotal()
+        );
+
+        return ResponseEntity.ok(pedido);
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(
+            Map.of("mensagem", e.getMessage(), "status", "erro")
+        );
     }
+}
+
+
+@PutMapping("/{id}/status")
+public ResponseEntity<Pedido> atualizarStatus(
+    @PathVariable Long id, 
+    @RequestBody AtualizarStatusDTO statusDTO) {
+    
+    return ResponseEntity.ok(
+        pedidoService.atualizarStatus(
+            id, 
+            statusDTO.getNovoStatus(),
+            statusDTO.getMotivoDevolucao() // Passando o motivo
+        )
+    );
+}
 
     @GetMapping("/{id}")
     public ResponseEntity<Pedido> buscarPedido(@PathVariable Long id) {
@@ -83,7 +109,4 @@ public class PedidoController {
                 .body(Map.of("mensagem", "Erro ao excluir pedido: " + e.getMessage()));
         }
     }
-
-
-    
 }
