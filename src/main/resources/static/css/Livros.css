@@ -434,6 +434,11 @@
     .btn-status {
       background-color: var(--accent-color);
     }
+    .btn-status:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #4896ef5d;
+}
 
   .btn-limpar {
   background-color: transparent;

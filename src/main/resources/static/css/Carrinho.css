@@ -318,7 +318,6 @@
       transition: all 0.2s ease;
     }
     
-    
     .quantity-btn:hover {
       background-color: var(--primary-light);
       color: white;
@@ -817,4 +816,31 @@
 
 .cupom-info {
   color: #17a2b8;
+}
+
+.expired-items-container {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.expired-items-container h4 {
+  color: #6c757d;
+  margin-bottom: 15px;
+}
+
+.expired-item-restore {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.expired-item-restore:hover {
+  background-color: #0056b3;
 }

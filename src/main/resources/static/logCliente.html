@@ -259,7 +259,7 @@ button.btn.clear:hover {
         });
       }
 
-      // 🔴 NOVO: Oculta o link "Status do Pedido" (pedidos.html) para ADMINs
+      // Oculta o link "Status do Pedido" (pedidos.html) para ADMINs
       const linkStatusCliente = container.querySelector('a[href="pedidos.html"]');
       if (!clienteLogado || clienteLogado.perfil === 'ADMIN') {
         if (linkStatusCliente) linkStatusCliente.style.display = 'none';
