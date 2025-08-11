@@ -21,13 +21,14 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/clientes")
+
 public class ClienteController {
 
     @Autowired
     private ClienteService clienteService;
 
     @Autowired
-    private EnderecoService enderecoService;  // Injetado EnderecoService
+    private EnderecoService enderecoService; 
 
     @GetMapping
     public List<Cliente> listarClientes() {
@@ -40,7 +41,7 @@ public class ClienteController {
         return cliente.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Novo endpoint para buscar endereços do cliente
+    // buscar endereços do cliente
     @GetMapping("/{id}/enderecos")
     public ResponseEntity<List<Endereco>> listarEnderecos(@PathVariable Long id) {
         List<Endereco> enderecos = enderecoService.listarPorCliente(id);
@@ -172,5 +173,5 @@ public ResponseEntity<?> buscarRankingClientes() {
         return ResponseEntity.ok(clienteLogado);
     }
 
-
+    
 }
