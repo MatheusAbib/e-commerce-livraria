@@ -13,11 +13,7 @@ Este sistema tem como objetivo gerenciar de forma eficiente o cadastro de livros
 - [Requisitos Não Funcionais](#requisitos-não-funcionais)
 - [Regras de Negócio](#regras-de-negócio)
 - [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Como Executar](#como-executar)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Contribuições](#contribuições)
-- [Licença](#licença)
-
+  
 ---
 
 ## Funcionalidades
