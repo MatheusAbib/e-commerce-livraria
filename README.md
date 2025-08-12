@@ -30,6 +30,16 @@ Este sistema tem como objetivo gerenciar de forma eficiente o cadastro de livros
 
 ---
 
+## VISUALIZAÇÃO
+![Início](inicio.png)  
+![Gráfico](gráfico.png)  
+![Pedidos](pedidos.png)  
+![Transações](transacoes.png)
+![Usuários](usuarios.png)
+![Ranking](ranking.png)  
+![Carrinho](carrinho.png)  
+  
+---
 ## Requisitos Funcionais
 
 ### Grupo: Cadastro de Livros
@@ -164,7 +174,12 @@ Este sistema tem como objetivo gerenciar de forma eficiente o cadastro de livros
 
 ## Tecnologias Utilizadas
 
-- Linguagem: (Java, HTML, CSS, JAVA SCRIPT)
-- Banco de Dados: (MySQL)
-- IA Generativa: (API GEMINI)
+![Java](https://img.shields.io/badge/Java-17%2B-blue)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.1-green)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.2-purple)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)
+![HTML](https://img.shields.io/badge/HTML-5-orange)
+![CSS](https://img.shields.io/badge/CSS-3-blueviolet)
+
+
 
