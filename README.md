@@ -168,6 +168,3 @@ Este sistema tem como objetivo gerenciar de forma eficiente o cadastro de livros
 - Banco de Dados: (MySQL)
 - IA Generativa: (API GEMINI)
 
-
-   ```bash
-   git clone https://github.com/seu-usuario/seu-repositorio.git
