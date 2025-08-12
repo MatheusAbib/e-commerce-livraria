@@ -32,7 +32,7 @@ Este sistema tem como objetivo gerenciar de forma eficiente o cadastro de livros
 
 ## VISUALIZAÇÃO
 ![Início](inicio.png)  
-![Gráfico](gráfico.png)  
+![Gráfico](grafico.png)  
 ![Pedidos](pedidos.png)  
 ![Transações](transacoes.png)
 ![Usuários](usuarios.png)
