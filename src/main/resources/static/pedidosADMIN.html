@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Gerenciamento de Pedidos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/PedidosAdmin.css">
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <!-- Botão para abrir/fechar sidebar -->
+      <span class="menu-icon" onclick="toggleSidebar()" style="cursor:pointer; margin-right: 16px;">
+        <i class="fas fa-bars"></i>
+      </span>
+
+        <div class="logo">
+    <span>Livros Online</span>
+  </div>
+
+      <h6>Admin - Gerenciamento de Pedidos</h6>
+        </div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button id="tab-todos" class="tab active">Todos</button>
+      <button id="tab-processamento" class="tab">Em Processamento</button>
+      <button id="tab-transito" class="tab">Em Trânsito</button>
+      <button id="tab-entregues" class="tab">Entregues</button>
+      <button id="tab-devolucao" class="tab">Devolução</button>
+      <button id="tab-cancelados" class="tab">Cancelados</button>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <a href="principal.html"><i class="fas fa-home"></i> Início</a>
+    <a href="clientes.html"><i class="fas fa-user-plus"></i> Cadastrar Cliente</a>
+    <a href="usuarios.html"><i class="fas fa-users-cog"></i> Gerenciamento de Usuários</a>
+    <a href="ranking.html"><i class="fas fa-trophy"></i> Ranking de Usuários</a>
+    <a href="log.html"><i class="fas fa-clipboard-list"></i> Log de Transações</a>
+    <a href="logCliente.html"><i class="fas fa-clipboard-list"></i> Minhas Transações</a>
+    <a href="grafico.html"><i class="fas fa-chart-line"></i> Histórico de Vendas</a>
+    <a href="pedidos.html" id="link-status-cliente"><i class="fas fa-truck"></i> Status do Pedido</a>
+    <a href="pedidosADMIN.html" id="link-pedidosADMIN"><i class="fas fa-truck"></i> Gerenciamento de Pedidos</a>
+    <a href="livros.html"><i class="fas fa-book"></i> Cadastrar Livro</a>
+    <a href="lucros.html"><i class="fas fa-chart-bar"></i> Lucro dos Livros</a>
+  </div>
+
+  <div class="main-content">
+    <div class="filtros-container">
+      <div>
+        <label for="filtro-status">Status:</label>
+        <select id="filtro-status">
+          <option value="TODOS">Todos</option>
+          <option value="EM_PROCESSAMENTO">Em Processamento</option>
+          <option value="EM_TRANSITO">Em Trânsito</option>
+          <option value="ENTREGUE">Entregue</option>
+          <option value="CANCELADO">Cancelado</option>
+          <option value="DEVOLUCAO">Devolução</option>
+          <option value="DEVOLVIDO">Devolvido</option>
+          <option value="TROCADO">Trocado</option>
+        </select>
+      </div>
+      
+      <div>
+        <label for="filtro-cliente">Cliente:</label>
+        <input type="text" id="filtro-cliente" placeholder="Nome do cliente">
+      </div>
+      
+      <button id="btn-filtrar" class="btn-filtrar">
+        <i class="fas fa-check"></i> Aplicar Filtros
+      </button>
+    </div>
+
+    <div id="admin-pedidos-container">
+      <!-- Tabela de pedidos será inserida aqui -->
+      <div class="empty-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Carregando pedidos...</p>
+      </div>
+    </div>
+  </div>
+ <script src="js/pedidosADMIN.js"></script>
+</body>
+</html>

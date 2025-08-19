@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Ranking de Clientes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/ranking.css">
+</head>
+<body>
+  <div id="header-container"></div>
+
+  <div class="container">
+    <div class="ranking-header">
+      <h1 class="ranking-title">Ranking de Clientes</h1>
+    </div>
+    
+    <p class="ranking-description">
+      Veja quem são os clientes que mais compram em nossa loja. O ranking é atualizado automaticamente com base no valor total de compras.
+    </p>
+
+    <div style="margin-bottom: 20px;">
+  <input type="text" id="busca-nome" placeholder="Buscar cliente por nome..." style="padding: 10px; width: 100%; max-width: 400px; border: 1px solid #ccc; border-radius: 5px;">
+  <div id="mensagem-carregando" style="margin-top: 10px; color: #999; font-style: italic; display: none;">Carregando resultados...</div>
+</div>
+
+    
+    <div id="ranking-content">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+  </div>
+<script>
+  // Carrega o header externo e injeta no container
+  fetch('header.html')
+    .then(response => response.text())
+    .then(data => {
+      const container = document.getElementById('header-container');
+      container.innerHTML = data;
+
+      // Executa os scripts que vieram dentro do header.html (se houver)
+      const scripts = container.querySelectorAll('script');
+      scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+        if (oldScript.src) {
+          newScript.src = oldScript.src;
+        } else {
+          newScript.textContent = oldScript.textContent;
+        }
+        document.body.appendChild(newScript);
+      });
+
+      // Atualiza o nome do cliente no header
+      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+      const nomeSpan = document.getElementById('nome-cliente');
+      if (nomeSpan && clienteLogado) {
+        nomeSpan.textContent = clienteLogado.nome;
+      }
+
+      // Oculta links restritos para perfis que não são ADMIN
+      const idsRestritos = [
+        'link-usuarios',
+        'link-log',
+        'link-lucros',
+        'link-livros',
+        'link-pedidosADMIN'
+      ];
+      if (!clienteLogado || clienteLogado.perfil !== 'ADMIN') {
+        idsRestritos.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'none';
+        });
+      }
+
+      // 🔴 NOVO: Oculta o link "Status do Pedido" (pedidos.html) para ADMINs
+      const linkStatusCliente = container.querySelector('a[href="pedidos.html"]');
+      if (!clienteLogado || clienteLogado.perfil === 'ADMIN') {
+        if (linkStatusCliente) linkStatusCliente.style.display = 'none';
+      }
+    });
+
+  let rankingOriginal = []; // armazena a lista original
+  let timeoutBusca;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    carregarRanking();
+
+    document.getElementById('busca-nome').addEventListener('input', () => {
+      clearTimeout(timeoutBusca);
+      document.getElementById('mensagem-carregando').style.display = 'block';
+
+      timeoutBusca = setTimeout(() => {
+        const termo = document.getElementById('busca-nome').value.toLowerCase();
+
+        const filtrados = rankingOriginal.filter(cliente =>
+          cliente.nome.toLowerCase().includes(termo)
+        );
+
+        exibirRanking(filtrados);
+        document.getElementById('mensagem-carregando').style.display = 'none';
+      }, 1000);
+    });
+  });
+
+  async function carregarRanking() {
+    try {
+      const response = await fetch('/api/clientes/ranking');
+      if (!response.ok) throw new Error('Erro ao carregar ranking');
+
+      const ranking = await response.json();
+      rankingOriginal = ranking; // salvar para buscas futuras
+      exibirRanking(ranking);
+    } catch (error) {
+      console.error('Erro:', error);
+      document.getElementById('ranking-content').innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Não foi possível carregar o ranking de clientes.</p>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  }
+
+  function exibirRanking(ranking) {
+    const container = document.getElementById('ranking-content');
+
+    if (!ranking || ranking.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-trophy"></i>
+          <p>Nenhum dado de ranking disponível no momento.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <table class="ranking-table">
+        <thead>
+          <tr>
+            <th>Posição</th>
+            <th>Cliente</th>
+            <th class="purchase-count">Pedidos</th>
+            <th class="purchase-value">Valor Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ranking.map((cliente, index) => {
+            const positionClass = index === 0 ? 'position-1' : 
+                                index === 1 ? 'position-2' : 
+                                index === 2 ? 'position-3' : '';
+            const medalIcon = index === 0 ? '<i class="fas fa-trophy medal-icon"></i>' : 
+                            index === 1 ? '<i class="fas fa-medal medal-icon"></i>' : 
+                            index === 2 ? '<i class="fas fa-medal medal-icon"></i>' : '';
+            
+            return `
+              <tr>
+                <td class="ranking-position ${positionClass}">
+                  ${medalIcon}${index + 1}º
+                </td>
+                <td>
+                  <div class="user-info">
+                    <div class="user-avatar">
+                      ${cliente.nome.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div class="user-name">${cliente.nome}</div>
+                      <div class="user-email">${cliente.email}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="purchase-count">${cliente.quantidadePedidos || 0}</td>
+                <td class="purchase-value">R$ ${(cliente.valorTotalGasto || 0).toFixed(2)}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+</script>
+
+</body>
+</html>

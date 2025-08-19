@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Biblioteca Online</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/Principal.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css"/>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <h3>Livros Online</h3>
+  <a href="principal.html" id="link-inicio"><i class="fas fa-home"></i> Inicio</a>
+  <a href="clientes.html" id="link-clientes"><i class="fas fa-user-plus"></i> Cadastrar</a>
+  <a href="usuarios.html" id="link-usuarios"><i class="fas fa-users-cog"></i> Gerenciamento de Usuários</a>
+  <a href="ranking.html" id="link-ranking"><i class="fas fa-trophy"></i> Ranking de Usuários</a>
+  <a href="log.html" id="link-log"><i class="fas fa-clipboard-list"></i> Log de Transações</a>
+  <a href="logCliente.html"><i class="fas fa-clipboard-list"></i> Minhas Transações</a>
+  <a href="grafico.html"><i class="fas fa-chart-line"></i> Histórico de Vendas</a>
+  <a href="pedidos.html" id="link-status-cliente"><i class="fas fa-truck"></i> Status do Pedido</a>
+  <a href="pedidosADMIN.html" id="link-pedidosADMIN"><i class="fas fa-truck"></i> Gerenciamento de Pedidos</a>
+  <a href="livros.html" id="link-livros"><i class="fas fa-book"></i> Cadastrar Livro</a>
+  <a href="lucros.html" id="link-lucros"><i class="fas fa-chart-bar"></i> Lucro dos Livros</a>
+</div>
+
+  <!-- Header -->
+<header id="main-header">
+  <span class="menu-icon" onclick="toggleSidebar()"><i class="fas fa-bars"></i></span>
+
+  <div class="logo">
+    <span>Livros Online</span>
+  </div>
+
+  <span class="cliente-nome" id="nome-cliente">Visitante</span>
+
+  <!-- Ícone do perfil -->
+  <div class="profile-icon" style="display:none" id="profile-icon">
+    <i class="fas fa-user-circle"></i>
+  </div>
+
+  <!-- Sininho de notificação -->
+  <div class="notificacao-icon" id="notificacao-icon">
+    <i class="bi bi-bell-fill"></i>
+    <span class="notificacao-badge" id="notificacao-badge" style="display: none;">0</span>
+  </div>
+
+  <!-- Dropdown de notificações -->
+  <div class="notificacao-dropdown" id="notificacao-dropdown">
+    <div class="notificacao-header">
+      <h3>Notificações</h3>
+      <button onclick="marcarTodasComoLidas()">Marcar todas como lidas</button>
+    </div>
+    <div class="notificacao-list" id="notificacao-list"></div>
+  </div>
+
+  <!-- Carrinho -->
+  <div class="cart-icon" id="cart-icon" style="display: none;">
+    <a href="carrinho.html">
+      <i class="fas fa-shopping-cart" style="color: rgb(255, 255, 255);"></i>
+    </a>
+    <span class="cart-count" id="cart-count">0</span>
+  </div>
+
+  <!-- Botão de logout -->
+  <button id="btn-logout" class="btn btn-logout" onclick="handleLogout()" style="display: none;">
+    <i class="fas fa-sign-out-alt"></i>
+  </button>
+
+  <!-- Botão de login (mantido no final para controle por JS) -->
+  <button id="btn-auth" class="btn btn-primary" onclick="handleAuthClick()">
+    <i class="fas fa-sign-in-alt"></i>
+  </button>
+</header>
+
+
+
+  <!-- Main Content -->
+  <main>
+    <!-- Hero Carousel -->
+    <div class="hero-carousel">
+      <div>
+        <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Biblioteca">
+        <div class="carousel-caption">
+          <h2>Explore nosso acervo</h2>
+          <p>Milhares de livros esperando por você</p>
+          <button class="btn btn-accent">Comece agora</button>
+        </div>
+      </div>
+      <div>
+        <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Promoção">
+        <div class="carousel-caption">
+          <h2>Promoções especiais</h2>
+          <p>Descontos imperdíveis nos melhores livros</p>
+          <button class="btn btn-accent">Ver ofertas</button>
+        </div>
+      </div>
+      <div>
+        <img src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Lançamentos">
+        <div class="carousel-caption">
+          <h2>Novos lançamentos</h2>
+          <p>As últimas novidades do mundo literário</p>
+          <button class="btn btn-accent">Descubra</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cupons Section -->
+    <section class="cupons-container">
+      <h2>Cupons de Desconto</h2>
+      <div class="cupons-grid" id="cupons-grid">
+        <!-- Cupom 1 -->
+        <div class="cupom-card">
+          <div class="cupom-header">
+            <h3>Desconto de 10%</h3>
+            <span class="cupom-valor">10% OFF</span>
+          </div>
+          <div class="cupom-body">
+            <p>Use em qualquer compra acima de R$ 50,00</p>
+            <p class="cupom-codigo" id="cupom-1-codigo">Clique em "Pegar Cupom"</p>
+            <button class="btn-pegar-cupom" onclick="gerarCupom(1, 10, 50)">Pegar Cupom</button>
+          </div>
+        </div>
+        
+        <!-- Cupom 2 -->
+        <div class="cupom-card">
+          <div class="cupom-header">
+            <h3>Desconto de 15%</h3>
+            <span class="cupom-valor">15% OFF</span>
+          </div>
+          <div class="cupom-body">
+            <p>Use em qualquer compra acima de R$ 100,00</p>
+            <p class="cupom-codigo" id="cupom-2-codigo">Clique em "Pegar Cupom"</p>
+            <button class="btn-pegar-cupom" onclick="gerarCupom(2, 15, 100)">Pegar Cupom</button>
+          </div>
+        </div>
+        
+        <!-- Cupom 3 -->
+        <div class="cupom-card">
+          <div class="cupom-header">
+            <h3>Desconto de 20%</h3>
+            <span class="cupom-valor">20% OFF</span>
+          </div>
+          <div class="cupom-body">
+            <p>Use em qualquer compra acima de R$ 150,00</p>
+            <p class="cupom-codigo" id="cupom-3-codigo">Clique em "Pegar Cupom"</p>
+            <button class="btn-pegar-cupom" onclick="gerarCupom(3, 20, 150)">Pegar Cupom</button>
+          </div>
+        </div>
+        
+        <!-- Cupom 4 -->
+        <div class="cupom-card">
+          <div class="cupom-header">
+            <h3>Desconto de R$ 30</h3>
+            <span class="cupom-valor">R$ 30 OFF</span>
+          </div>
+          <div class="cupom-body">
+            <p>Use em qualquer compra acima de R$ 200,00</p>
+            <p class="cupom-codigo" id="cupom-4-codigo">Clique em "Pegar Cupom"</p>
+            <button class="btn-pegar-cupom" onclick="gerarCupom(4, 30, 200, 'fixed')">Pegar Cupom</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Produtos Section -->
+   <section class="produtos-container">
+  <h2><i class="fas fa-book-open"></i> Nossos Livros</h2>
+  
+  <!-- Filtros -->
+  <div class="filtros-container">
+    <div class="filtro-header">
+      <h3><i class="fas fa-filter"></i> Filtrar Livros</h3>
+      <button class="btn btn-outline btn-limpar" onclick="limparFiltros()">
+        <i class="fas fa-broom"></i> Limpar Filtros
+      </button>
+    </div>
+    
+    <div class="filtros-grid">
+      <!-- Filtro por Título -->
+      <div class="filtro-item">
+        <label for="filtro-titulo">Título</label>
+        <input type="text" id="filtro-titulo" placeholder="Digite o título">
+      </div>
+      
+      <!-- Filtro por Autor -->
+      <div class="filtro-item">
+        <label for="filtro-autor">Autor</label>
+        <input type="text" id="filtro-autor" placeholder="Digite o autor">
+      </div>
+      
+      <!-- Filtro por Editora -->
+      <div class="filtro-item">
+        <label for="filtro-editora">Editora</label>
+        <input type="text" id="filtro-editora" placeholder="Digite a editora">
+      </div>
+      
+      <!-- Filtro por ISBN -->
+      <div class="filtro-item">
+        <label for="filtro-isbn">ISBN</label>
+        <input type="text" id="filtro-isbn" placeholder="Digite o ISBN">
+      </div>
+      
+      <!-- Filtro por Categoria -->
+      <div class="filtro-item">
+        <label for="filtro-categoria">Categoria</label>
+        <select id="filtro-categoria">
+          <option value="">Todas</option>
+          <!-- As opções serão preenchidas via JavaScript -->
+        </select>
+      </div>
+      
+      <!-- Filtro por Preço -->
+      <div class="filtro-item">
+        <label for="filtro-preco">Preço Máximo</label>
+        <input type="number" id="filtro-preco" placeholder="R$ máximo" min="0" step="0.01">
+      </div>
+      
+      <!-- Filtro por Disponibilidade -->
+      <div class="filtro-item">
+        <label for="filtro-disponivel">Disponibilidade</label>
+        <select id="filtro-disponivel">
+          <option value="">Todos</option>
+          <option value="disponivel">Disponíveis</option>
+          <option value="esgotado">Esgotados</option>
+        </select>
+      </div>
+      
+      <!-- Botão de Aplicar Filtros -->
+      <div class="filtro-item full-width">
+        <button class="btn btn-filtrar" onclick="aplicarFiltros()">
+          <i class="fas fa-check"></i> Aplicar Filtros
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="produtos-grid" id="produtos-grid">
+    <!-- Os produtos serão carregados aqui via JavaScript -->
+  </div>
+</section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-col">
+        <h3>Sobre Nós</h3>
+        <p>Somos a maior biblioteca online do país, com milhares de títulos para todos os gostos.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h3>Links Úteis</h3>
+        <ul>
+          <li><a href="#">Início</a></li>
+          <li><a href="#">Livros</a></li>
+          <li><a href="#">Autores</a></li>
+          <li><a href="#">Promoções</a></li>
+          <li><a href="#">Contato</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-col">
+        <h3>Categorias</h3>
+        <ul>
+          <li><a href="#">Ficção</a></li>
+          <li><a href="#">Não-Ficção</a></li>
+          <li><a href="#">Técnicos</a></li>
+          <li><a href="#">Infantil</a></li>
+          <li><a href="#">Didáticos</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-col">
+        <h3>Contato</h3>
+        <ul>
+          <li><i class="fas fa-map-marker-alt"></i> Rua das Rosas, 123</li>
+          <li><i class="fas fa-phone"></i> (11) 1234-5678</li>
+          <li><i class="fas fa-envelope"></i> contato@livrosonline.com</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2025 Livros Online. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Modal de Produto -->
+  <div id="modal-produto" class="modal-produto">
+    <div class="modal-content-produto">
+      <span class="close-produto" onclick="fecharModalProduto()">&times;</span>
+      <div class="produto-detalhes" id="produto-detalhes">
+        <!-- Detalhes do produto serão carregados aqui -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Login -->
+  <div id="modal-login" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2>Login</h2>
+        <span class="close" onclick="closeModalLogin()">&times;</span>
+      </div>
+      <form id="form-login">
+        <div class="form-row">
+          <div>
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label for="login-senha">Senha</label>
+            <input type="password" id="login-senha" required>
+          </div>
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-cancelar" onclick="closeModalLogin()">Cancelar</button>
+          <button type="submit" class="btn btn-salvar">Entrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Logout -->
+  <div id="modal-logout" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2>Sair da conta</h2>
+        <span class="close" onclick="fecharModalLogout()">&times;</span>
+      </div>
+      <div style="padding: 20px;">
+        <p>Tem certeza que deseja sair da sua conta?</p>
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+          <button onclick="fecharModalLogout()" class="btn btn-cancelar">Cancelar</button>
+          <button onclick="confirmarLogout()" class="btn btn-danger">Sair</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Perfil -->
+  <div id="profile-modal" class="profile-modal">
+    <div class="profile-content">
+      <span class="close-profile" onclick="fecharPerfil()">&times;</span>
+      <div id="profile-content">      
+        <div class="user-info" id="user-info">
+          <h2>Minhas Informações</h2>
+          <div id="dados-cliente" style="background-color: #f8f9fa;"></div>
+          <div style="margin-top: 20px;">
+            <button class="btn btn-primary" onclick="editarMeusDados()">Editar Meus Dados</button>
+            <button class="btn btn-secondary" onclick="abrirModalSenha()">Alterar Senha</button>
+          </div>
+        </div>
+
+        <div class="user-info">
+          <h2>Endereços e Cartões</h2>
+          <div id="enderecos-cartoes"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para edição de dados -->
+  <div id="modal-editar" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar Meus Dados</h2>
+        <span class="close" onclick="fecharModalEditar()">&times;</span>
+      </div>
+      <form id="form-editar-cliente" onsubmit="salvarDadosCliente(event); return false;">
+        <input type="hidden" id="cliente-id">
+        
+        <h3>Dados Pessoais</h3>
+        <div class="form-row">
+          <div>
+            <label for="editar-nome">Nome Completo*</label>
+            <input type="text" id="editar-nome" required>
+          </div>
+          <div>
+            <label for="editar-email">E-mail*</label>
+            <input type="email" id="editar-email" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label for="editar-telefone">Telefone</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select id="editar-tipotelefone" style="width: 90px;" required>
+                <option value="">Tipo</option>
+                <option value="celular">Celular</option>
+                <option value="fixo">Fixo</option>
+              </select>
+              <input type="text" id="editar-telefone" placeholder="(00) 00000-0000" style="flex-grow: 1;">
+            </div>
+          </div>
+          <div>
+            <label for="editar-cpf">CPF</label>
+            <input type="text" id="editar-cpf" placeholder="000.000.000-00">
+          </div>
+        </div>
+                
+        <div class="form-row">
+          <div>
+            <label for="editar-nascimento">Data de Nascimento</label>
+            <input type="date" id="editar-nascimento">
+          </div>
+          <div>
+            <label for="editar-genero">Gênero</label>
+            <select id="editar-genero">
+              <option value="">Selecione</option>
+              <option value="MASCULINO">Masculino</option>
+              <option value="FEMININO">Feminino</option>
+              <option value="PREFIRO_NAO_INFORMAR">Prefiro não informar</option>
+            </select>
+          </div>
+        </div>
+                
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-salvar">Salvar Alterações</button>
+          <button type="button" class="btn btn-cancelar" onclick="fecharModalEditar()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para alteração de senha -->
+  <div id="modal-senha" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>Alterar Senha</h2>
+        <span class="close" onclick="fecharModalSenha()">&times;</span>
+      </div>
+      <form id="form-alterar-senha">
+        <div class="form-row">
+          <div>
+            <label for="nova-senha">Nova Senha</label>
+            <input type="password" id="nova-senha" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label for="confirmar-senha">Confirmar Nova Senha</label>
+            <input type="password" id="confirmar-senha" required>
+          </div>
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-salvar">Alterar Senha</button>
+          <button type="button" class="btn btn-cancelar" onclick="fecharModalSenha()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para adicionar novo cartão -->
+  <div id="modal-cartao" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Adicionar Novo Cartão</h2>
+        <span class="close" onclick="fecharModalCartao()">&times;</span>
+      </div>
+      <form id="form-novo-cartao" onsubmit="adicionarCartao(event); return false;">
+        <div class="form-row">
+          <div>
+            <label for="novo-cartao-numero">Número do Cartão</label>
+            <input type="text" id="novo-cartao-numero" required>
+          </div>
+          <div>
+            <label for="novo-cartao-nome">Nome no Cartão</label>
+            <input type="text" id="novo-cartao-nome" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label for="novo-cartao-bandeira">Bandeira</label>
+            <select id="novo-cartao-bandeira" required>
+              <option value="">Selecione</option>
+              <option value="Visa">Visa</option>
+              <option value="Mastercard">Mastercard</option>
+              <option value="Elo">Elo</option>
+              <option value="American Express">American Express</option>
+            </select>
+          </div>
+          <div>
+            <label for="novo-cartao-cvv">CVV</label>
+            <input type="text" id="novo-cartao-cvv" required maxlength="4">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label for="novo-cartao-validade">Validade</label>
+            <input type="month" id="novo-cartao-validade" required>
+          </div>
+          <div>
+            <label>
+              <input type="checkbox" id="novo-cartao-preferencial">
+              Cartão Preferencial
+            </label>
+          </div>
+        </div>
+        
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-salvar">Salvar Cartão</button>
+          <button type="button" class="btn btn-cancelar" onclick="fecharModalCartao()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para adicionar novo endereço -->
+  <div id="modal-endereco" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Adicionar Novo Endereço de Entrega</h2>
+        <span class="close" onclick="fecharModalEndereco()">&times;</span>
+      </div>
+      <form id="form-novo-endereco" onsubmit="adicionarEndereco(event); return false;">
+        <div class="form-row">
+          <div>
+            <label for="novo-endereco-nome">Nome do Endereço (ex: Casa, Trabalho)</label>
+            <input type="text" id="novo-endereco-nome" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label for="novo-endereco-cep">CEP</label>
+            <input type="text" id="novo-endereco-cep" required>
+          </div>
+          <div>
+            <label for="novo-endereco-rua">Rua</label>
+            <input type="text" id="novo-endereco-rua" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label for="novo-endereco-logradouro">Logradouro</label>
+            <input type="text" id="novo-endereco-logradouro" required>
+          </div>
+          <div>
+            <label for="novo-endereco-numero">Número</label>
+            <input type="text" id="novo-endereco-numero" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label for="novo-endereco-complemento">Complemento</label>
+            <input type="text" id="novo-endereco-complemento">
+          </div>
+          <div>
+            <label for="novo-endereco-bairro">Bairro</label>
+            <input type="text" id="novo-endereco-bairro" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label for="novo-endereco-cidade">Cidade</label>
+            <input type="text" id="novo-endereco-cidade" required>
+          </div>
+          <div>
+            <label for="novo-endereco-estado">Estado</label>
+            <select id="novo-endereco-estado" required>
+              <option value="">Selecione</option>
+              <option value="AC">Acre</option>
+              <option value="AL">Alagoas</option>
+              <option value="AP">Amapá</option>
+              <option value="AM">Amazonas</option>
+              <option value="BA">Bahia</option>
+              <option value="CE">Ceará</option>
+              <option value="DF">Distrito Federal</option>
+              <option value="ES">Espírito Santo</option>
+              <option value="GO">Goiás</option>
+              <option value="MA">Maranhão</option>
+              <option value="MT">Mato Grosso</option>
+              <option value="MS">Mato Grosso do Sul</option>
+              <option value="MG">Minas Gerais</option>
+              <option value="PA">Pará</option>
+              <option value="PB">Paraíba</option>
+              <option value="PR">Paraná</option>
+              <option value="PE">Pernambuco</option>
+              <option value="PI">Piauí</option>
+              <option value="RJ">Rio de Janeiro</option>
+              <option value="RN">Rio Grande do Norte</option>
+              <option value="RS">Rio Grande do Sul</option>
+              <option value="RO">Rondônia</option>
+              <option value="RR">Roraima</option>
+              <option value="SC">Santa Catarina</option>
+              <option value="SP">São Paulo</option>
+              <option value="SE">Sergipe</option>
+              <option value="TO">Tocantins</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label for="novo-endereco-pais">País</label>
+            <input type="text" id="novo-endereco-pais" value="Brasil" readonly>
+          </div>
+          <div>
+            <label for="novo-endereco-tipo-residencia">Tipo de Residência</label>
+            <input type="text" id="novo-endereco-tipo-residencia">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label for="novo-endereco-tipo-logradouro">Tipo de Logradouro</label>
+            <input type="text" id="novo-endereco-tipo-logradouro">
+          </div>
+        </div>
+        
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-salvar">Salvar Endereço</button>
+          <button type="button" class="btn btn-cancelar" onclick="fecharModalEndereco()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-sucesso-carrinho" class="modal">
+  <div class="modal-content modal-sucesso">
+    <div class="modal-sucesso-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+      </svg>
+    </div>
+    <h3>Produto adicionado ao carrinho!</h3>
+  </div>
+</div>
+
+<!-- Chatbot Popup -->
+<div id="chatbot-popup" class="chatbot-popup">
+  <div class="chatbot-header">
+    Robô Bibliotecário
+    <button class="chatbot-close" onclick="closeChatbotPopup()">&times;</button>
+  </div>
+  <div id="chatbot-messages" class="chatbot-messages"></div>
+  <div class="chatbot-input-container">
+    <input type="text" id="chatbot-input" class="chatbot-input" placeholder="Digite sua mensagem..." autocomplete="off" />
+    <button class="chatbot-send" onclick="chatbotEnviar()">Enviar</button>
+  </div>
+</div>
+
+<!-- Chatbot Icon -->
+<div id="chatbot-icon-container">
+  <a href="#" onclick="toggleChatbotPopup()" id="chatbot-icon">
+    <i class="fas fa-comment-dots"></i>
+  </a>
+</div>
+
+  <!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+<script src="js/principal.js"></script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lucros</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    main {
+      margin-top: 100px;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    select {
+      padding: 8px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      min-width: 300px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #4a6fa5;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+ 
+  </style>
+</head>
+<body>
+
+<div id="header-container"></div>
+
+<main>
+  <h2 style="font-size: 28px; color: #4a6fa5; margin-bottom: 10px;">
+     Lucros dos Livros
+  </h2>
+
+  <select id="filtroTitulo" aria-label="Filtro por título do livro">
+    <option value="todos">Todos os livros</option>
+  </select>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Quantidade Vendida</th>
+        <th>Lucro Total (R$)</th>
+      </tr>
+    </thead>
+    <tbody id="lucros-tbody">
+      <!-- Preenchido dinamicamente -->
+    </tbody>
+  </table>
+</main>
+
+<script>
+// Carrega o header
+fetch('header.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('header-container').innerHTML = data;
+    const scripts = document.querySelectorAll('#header-container script');
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script');
+      if (oldScript.src) {
+        newScript.src = oldScript.src;
+      } else {
+        newScript.textContent = oldScript.textContent;
+      }
+      document.body.appendChild(newScript);
+    });
+
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    const nomeSpan = document.getElementById('nome-cliente');
+    if (nomeSpan && clienteLogado) {
+      nomeSpan.textContent = clienteLogado.nome;
+
+      // Se for ADMIN, esconder o link "Status do Pedido"
+      if (clienteLogado.perfil === 'ADMIN') {
+        const statusPedidoLink = document.getElementById('link-status-cliente');
+        if (statusPedidoLink) {
+          statusPedidoLink.style.display = 'none';
+        }
+      }
+    }
+  });
+
+
+let todosLucros = [];
+
+function preencherTabela(data) {
+  const tbody = document.getElementById('lucros-tbody');
+  tbody.innerHTML = '';
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 15px;">Nenhum dado encontrado.</td></tr>';
+    return;
+  }
+
+  data.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item[0]}</td>
+      <td>${item[1]}</td>
+      <td>R$ ${Number(item[2]).toFixed(2)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Carrega dados de lucros com animação de carregamento
+function carregarLucros() {
+  const tbody = document.getElementById('lucros-tbody');
+  
+  // Mostra mensagem de carregamento com spinner
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="3" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Carregando dados de lucros...</p>
+      </td>
+    </tr>
+  `;
+
+  setTimeout(() => {
+    fetch('/api/vendas/lucros')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          todosLucros = data;
+          preencherTabela(data);
+
+          // Preencher o select com os títulos únicos
+          const titulos = [...new Set(data.map(item => item[0]))];
+          const select = document.getElementById('filtroTitulo');
+          titulos.forEach(titulo => {
+            const option = document.createElement('option');
+            option.value = titulo;
+            option.textContent = titulo;
+            select.appendChild(option);
+          });
+
+          // Adiciona filtro por título com delay e mensagem carregando
+          select.addEventListener('change', () => {
+            const valorSelecionado = select.value;
+            const tbody = document.getElementById('lucros-tbody');
+
+            // Mostrar mensagem de carregamento com spinner
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="3" class="loading-state">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>Filtrando resultados...</p>
+                </td>
+              </tr>
+            `;
+
+            setTimeout(() => {
+              const filtrado = valorSelecionado === 'todos'
+                ? todosLucros
+                : todosLucros.filter(item => item[0] === valorSelecionado);
+              preencherTabela(filtrado);
+            }, 1000); // delay de 1 segundo
+          });
+
+        } else {
+          console.error("Formato inválido:", data);
+          preencherTabela([]);
+        }
+      })
+      .catch(err => {
+        console.error("Erro ao carregar lucros:", err);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" style="text-align:center; color: red;">
+              <i class="fas fa-exclamation-triangle"></i> Erro ao carregar dados.
+            </td>
+          </tr>
+        `;
+      });
+  }, 1000); // delay de 1 segundo
+}
+
+// Inicia o carregamento dos dados
+carregarLucros();
+</script>
+
+</body>
+</html>

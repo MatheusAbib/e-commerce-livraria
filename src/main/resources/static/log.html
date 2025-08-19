@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Log de Transações</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    
+    main {
+      margin-top: 100px;
+      margin-left: 10px;
+      padding: 20px;
+    }
+    
+
+    
+    .log-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    h1, h2 {
+      color: #2c3e50;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+    }
+    
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .log-level-info {
+      color: #3498db;
+    }
+    
+    .log-level-warning {
+      color: #f39c12;
+    }
+    
+    .log-level-error {
+      color: #e74c3c;
+    }
+    
+    .log-level-success {
+      color: #2ecc71;
+    }
+    
+    .filters {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    label {
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    select, input {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      min-width: 150px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .pagination button {
+      padding: 8px 12px;
+    }
+    
+    .pagination button.active {
+      background-color: #2c3e50;
+    }
+    
+    @media (max-width: 768px) {
+      
+      main {
+        margin-left: 0;
+      }
+      
+      .menu-icon {
+        display: block;
+      }
+      
+      .filters {
+        flex-direction: column;
+      }
+    }
+
+    .filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #4a6fa5;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+}
+  .btn-limpar {
+  background-color: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 8px 15px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.btn-limpar:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+button.btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button.btn.apply {
+  background-color: #4a6fa5;
+  color: white;
+}
+
+button.btn.apply:hover {
+  background-color: #3d5c88;
+}
+
+button.btn.clear {
+  background-color: #ccc;
+  color: #333;
+}
+
+button.btn.clear:hover {
+  background-color: #aaa;
+}
+
+ .loading-state {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div id="header-container"></div>
+
+  <script>
+fetch('header.html')
+  .then(response => response.text())
+  .then(data => {
+    const container = document.getElementById('header-container');
+    container.innerHTML = data;
+
+    // Executar scripts do header.html
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script');
+      if (oldScript.src) {
+        newScript.src = oldScript.src;
+      } else {
+        newScript.textContent = oldScript.textContent;
+      }
+      document.body.appendChild(newScript);
+    });
+
+    // Atualiza nome do cliente
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    const nomeSpan = document.getElementById('nome-cliente');
+    if (nomeSpan && clienteLogado) {
+      nomeSpan.textContent = clienteLogado.nome;
+
+      // Se for ADMIN, esconde link "Status do Pedido"
+      if (clienteLogado.perfil === 'ADMIN') {
+        const statusPedidoLink = document.getElementById('link-status-cliente');
+        if (statusPedidoLink) {
+          statusPedidoLink.style.display = 'none';
+        }
+      }
+    }
+  });
+
+</script>
+
+  <main>
+    <div class="log-container">
+      <h2>Histórico de Atividades</h2>
+      
+      <div class="filters">
+        <div class="filter-group">
+          <label for="filter-user">Usuário</label>
+          <select id="filter-user">
+            <option value="">Todos</option>
+            <!-- Opções serão preenchidas dinamicamente -->
+          </select>
+        </div>
+        
+       <div class="filters-container">
+  <div class="filter-group">
+    <label for="filter-action">Ação</label>
+    <select id="filter-action">
+      <option value="">Todas</option>
+      <option value="login">Login</option>
+      <option value="compra">Compra</option>
+      <option value="cadastro">Cadastro</option>
+      <option value="exclusao">Exclusão</option>
+      <option value="Em Trânsito">Em Trânsito</option>
+      <option value="Em Devolução">Em Devolução</option>
+      <option value="Devolvido">Devolvido</option>
+      <option value="Trocado">Trocado</option>
+      <option value="Cancelado">Cancelado</option>
+
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label for="filter-date">Data</label>
+    <input type="date" id="filter-date">
+  </div>
+
+  <div class="filter-group">
+    <label for="filter-level">Nível</label>
+    <select id="filter-level">
+      <option value="">Todos</option>
+      <option value="info">Informação</option>
+      <option value="warning">Aviso</option>
+      <option value="error">Erro</option>
+      <option value="success">Sucesso</option>
+    </select>
+  </div>
+
+  <div class="filter-buttons">
+   <div class="filtro-item full-width">
+            <button class="btn btn-filtrar" onclick="applyFilters()"><i class="fas fa-check"></i> Aplicar Filtros</button>
+        </div>
+   <div class="filtro-header">
+        <button class="btn btn-outline btn-limpar"  onclick="clearFilters()"><i class="fas fa-broom"></i> Limpar Filtros</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal feedback -->
+
+      <table id="log-table">
+        <thead>
+          <tr>
+   <th>Data/Hora</th>
+      <th>Usuário</th>
+      <th>Ação</th>
+      <th>Detalhes</th>
+      <th>Nível</th>
+    </tr>
+        </thead>
+        <tbody>
+          <!-- Logs serão carregados aqui via JavaScript -->
+        </tbody>
+      </table>
+      
+      <div class="pagination" id="pagination">
+        <!-- Paginação será gerada dinamicamente -->
+      </div>
+    </div>
+  </main>
+
+  <script src="js/log.js"></script>
+</body>
+</html>
