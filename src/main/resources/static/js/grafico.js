@@ -1,4 +1,4 @@
-     let salesChart;
+             let salesChart;
         let allPedidosGlobal = [];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -50,6 +50,8 @@ async function loadData() {
     try {
         const statusSelecionado = document.getElementById('status-filter').value;
         const livroSelecionado = document.getElementById('livros-filter').value;
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
 
         const response = await fetch('/api/pedidos/todos');
         if (!response.ok) throw new Error('Erro ao carregar dados');
@@ -61,7 +63,7 @@ async function loadData() {
             ? allPedidosGlobal 
             : allPedidosGlobal.filter(p => p.status === statusSelecionado);
 
-        // Filtra por livro se selecionado
+        // Filtra por livro
         if (livroSelecionado) {
             filteredPedidos = filteredPedidos.filter(pedido => {
                 return pedido.itens && pedido.itens.some(item => {
@@ -69,8 +71,17 @@ async function loadData() {
                            (item.livro && item.livro.id == livroSelecionado);
                 });
             });
-            
-            console.log("Pedidos filtrados por livro:", filteredPedidos);
+        }
+
+        // 🔹 Filtra por intervalo de datas
+        if (startDate) {
+            const start = new Date(startDate);
+            filteredPedidos = filteredPedidos.filter(p => new Date(p.dataPedido) >= start);
+        }
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999); // inclui o dia todo
+            filteredPedidos = filteredPedidos.filter(p => new Date(p.dataPedido) <= end);
         }
 
         processAndDisplayData(filteredPedidos, livroSelecionado);
@@ -79,6 +90,7 @@ async function loadData() {
         alert('Não foi possível carregar os dados de vendas');
     }
 }
+
 
 function processAndDisplayData(pedidos, livroSelecionado = null) {
     const period = document.getElementById('time-period').value;

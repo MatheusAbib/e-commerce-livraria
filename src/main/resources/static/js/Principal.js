@@ -1574,7 +1574,7 @@ function atualizarUI(usuario) {
                     <p class="produto-preco">R$ ${produto.precoVenda?.toFixed(2) || '0,00'}</p>
                     <div class="produto-botoes">
                         <button class="btn btn-ver" onclick="verDetalhesProduto(${produto.id})">Ver</button>
-                        <button class="btn btn-adicionar" onclick="adicionarAoCarrinho(${produto.id})" ${!produto.ativo || produto.estoque <= 0 ? 'disabled title="Produto indisponível"' : ''}>Adicionar</button>
+                        <button class="btn btn-adicionar" onclick="adicionarAoCarrinho(${produto.id})" ${!produto.ativo || produto.estoque <= 0 ? 'disabled title="Produto indisponível"' : ''}><i class="fas fa-cart-plus"></i> Adicionar</button>
                     </div>
                 </div>
             </div>
