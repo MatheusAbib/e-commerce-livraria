@@ -614,26 +614,86 @@
       showModal('modal-endereco');
     }
 
-    async function confirmarExclusaoEndereco(enderecoId) {
-      if (confirm('Tem certeza que deseja excluir este endereço?')) {
-        try {
-          const response = await fetch(`/api/enderecos/${enderecoId}`, {
-            method: 'DELETE'
-          });
-          
-          if (response.ok) {
-            alert('Endereço excluído com sucesso!');
-            await carregarDadosCliente();
-          } else {
-            const error = await response.text();
-            alert(`Erro ao excluir endereço: ${error}`);
-          }
-        } catch (error) {
-          console.error('Erro:', error);
-          alert('Erro ao conectar com o servidor');
-        }
+async function confirmarExclusaoEndereco(enderecoId) {
+  if (!confirm('Tem certeza que deseja excluir este endereço?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/enderecos/${enderecoId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json'
       }
+    });
+
+    if (response.ok) {
+      alert('Endereço excluído com sucesso!');
+      await carregarDadosCliente();
+    } else {
+      const errorText = await response.text();
+      let errorMessage = 'Erro ao excluir endereço';
+      
+      if (response.status === 400) {
+        errorMessage = 'Não é possível excluir o endereço de cobrança principal';
+      } else if (response.status === 404) {
+        errorMessage = 'Endereço não encontrado';
+      } else if (response.status === 500) {
+        errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
+      }
+      
+      alert(`${errorMessage}: ${errorText}`);
     }
+  } catch (error) {
+    console.error('Erro completo:', error);
+    alert('Erro de conexão. Verifique sua internet e tente novamente.');
+  }
+}
+
+// Função para debug - ver detalhes do erro
+async function debugExclusaoEndereco(enderecoId) {
+  try {
+    console.log('Tentando excluir endereço ID:', enderecoId);
+    
+    const response = await fetch(`/api/enderecos/${enderecoId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('Status da resposta:', response.status);
+    console.log('Status text:', response.statusText);
+    
+    const responseText = await response.text();
+    console.log('Corpo da resposta:', responseText);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${responseText}`);
+    }
+
+    return responseText;
+  } catch (error) {
+    console.error('Erro detalhado:', error);
+    throw error;
+  }
+}
+
+// Use esta versão para testar
+async function confirmarExclusaoEnderecoDebug(enderecoId) {
+  if (confirm('Tem certeza que deseja excluir este endereço?')) {
+    try {
+      await debugExclusaoEndereco(enderecoId);
+      alert('Endereço excluído com sucesso!');
+      await carregarDadosCliente();
+    } catch (error) {
+      console.error('Erro na exclusão:', error);
+      alert('Erro ao excluir endereço. Verifique o console para detalhes.');
+    }
+  }
+}
 
     // Funções para cartões
     async function editarCartao(indexCartao) {
@@ -1200,7 +1260,8 @@ if (bandeiraSelect) {
     }
 
     // Função para fazer login
-   async function fazerLogin() {
+// Função para fazer login
+async function fazerLogin() {
     const email = document.getElementById('login-email').value;
     const senha = document.getElementById('login-senha').value;
     
@@ -1210,7 +1271,6 @@ if (bandeiraSelect) {
     }
 
     try {
-        // Modifique esta URL para o endpoint correto do seu backend
         const response = await fetch('http://localhost:8080/clientes/login', {
             method: 'POST',
             headers: {
@@ -1228,21 +1288,10 @@ if (bandeiraSelect) {
             // Armazena o usuário logado
             localStorage.setItem('clienteLogado', JSON.stringify(usuario));
             
-            // Atualiza a interface
-            document.getElementById('nome-cliente').textContent = usuario.nome;
-            esconderFormularioLogin();
+            // Fecha o modal e RECARREGA A PÁGINA
+            closeModalLogin();
+            location.reload(); // ← ADICIONE ESTA LINHA
             
-            // Altera para mostrar o ícone de logout
-            const btnAuth = document.getElementById('btn-auth');
-            btnAuth.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
-            btnAuth.title = 'Sair'; // Adiciona um tooltip para acessibilidade
-            
-            document.querySelector('.profile-icon').style.display = 'block';
-            
-            // Recarrega os dados do usuário
-            await carregarDadosCliente();
-            
-            alert('Login realizado com sucesso!');
         } else {
             const error = await response.text();
             alert(`Erro: ${error || 'Credenciais inválidas'}`);
@@ -1253,15 +1302,19 @@ if (bandeiraSelect) {
     }
 }
 
-   function logout() {
+function logout() {
     // Limpa o carrinho temporário ao deslogar
     limparCarrinhoVisitante();
     
     localStorage.removeItem('clienteLogado');
+    
+    // RECARREGA A PÁGINA antes de fechar o modal
+    location.reload(); // ← ADICIONE ESTA LINHA
+    
+    // O restante do código será executado após o reload
     atualizarUI(null);
     document.getElementById('profile-content').style.display = 'none';
     fecharModalLogout();
-    window.location.href = 'principal.html';
 }
 
 // Atualiza UI do header conforme login
@@ -1308,43 +1361,40 @@ function atualizarUI(usuario) {
       atualizarContadorCarrinho();
     }
 
-    document.getElementById('form-login').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const senha = document.getElementById('login-senha').value.trim();
+document.getElementById('form-login').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const senha = document.getElementById('login-senha').value.trim();
 
-      if (!email || !senha) {
+    if (!email || !senha) {
         alert('Preencha email e senha');
         return;
-      }
+    }
 
-      try {
+    try {
         const response = await fetch('/api/clientes/login', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ email, senha })
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email, senha })
         });
 
         if (response.ok) {
-          const usuario = await response.json();
-          
-          // Garante que teremos uma estrutura limpa para o novo usuário
-          if (!localStorage.getItem('carrinhosPorUsuario')) {
-            localStorage.setItem('carrinhosPorUsuario', JSON.stringify({}));
-          }
-          
-          localStorage.setItem('clienteLogado', JSON.stringify(usuario));
-          atualizarUI(usuario);
-          closeModalLogin();
+            const usuario = await response.json();
+            localStorage.setItem('clienteLogado', JSON.stringify(usuario));
+            
+            // Fecha o modal e RECARREGA
+            closeModalLogin();
+            location.reload(); // ← ADICIONE ESTA LINHA
+            
         } else {
-          const erro = await response.text();
-          alert('Erro no login: ' + (erro || 'Credenciais inválidas'));
+            const erro = await response.text();
+            alert('Erro no login: ' + (erro || 'Credenciais inválidas'));
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Erro:', error);
         alert('Erro ao conectar com o servidor');
-      }
-    });
+    }
+});
 
     window.addEventListener('DOMContentLoaded', () => {
       carregarProdutos();

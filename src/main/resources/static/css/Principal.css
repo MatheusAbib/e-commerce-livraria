@@ -1,5 +1,4 @@
   :root {
-
   --accent-color: #4895ef;
   --light-color: #f8f9fa;
   --dark-color: #212529;
@@ -25,8 +24,7 @@
   box-sizing: border-box;
 }
 
-
-    h1, h2, h3, h4 {
+  h1, h2, h3, h4 {
       font-family: 'Playfair Display', serif;
       font-weight: 700;
     }

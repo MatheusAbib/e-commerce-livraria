@@ -1,4 +1,4 @@
- :root {
+  :root {
    --primary-color: #4a6fa5;
       --secondary-color: #166088;
       --primary-dark:  #2c4a73;
@@ -726,7 +726,7 @@
   top: 125px;
   left: 7.5%;
   transform: translateX(-50%);
-  z-index: 9999;
+  z-index: 1030;
 
   font-family: 'Montserrat', sans-serif;
   background-color: var(--light-bg);
@@ -737,7 +737,6 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  user-select: none;
   width: fit-content;
   transition: box-shadow 0.3s ease;
   cursor: default;
@@ -766,7 +765,6 @@
 #cart-timer .timer-label {
   font-size: 0.9rem;
   color: var(--gray-text);
-  user-select: text;
 }
 
 /* Estilos para o Modal de Cupom */
@@ -923,3 +921,281 @@
       margin-top: 10px;
       display: none;
     }
+
+.modal {
+  z-index: 11000 !important;
+}
+
+.modal-backdrop {
+  z-index: 10999 !important;
+}
+
+
+/* Modal Novo Endereço */
+#modalNovoEndereco .modal-content {
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  border: none;
+}
+
+#modalNovoEndereco .modal-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: white;
+  border-bottom: none;
+  padding: 20px 25px;
+  border-radius: 12px 12px 0 0;
+}
+
+#modalNovoEndereco .modal-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+#modalNovoEndereco .btn-close {
+  filter: invert(1);
+  opacity: 0.8;
+}
+
+#modalNovoEndereco .btn-close:hover {
+  opacity: 1;
+}
+
+#modalNovoEndereco .modal-body {
+  padding: 25px;
+  background-color: white;
+}
+
+#modalNovoEndereco .form-label {
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+#modalNovoEndereco .form-control {
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+}
+
+#modalNovoEndereco .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.25);
+}
+
+#modalNovoEndereco .modal-footer {
+  background-color: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 20px 25px;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Modal Novo Cartão igual ao Novo Endereço */
+#modalNovoCartao .modal-content {
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  border: none;
+}
+
+#modalNovoCartao .modal-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: white;
+  border-bottom: none;
+  padding: 20px 25px;
+  border-radius: 12px 12px 0 0;
+}
+
+#modalNovoCartao .modal-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+#modalNovoCartao .btn-close {
+  filter: invert(1);
+  opacity: 0.8;
+}
+
+#modalNovoCartao .btn-close:hover {
+  opacity: 1;
+}
+
+#modalNovoCartao .modal-body {
+  padding: 25px;
+  background-color: white;
+}
+
+#modalNovoCartao .form-label {
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+#modalNovoCartao .form-control {
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+}
+
+#modalNovoCartao .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.25);
+}
+
+#modalNovoCartao .modal-footer {
+  background-color: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 20px 25px;
+  border-radius: 0 0 12px 12px;
+}
+
+
+/* Botões padronizados */
+.btn-novo-endereco,
+.btn-novo-cartao {
+  background-color: transparent;
+  border: 1px solid var(--primary-color); /* Corrigido */
+  color: var(--primary-color);
+  padding: 5px 15px;
+  font-size: 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn-adicionar-cartao {
+  background-color: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn-novo-cartao:hover{
+  color: white;
+}
+
+.btn-novo-endereco:hover,
+.btn-adicionar-cartao:hover,
+.btn-novo-cartao:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  color: white;
+}
+
+/* Sobrescrever estilos específicos dos botões */
+.btn-outline-primary {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  #modalNovoEndereco .modal-dialog {
+    max-width: 95%;
+  }
+  #modalNovoEndereco .modal-body {
+    padding: 15px;
+  }
+  #modalNovoEndereco .modal-footer {
+    padding: 15px;
+  }
+}
+
+/* Modal Sucesso */
+.modal-sucesso-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--card-shadow);
+}
+
+.modal-sucesso-icon svg {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.modal-sucesso {
+  margin: 0;
+  color: var(--dark-text);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+#modalSucessoEndereco .btn {
+  background-color: var(--primary-color);
+  border: none;
+  color: white;
+  padding: 10px 25px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+#modalSucessoEndereco .btn:hover {
+  background-color: var(--primary-dark);
+}
+
+
+/* Modal Sucesso */
+.modal-sucesso-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--card-shadow);
+}
+
+.modal-sucesso-icon svg {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.modal-sucesso {
+  margin: 0;
+  color: var(--dark-text);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+#modalSucessoCartao .btn {
+  background-color: var(--primary-color);
+  border: none;
+  color: white;
+  padding: 10px 25px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+#modalSucessoCartao .btn:hover {
+  background-color: var(--primary-dark);
+}
+

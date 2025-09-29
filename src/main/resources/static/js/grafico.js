@@ -31,7 +31,6 @@
                 const livros = data.livros || [];
                 const select = document.getElementById('livros-filter');
 
-                // Limpa as opções antigas (exceto "Todos os Livros")
                 select.innerHTML = '<option value="" selected>Todos os Livros</option>';
 
                 livros.forEach(livro => {
@@ -73,7 +72,6 @@ async function loadData() {
             });
         }
 
-        // 🔹 Filtra por intervalo de datas
         if (startDate) {
             const start = new Date(startDate);
             filteredPedidos = filteredPedidos.filter(p => new Date(p.dataPedido) >= start);
@@ -359,10 +357,8 @@ function processAndDisplayData(pedidos, livroSelecionado = null) {
         </div>
     `;
     
-    // Adiciona ao corpo do documento
     document.body.appendChild(toast);
     
-    // Mostra a notificação
     setTimeout(() => {
         toast.classList.add('show');
     }, 100);

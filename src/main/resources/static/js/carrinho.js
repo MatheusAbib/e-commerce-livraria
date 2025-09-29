@@ -1,4 +1,4 @@
-  let cartoesSelecionados = [];
+    let cartoesSelecionados = [];
     let cuponsAplicados = []; // Array para armazenar múltiplos cupons
     let cartTimer = null;
     let cartTimeoutDuration = 15; // segundos
@@ -168,6 +168,32 @@ function adicionarCartao() {
 
   cartoesContainer.insertAdjacentHTML('beforeend', cartaoHtml);
   document.getElementById('resumo-pagamento').style.display = 'block';
+  
+  atualizarResumoPagamento();
+}
+
+// Recalcula totais de forma consistente
+function recalcularTotaisConsistentes() {
+  const subtotalText = document.getElementById('subtotal').textContent;
+  const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
+  
+  const freteText = document.getElementById('frete').textContent;
+  let frete = parseFloat(freteText.replace('R$', '').replace(',', '.')) || 0;
+  
+  // 🔹 CORREÇÃO: Se há cupons que zeram frete, mantém frete zerado
+  if (cuponsAplicados.some(cupom => cupom.zerarFrete)) {
+    frete = 0;
+    document.getElementById('frete').textContent = 'R$ 0,00';
+  }
+  
+  const descontoCupons = cuponsAplicados.reduce((total, cupom) => total + cupom.valorDesconto, 0);
+  const totalCompra = Math.max(0, subtotal + frete - descontoCupons);
+  
+  // Atualiza a exibição do total
+  document.getElementById('total').textContent = `R$ ${totalCompra.toFixed(2)}`;
+  
+  // Atualiza o resumo do pagamento
+  atualizarResumoPagamento();
 }
 
 // Função para remover um cartão
@@ -225,75 +251,80 @@ function atualizarDetalhesCartao(campoId, cartaoId) {
 }
 
 // Função para atualizar o resumo do pagamento
-   function atualizarResumoPagamento() {
-      const resumoCartoes = document.getElementById('resumo-cartoes');
-      const resumoCupons = document.getElementById('resumo-cupons');
-      let totalPago = 0;
-      let cartoesInvalidos = false;
+function atualizarResumoPagamento() {
+  const resumoCartoes = document.getElementById('resumo-cartoes');
+  const resumoCupons = document.getElementById('resumo-cupons');
+  let totalPago = 0;
+  let cartoesInvalidos = false;
 
-      // Atualiza os valores nos cartões selecionados
-      document.querySelectorAll('.cartao-pagamento').forEach(cartaoDiv => {
-        const campoId = parseInt(cartaoDiv.getAttribute('data-id'));
-        const valorInput = cartaoDiv.querySelector('.valor-cartao');
-        let valor = parseFloat(valorInput.value) || 0;
-        
-        // Valida valor mínimo
-        if (valor > 0 && valor < 10) {
-          valorInput.classList.add('is-invalid');
-          cartoesInvalidos = true;
-        } else {
-          valorInput.classList.remove('is-invalid');
-        }
-
-        const cartaoIndex = cartoesSelecionados.findIndex(c => c.campoId === campoId);
-        if (cartaoIndex !== -1) {
-          cartoesSelecionados[cartaoIndex].valor = valor;
-          totalPago += valor;
-        }
-      });
-
-      // Atualiza o resumo dos cartões
-      resumoCartoes.innerHTML = cartoesSelecionados
-        .filter(c => c.valor > 0)
-        .map(cartao => `
-          <div class="resumo-cartao-item ${cartao.valor < 10 ? 'text-danger' : ''}">
-            <span>${cartao.bandeira} ****${cartao.ultimosDigitos}:</span>
-            <span>R$ ${cartao.valor.toFixed(2)} ${cartao.valor < 10 ? '(Mínimo: R$ 10,00)' : ''}</span>
-          </div>
-        `).join('');
-
-      // Atualiza o resumo dos cupons
-      const descontoCupons = cuponsAplicados.reduce((total, cupom) => total + cupom.valorDesconto, 0);
-      resumoCupons.innerHTML = cuponsAplicados
-        .map(cupom => `
-          <div class="resumo-cupom-item text-success">
-            <span>${cupom.codigo}:</span>
-            <span>-R$ ${cupom.valorDesconto.toFixed(2)}</span>
-          </div>
-        `).join('');
-
-      // Calcula o total considerando cupons
-      const totalCompraText = document.getElementById('total').textContent;
-      const totalCompra = parseFloat(totalCompraText.replace('R$', '').replace(',', '.'));
-      
-      document.getElementById('total-pagamento').textContent = `R$ ${totalPago.toFixed(2)}`;
-
-      // Verifica se o total pago corresponde ao total da compra
-      if (cartoesInvalidos) {
-        resumoCartoes.innerHTML += `
-          <div class="text-danger mt-2">
-            Cada cartão deve ter um valor mínimo de R$ 10,00
-          </div>
-        `;
-      } else if (totalPago.toFixed(2) !== totalCompra.toFixed(2)) {
-        resumoCartoes.innerHTML += `
-          <div class="text-danger mt-2">
-            Atenção: O total dos cartões (R$ ${totalPago.toFixed(2)}) não corresponde 
-            ao valor da compra (R$ ${totalCompra.toFixed(2)})
-          </div>
-        `;
-      }
+  // Atualiza os valores nos cartões selecionados
+  document.querySelectorAll('.cartao-pagamento').forEach(cartaoDiv => {
+    const campoId = parseInt(cartaoDiv.getAttribute('data-id'));
+    const valorInput = cartaoDiv.querySelector('.valor-cartao');
+    let valor = parseFloat(valorInput.value) || 0;
+    
+    // Valida valor mínimo
+    if (valor > 0 && valor < 10) {
+      valorInput.classList.add('is-invalid');
+      cartoesInvalidos = true;
+    } else {
+      valorInput.classList.remove('is-invalid');
     }
+
+    const cartaoIndex = cartoesSelecionados.findIndex(c => c.campoId === campoId);
+    if (cartaoIndex !== -1) {
+      cartoesSelecionados[cartaoIndex].valor = valor;
+      totalPago += valor;
+    }
+  });
+
+  // Atualiza o resumo dos cartões
+  resumoCartoes.innerHTML = cartoesSelecionados
+    .filter(c => c.valor > 0)
+    .map(cartao => `
+      <div class="resumo-cartao-item ${cartao.valor < 10 ? 'text-danger' : ''}">
+        <span>${cartao.bandeira} ****${cartao.ultimosDigitos}:</span>
+        <span>R$ ${cartao.valor.toFixed(2)} ${cartao.valor < 10 ? '(Mínimo: R$ 10,00)' : ''}</span>
+      </div>
+    `).join('');
+
+  // Atualiza o resumo dos cupons
+  const descontoCupons = cuponsAplicados.reduce((total, cupom) => total + cupom.valorDesconto, 0);
+  resumoCupons.innerHTML = cuponsAplicados
+    .map(cupom => `
+      <div class="resumo-cupom-item text-success">
+        <span>${cupom.codigo}:</span>
+        <span>-R$ ${cupom.valorDesconto.toFixed(2)}</span>
+      </div>
+    `).join('');
+
+  // 🔹 CORREÇÃO: Calcula o total CORRETAMENTE considerando subtotal + frete - cupons
+  const subtotalText = document.getElementById('subtotal').textContent;
+  const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
+  
+  const freteText = document.getElementById('frete').textContent;
+  const frete = parseFloat(freteText.replace('R$', '').replace(',', '.')) || 0;
+  
+  const totalCompra = Math.max(0, subtotal + frete - descontoCupons);
+  
+  document.getElementById('total-pagamento').textContent = `R$ ${totalPago.toFixed(2)}`;
+
+  // Verifica se o total pago corresponde ao total da compra
+  if (cartoesInvalidos) {
+    resumoCartoes.innerHTML += `
+      <div class="text-danger mt-2">
+        Cada cartão deve ter um valor mínimo de R$ 10,00
+      </div>
+    `;
+  } else if (Math.abs(totalPago - totalCompra) > 0.01) { // 🔹 Usa comparação com tolerância
+    resumoCartoes.innerHTML += `
+      <div class="text-danger mt-2">
+        Atenção: O total dos cartões (R$ ${totalPago.toFixed(2)}) não corresponde 
+        ao valor da compra (R$ ${totalCompra.toFixed(2)})
+      </div>
+    `;
+  }
+}
     // Funções para gerenciar carrinho por usuário
     function obterCarrinhoUsuario() {
       const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
@@ -491,32 +522,53 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // Calcula subtotal e frete
         const subtotal = itensDetalhados.reduce((s, i) => s + (i.produto.precoVenda * i.quantidade), 0);
-        const frete = calcularFrete(subtotal, '');
+
+        // 🔹 CORREÇÃO: Verifica se há cupons que zeram o frete antes de calcular
+        const temCupomFreteGratis = cuponsAplicados.some(cupom => cupom.zerarFrete);
+        let frete = 0;
+
+        if (!temCupomFreteGratis) {
+          // Só calcula o frete se NÃO houver cupom que zera o frete
+          // Tenta obter o estado do endereço selecionado, se houver
+          const enderecoSelect = document.getElementById('select-endereco');
+          let estado = '';
+          
+          if (enderecoSelect && enderecoSelect.value) {
+            const enderecoId = parseInt(enderecoSelect.value);
+            const endereco = enderecos.find(e => e.id == enderecoId);
+            if (endereco) {
+              estado = endereco.estado;
+            }
+          }
+          
+          frete = calcularFrete(subtotal, estado);
+        }
 
         document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
         document.getElementById('frete').textContent = `R$ ${frete.toFixed(2)}`;
-
         // Verifica se há cupom aplicado
         const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-        if (cupomAplicado && clienteLogado) {
-          const validacao = validarCupom(cupomAplicado.codigo, subtotal, clienteLogado.id);
+
+        // 🔹 CORREÇÃO: Usa cuponsAplicados em vez de cupomAplicado
+        if (cuponsAplicados.length > 0 && clienteLogado) {
+          const descontoTotal = cuponsAplicados.reduce((total, cupom) => total + cupom.valorDesconto, 0);
+          const valorFinal = Math.max(0, subtotal + frete - descontoTotal);
           
-          if (validacao.valido) {
-            // Atualiza a UI do cupom
-            document.getElementById('cupom-codigo').textContent = cupomAplicado.codigo;
-            document.getElementById('cupom-aplicado').style.display = 'block';
-            document.getElementById('input-cupom').value = cupomAplicado.codigo;
-            
-            // Atualiza o total com desconto
-            atualizarTotalComCupom(subtotal, validacao.valorDesconto);
-          } else {
-            // Cupom inválido (pode ter expirado ou valor mínimo não atingido)
-            removerCupom();
-            document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+          document.getElementById('total').textContent = `R$ ${valorFinal.toFixed(2)}`;
+          document.getElementById('valor-desconto').textContent = `-R$ ${descontoTotal.toFixed(2)}`;
+          document.getElementById('cupom-line').style.display = 'flex';
+          
+          // 🔹 CORREÇÃO ADICIONAL: Se há cupons que zeram frete, força frete = 0
+          if (cuponsAplicados.some(cupom => cupom.zerarFrete)) {
+            document.getElementById('frete').textContent = 'R$ 0,00';
+            // Recalcula o total com frete zerado
+            const novoValorFinal = Math.max(0, subtotal - descontoTotal);
+            document.getElementById('total').textContent = `R$ ${novoValorFinal.toFixed(2)}`;
           }
         } else {
           // Sem cupom aplicado
           document.getElementById('total').textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+          document.getElementById('cupom-line').style.display = 'none';
         }
 
       } catch (error) {
@@ -528,7 +580,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     }
 
-   function alterarQuantidadeCarrinho(idProduto, delta, estoqueMax = Infinity) {
+    function alterarQuantidadeCarrinho(idProduto, delta, estoqueMax = Infinity) {
       const item = carrinho.find(i => i.id === idProduto);
       if (!item) return;
       const novaQtd = item.quantidade + delta;
@@ -553,35 +605,37 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function atualizarCarrinho() {
       salvarCarrinhoUsuario(carrinho);
-      carregarCarrinho();
+      carregarCarrinho(); // Esta função que precisa ser ajustada
     }
 
-    async function carregarEnderecos() {
-      const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
-      if (!cliente) return;
+async function carregarEnderecos() {
+  const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
+  if (!cliente) return;
 
-      try {
-        const res = await fetch(`/api/clientes/${cliente.id}/enderecos`);
-        if (!res.ok) throw new Error('Erro ao buscar endereços');
-        enderecos = await res.json();
+  try {
+    const res = await fetch(`/api/clientes/${cliente.id}/enderecos`);
+    if (!res.ok) throw new Error('Erro ao buscar endereços');
+    enderecos = await res.json();
 
-        const selectEnderecos = document.getElementById('select-endereco');
-        selectEnderecos.innerHTML = '<option value="">-- Selecione um endereço --</option>';
+    const selectEnderecos = document.getElementById('select-endereco');
+    selectEnderecos.innerHTML = '<option value="">-- Selecione um endereço --</option>';
 
-        const enderecosEntrega = enderecos.filter(e => e.tipo === 'ENTREGA');
+    const enderecosEntrega = enderecos.filter(e => e.tipo === 'ENTREGA');
 
-        enderecosEntrega.forEach(e => {
-          const opt = document.createElement('option');
-          opt.value = e.id;
-          opt.textContent = `${e.rua}, ${e.numero} - ${e.bairro}, ${e.cidade}`;
-          selectEnderecos.appendChild(opt);
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    }
+    enderecosEntrega.forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.id;
+      // Inclui o nome do endereço se existir
+      const nome = e.nomeEndereco ? `${e.nomeEndereco} - ` : '';
+      opt.textContent = `${nome}${e.rua}, ${e.numero} - ${e.bairro}, ${e.cidade}`;
+      selectEnderecos.appendChild(opt);
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
 
-    async function carregarCartoes() {
+async function carregarCartoes() {
   const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
   if (!cliente) return;
 
@@ -590,61 +644,87 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!res.ok) throw new Error('Erro ao buscar cartões');
     cartoes = await res.json();
 
+    // Ordena cartões: preferenciais primeiro
+    cartoes.sort((a, b) => (b.preferencial ? 1 : 0) - (a.preferencial ? 1 : 0));
+
     // Inicializa com um campo de cartão se houver cartões disponíveis
-    if (cartoes.length > 0) {
+    const cartoesContainer = document.getElementById('cartoes-container');
+    if (cartoes.length > 0 && cartoesContainer.children.length === 0) {
       adicionarCartao();
+      
+      // Seleciona automaticamente o cartão preferencial se existir
+      const cartaoPreferencial = cartoes.find(c => c.preferencial);
+      if (cartaoPreferencial) {
+        setTimeout(() => {
+          const primeiroSelect = document.querySelector('.select-cartao');
+          if (primeiroSelect) {
+            primeiroSelect.value = cartaoPreferencial.id;
+            const campoId = primeiroSelect.closest('.cartao-pagamento').dataset.id;
+            atualizarDetalhesCartao(parseInt(campoId), cartaoPreferencial.id);
+          }
+        }, 100);
+      }
     }
   } catch (e) {
     console.error(e);
   }
 }
 
-    function mostrarDetalhesEndereco() {
-      const select = document.getElementById('select-endereco');
-      const detalhesDiv = document.getElementById('detalhes-endereco');
-      const endereco = enderecos.find(e => e.id == select.value);
+ function mostrarDetalhesEndereco() {
+  const select = document.getElementById('select-endereco');
+  const detalhesDiv = document.getElementById('detalhes-endereco');
+  const endereco = enderecos.find(e => e.id == select.value);
 
-      if (!endereco) {
-        detalhesDiv.style.display = 'none';
-        detalhesDiv.innerHTML = '';
-        return;
-      }
+  if (!endereco) {
+    detalhesDiv.style.display = 'none';
+    detalhesDiv.innerHTML = '';
+    return;
+  }
 
-      detalhesDiv.style.display = 'block';
-      detalhesDiv.innerHTML = `
-        <strong>${endereco.nomeEndereco || 'Endereço de Entrega'}</strong>
-        <div class="detalhes-row"><strong>Rua:</strong> ${endereco.tipoLogradouro ? endereco.tipoLogradouro + ' ' : ''}${endereco.rua}, Nº ${endereco.numero}${endereco.complemento ? ' - ' + endereco.complemento : ''}</div>
-        <div class="detalhes-row"><strong>Bairro:</strong> ${endereco.bairro}</div>
-        <div class="detalhes-row"><strong>Cidade/Estado:</strong> ${endereco.cidade} / ${endereco.estado}</div>
-        <div class="detalhes-row"><strong>CEP:</strong> ${endereco.cep}</div>
-        <div class="detalhes-row"><strong>Tipo Residência:</strong> ${endereco.tipoResidencia || 'Não informado'}</div>
-        <div class="detalhes-row"><strong>País:</strong> ${endereco.pais || 'Brasil'}</div>
-      `;
+  detalhesDiv.style.display = 'block';
+  detalhesDiv.innerHTML = `
+    <strong>${endereco.nomeEndereco || 'Endereço de Entrega'}</strong>
+    <div class="detalhes-row"><strong>Rua:</strong> ${endereco.tipoLogradouro ? endereco.tipoLogradouro + ' ' : ''}${endereco.rua}, Nº ${endereco.numero}${endereco.complemento ? ' - ' + endereco.complemento : ''}</div>
+    <div class="detalhes-row"><strong>Bairro:</strong> ${endereco.bairro}</div>
+    <div class="detalhes-row"><strong>Cidade/Estado:</strong> ${endereco.cidade} / ${endereco.estado}</div>
+    <div class="detalhes-row"><strong>CEP:</strong> ${endereco.cep}</div>
+    <div class="detalhes-row"><strong>Tipo Residência:</strong> ${endereco.tipoResidencia || 'Não informado'}</div>
+    <div class="detalhes-row"><strong>País:</strong> ${endereco.pais || 'Brasil'}</div>
+  `;
 
-      const subtotalSpan = document.getElementById('subtotal');
-      const freteSpan = document.getElementById('frete');
-      const totalSpan = document.getElementById('total');
+  const subtotalSpan = document.getElementById('subtotal');
+  const freteSpan = document.getElementById('frete');
+  const totalSpan = document.getElementById('total');
 
-      if (subtotalSpan && freteSpan && totalSpan) {
-        const subtotal = parseFloat(subtotalSpan.textContent.replace('R$', '').replace(',', '.'));
-        const frete = calcularFrete(subtotal, endereco.estado);
-
-        freteSpan.textContent = `R$ ${frete.toFixed(2)}`;
-        
-        // Recalcula o total considerando o cupom se existir
-        if (cupomAplicado) {
-          const validacao = validarCupom(cupomAplicado.codigo, subtotal, JSON.parse(localStorage.getItem('clienteLogado')).id);
-          if (validacao.valido) {
-            atualizarTotalComCupom(subtotal, validacao.valorDesconto);
-          } else {
-            removerCupom();
-            totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
-          }
-        } else {
-          totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
-        }
-      }
+  if (subtotalSpan && freteSpan && totalSpan) {
+    const subtotal = parseFloat(subtotalSpan.textContent.replace('R$', '').replace(',', '.'));
+    
+    const temCupomFreteGratis = cuponsAplicados.some(cupom => cupom.zerarFrete);
+    
+    let frete = 0;
+    if (!temCupomFreteGratis) {
+      // Só calcula o frete se NÃO houver cupom que zera o frete
+      frete = calcularFrete(subtotal, endereco.estado);
     }
+    // Se tem cupom que zera frete, mantém frete = 0
+
+    freteSpan.textContent = `R$ ${frete.toFixed(2)}`;
+    
+    if (cuponsAplicados.length > 0) {
+      const descontoTotal = cuponsAplicados.reduce((total, cupom) => total + cupom.valorDesconto, 0);
+      const valorFinal = Math.max(0, subtotal + frete - descontoTotal);
+      totalSpan.textContent = `R$ ${valorFinal.toFixed(2)}`;
+      
+      // Mantém a exibição do desconto
+      document.getElementById('valor-desconto').textContent = `-R$ ${descontoTotal.toFixed(2)}`;
+      document.getElementById('cupom-line').style.display = 'flex';
+    } else {
+      totalSpan.textContent = `R$ ${(subtotal + frete).toFixed(2)}`;
+    }
+  }
+  
+  atualizarResumoPagamento();
+}
 
     function mostrarDetalhesCartao() {
       const select = document.getElementById('select-cartao');
@@ -711,7 +791,8 @@ window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('input-cupom').value = '';
       
       // Recalcula o total com todos os cupons aplicados
-      recalcularTotalComCupons();
+        recalcularTotaisConsistentes();
+
       
       if (validacao.mensagem) {
         alert(validacao.mensagem + (validacao.zerarFrete ? "\n\nFrete grátis aplicado!" : ""));
@@ -743,58 +824,42 @@ window.addEventListener('DOMContentLoaded', () => {
       `).join('');
     }
 
-        function removerCupomAplicado(codigoCupom) {
-      // Encontra o cupom a ser removido
-      const cupomIndex = cuponsAplicados.findIndex(c => c.codigo === codigoCupom);
-      if (cupomIndex === -1) return;
+      function removerCupomAplicado(codigoCupom) {
+  // Encontra o cupom a ser removido
+  const cupomIndex = cuponsAplicados.findIndex(c => c.codigo === codigoCupom);
+  if (cupomIndex === -1) return;
+  
+  const cupomRemovido = cuponsAplicados[cupomIndex];
+  
+  // Remove o cupom do array
+  cuponsAplicados.splice(cupomIndex, 1);
+  
+  // Atualiza a UI
+  atualizarCuponsAplicadosUI();
+  
+  // 🔹 CORREÇÃO: Verifica se ainda há cupons que zeram o frete
+  const aindaTemFreteGratis = cuponsAplicados.some(c => c.zerarFrete);
+  
+  if (!aindaTemFreteGratis) {
+    // Só recalcula o frete se NÃO houver mais cupons que zeram o frete
+    const subtotalText = document.getElementById('subtotal').textContent;
+    const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
+    const enderecoSelect = document.getElementById('select-endereco');
+    
+    if (enderecoSelect && enderecoSelect.value) {
+      const enderecoId = parseInt(enderecoSelect.value);
+      const endereco = enderecos.find(e => e.id == enderecoId);
       
-      const cupomRemovido = cuponsAplicados[cupomIndex];
-      
-      // Remove o cupom do array
-      cuponsAplicados.splice(cupomIndex, 1);
-      
-      // Atualiza a UI
-      atualizarCuponsAplicadosUI();
-      
-      // Restaura o frete se necessário
-      if (cupomRemovido.zerarFrete) {
-        const subtotalText = document.getElementById('subtotal').textContent;
-        const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
-        const enderecoSelect = document.getElementById('select-endereco');
-        
-        if (enderecoSelect && enderecoSelect.value) {
-          const enderecoId = parseInt(enderecoSelect.value);
-          const endereco = enderecos.find(e => e.id == enderecoId);
-          
-          if (endereco) {
-            const frete = calcularFrete(subtotal, endereco.estado);
-            document.getElementById('frete').textContent = `R$ ${frete.toFixed(2)}`;
-          }
-        }
+      if (endereco) {
+        const frete = calcularFrete(subtotal, endereco.estado);
+        document.getElementById('frete').textContent = `R$ ${frete.toFixed(2)}`;
       }
-      
-      // Verifica se ainda há cupons que zeram o frete
-      const aindaTemFreteGratis = cuponsAplicados.some(c => c.zerarFrete);
-      if (!aindaTemFreteGratis) {
-        // Recalcula o frete normalmente
-        const subtotalText = document.getElementById('subtotal').textContent;
-        const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
-        const enderecoSelect = document.getElementById('select-endereco');
-        
-        if (enderecoSelect && enderecoSelect.value) {
-          const enderecoId = parseInt(enderecoSelect.value);
-          const endereco = enderecos.find(e => e.id == enderecoId);
-          
-          if (endereco) {
-            const frete = calcularFrete(subtotal, endereco.estado);
-            document.getElementById('frete').textContent = `R$ ${frete.toFixed(2)}`;
-          }
-        }
-      }
-      
-      // Recalcula o total
-      recalcularTotalComCupons();
     }
+  }
+  
+  // Recalcula o total
+  recalcularTotaisConsistentes();
+}
 
         function recalcularTotalComCupons() {
       const subtotalText = document.getElementById('subtotal').textContent;
@@ -1829,4 +1894,297 @@ function limparCarrinhoAposCompra(clienteId) {
   // Recarrega o carrinho para atualizar a UI
   carrinho = [];
   carregarCarrinho();
+}
+
+// Função para abrir o modal de novo endereço
+function abrirModalNovoEndereco() {
+  // Limpa o formulário
+  document.getElementById('form-novo-endereco').reset();
+  document.getElementById('novo-endereco-pais').value = 'Brasil';
+  
+  // Abre o modal
+  const modal = new bootstrap.Modal(document.getElementById('modalNovoEndereco'));
+  modal.show();
+}
+
+// Função para salvar o novo endereço
+async function salvarNovoEndereco() {
+  try {
+    const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!cliente) {
+      alert('Você precisa estar logado para adicionar um endereço');
+      return;
+    }
+
+    // Coleta os dados do formulário
+    const novoEndereco = {
+      nomeEndereco: document.getElementById('novo-endereco-nome').value.trim(),
+      cep: document.getElementById('novo-endereco-cep').value,
+      rua: document.getElementById('novo-endereco-rua').value,
+      numero: document.getElementById('novo-endereco-numero').value,
+      complemento: document.getElementById('novo-endereco-complemento').value || null,
+      bairro: document.getElementById('novo-endereco-bairro').value,
+      cidade: document.getElementById('novo-endereco-cidade').value,
+      estado: document.getElementById('novo-endereco-estado').value,
+      pais: document.getElementById('novo-endereco-pais').value,
+      tipoResidencia: document.getElementById('novo-endereco-tipo-residencia').value,
+      tipoLogradouro: document.getElementById('novo-endereco-tipo-logradouro').value,
+      logradouro: document.getElementById('novo-endereco-logradouro').value,
+      tipo: 'ENTREGA',
+      cliente: { id: cliente.id } // Inclui o cliente no objeto
+    };
+
+    // Validação básica
+    const camposObrigatorios = [
+      'nomeEndereco', 'cep', 'rua', 'numero',
+      'bairro', 'cidade', 'estado',
+      'tipoResidencia', 'tipoLogradouro', 'logradouro'
+    ];
+    for (const campo of camposObrigatorios) {
+      if (!novoEndereco[campo]) {
+        alert(`O campo ${campo.replace('novo-endereco-', '').replace(/-/g, ' ')} é obrigatório`);
+        return;
+      }
+    }
+
+    // Envia para a API
+    const response = await fetch(`/api/enderecos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(novoEndereco)
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao salvar endereço');
+    }
+
+    const enderecoSalvo = await response.json();
+
+    // Fecha o modal de cadastro
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalNovoEndereco'));
+    modal.hide();
+
+    // Recarrega a lista de endereços
+    await carregarEnderecos();
+
+    // Seleciona automaticamente o novo endereço
+    document.getElementById('select-endereco').value = enderecoSalvo.id;
+    mostrarDetalhesEndereco();
+
+    // Abre o modal de sucesso
+  const modalSucesso = new bootstrap.Modal(document.getElementById('modalSucessoEndereco'));
+  modalSucesso.show();
+
+
+  } catch (error) {
+    console.error('Erro ao salvar endereço:', error);
+    alert('Erro ao salvar endereço. Tente novamente.');
+  }
+}
+
+
+// Máscara para CEP e busca automática
+document.addEventListener('DOMContentLoaded', function () {
+  // Máscara para CEP no modal de endereço
+  const cepInput = document.getElementById('novo-endereco-cep');
+  cepInput?.addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, '');
+    value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+    e.target.value = value.substring(0, 9);
+  });
+  cepInput?.addEventListener('blur', function (e) {
+    const cep = e.target.value.replace(/\D/g, '');
+    if (cep.length === 8) buscarEnderecoPorCEP(cep);
+  });
+
+  // Máscara para número do cartão no modal de cartão
+  const numeroCartaoInput = document.getElementById('novo-cartao-numero');
+  numeroCartaoInput?.addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, '');
+    value = value.match(/.{1,4}/g)?.join(' ') || '';
+    e.target.value = value.substring(0, 19);
+  });
+
+  // Máscara para CVV
+  const cvvInput = document.getElementById('novo-cartao-cvv');
+  cvvInput?.addEventListener('input', function (e) {
+    e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+  });
+
+});
+
+
+// Função para buscar endereço via CEP
+async function buscarEnderecoPorCEP(cep) {
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    if (response.ok) {
+      const data = await response.json();
+      if (!data.erro) {
+        document.getElementById('novo-endereco-rua').value = data.logradouro || '';
+        document.getElementById('novo-endereco-bairro').value = data.bairro || '';
+        document.getElementById('novo-endereco-cidade').value = data.localidade || '';
+        document.getElementById('novo-endereco-estado').value = data.uf || '';
+        document.getElementById('novo-endereco-logradouro').value = data.logradouro || '';
+        document.getElementById('novo-endereco-tipo-logradouro').value = obterTipoLogradouro(data.logradouro);
+      }
+    }
+  } catch (error) {
+    console.log('Erro ao buscar CEP:', error);
+  }
+}
+
+// Função auxiliar para determinar tipo de logradouro
+function obterTipoLogradouro(logradouro) {
+  if (!logradouro) return '';
+  const primeiraPalavra = logradouro.split(' ')[0].toLowerCase();
+  const tipos = ['rua', 'avenida', 'av', 'alameda', 'praça', 'travessa', 'rodovia', 'estrada'];
+  for (const tipo of tipos) {
+    if (primeiraPalavra.includes(tipo)) {
+      return tipo.charAt(0).toUpperCase() + tipo.slice(1);
+    }
+  }
+  return 'Rua';
+}
+
+// Função para abrir o modal de novo cartão
+function abrirModalNovoCartao() {
+  // Limpa o formulário
+  document.getElementById('form-novo-cartao').reset();
+  
+  // Define a data mínima como o mês atual
+  const hoje = new Date();
+  const mesAtual = hoje.toISOString().slice(0, 7);
+  document.getElementById('novo-cartao-validade').min = mesAtual;
+  
+  // Abre o modal
+  const modal = new bootstrap.Modal(document.getElementById('modalNovoCartao'));
+  modal.show();
+}
+
+// Função para salvar o novo cartão
+async function salvarNovoCartao() {
+  try {
+    const cliente = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!cliente) {
+      alert('Você precisa estar logado para adicionar um cartão');
+      return;
+    }
+
+    // Coleta os dados do formulário
+    const novoCartao = {
+      numero: document.getElementById('novo-cartao-numero').value.replace(/\s/g, ''),
+      nomeTitular: document.getElementById('novo-cartao-nome').value.trim(),
+      bandeira: document.getElementById('novo-cartao-bandeira').value,
+      cvv: document.getElementById('novo-cartao-cvv').value,
+      dataValidade: document.getElementById('novo-cartao-validade').value,
+      preferencial: document.getElementById('novo-cartao-preferencial').checked
+    };
+
+    // Validação básica
+    const camposObrigatorios = ['numero', 'nomeTitular', 'bandeira', 'cvv', 'dataValidade'];
+    for (const campo of camposObrigatorios) {
+      if (!novoCartao[campo]) {
+        alert(`O campo ${campo.replace('novo-cartao-', '').replace(/-/g, ' ')} é obrigatório`);
+        return;
+      }
+    }
+
+    // Validação do número do cartão
+    if (novoCartao.numero.length < 13 || novoCartao.numero.length > 19) {
+      alert('Número do cartão inválido. Deve ter entre 13 e 19 dígitos.');
+      return;
+    }
+
+    // Validação do CVV
+    if (novoCartao.cvv.length < 3 || novoCartao.cvv.length > 4) {
+      alert('CVV inválido. Deve ter 3 ou 4 dígitos.');
+      return;
+    }
+
+    // Validação da data de validade
+    const dataValidade = new Date(novoCartao.dataValidade + '-01');
+    const hoje = new Date();
+    if (dataValidade < hoje) {
+      alert('Cartão expirado. Por favor, insira uma data de validade futura.');
+      return;
+    }
+
+    // Envia para a API
+    const response = await fetch(`/api/clientes/${cliente.id}/cartoes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(novoCartao)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao salvar cartão');
+    }
+
+    const cartaoSalvo = await response.json();
+    
+    // Fecha o modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalNovoCartao'));
+    modal.hide();
+
+    // Recarrega a lista de cartões
+    await carregarCartoes();
+    
+    // Adiciona automaticamente o novo cartão à seleção
+    adicionarCartaoSelecionado(cartaoSalvo.id);
+
+    // Exibe o modal de sucesso
+    const modalSucesso = new bootstrap.Modal(document.getElementById('modalSucessoCartao'));
+    modalSucesso.show();
+
+
+  } catch (error) {
+    console.error('Erro ao salvar cartão:', error);
+    alert('Erro ao salvar cartão: ' + error.message);
+  }
+}
+
+// Função para adicionar automaticamente o cartão recém-criado
+function adicionarCartaoSelecionado(cartaoId) {
+  const cartoesContainer = document.getElementById('cartoes-container');
+  const cartao = cartoes.find(c => c.id === cartaoId);
+  
+  if (!cartao) return;
+
+  const novoId = Date.now();
+  
+  const cartaoHtml = `
+    <div class="cartao-pagamento" data-id="${novoId}">
+      <button class="remove-cartao" onclick="removerCartao(${novoId})">
+        <i class="bi bi-trash"></i>
+      </button>
+      <select class="form-control select-cartao" onchange="atualizarDetalhesCartao(${novoId}, this.value)">
+        <option value="">-- Selecione um cartão --</option>
+        ${cartoes.map(c => `
+          <option value="${c.id}" ${c.id === cartaoId ? 'selected' : ''}>
+            ${c.bandeira} **** **** **** ${c.numero.slice(-4)}
+          </option>
+        `).join('')}
+      </select>
+      <div class="detalhes-cartao-${novoId} detalhes-box mt-2"></div>
+      <div class="cartao-valor">
+        <span>R$</span>
+        <input type="number" class="form-control valor-cartao" 
+               placeholder="Mínimo R$ 10,00" min="0.01" step="0.01"
+               onchange="atualizarResumoPagamento()">
+      </div>
+    </div>
+  `;
+
+  cartoesContainer.insertAdjacentHTML('beforeend', cartaoHtml);
+  
+  // Atualiza os detalhes do cartão selecionado
+  atualizarDetalhesCartao(novoId, cartaoId);
+  
+  document.getElementById('resumo-pagamento').style.display = 'block';
 }
