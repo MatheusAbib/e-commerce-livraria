@@ -113,7 +113,6 @@ public Pedido criarPedido(Long clienteId, List<ItemPedidoDTO> itensDTO,
     Pedido pedidoSalvo = pedidoRepository.save(pedido);
     atualizarEstoque(pedidoSalvo);
 
-    // 🔽 ADICIONANDO LOG DA COMPRA 🔽
     try {
 Log log = new Log();
 log.setUserId(cliente.getId());      // ID do usuário que comprou
@@ -170,7 +169,6 @@ public Pedido atualizarStatus(Long pedidoId, StatusPedido novoStatus, String mot
 
     Pedido pedidoAtualizado = pedidoRepository.save(pedido);
 
-    // ✅ REGISTRA O LOG DA ALTERAÇÃO DE STATUS
     try {
         Log log = new Log();
         log.setUserId(pedido.getCliente().getId());
@@ -292,7 +290,7 @@ public void cancelarPedido(Long id) {
         pedidoRepository.delete(pedido);
     }
 public List<Pedido> listarTodosPedidos() {
-    return pedidoRepository.findAllComCliente(); // ✅ já traz cliente com nome
+    return pedidoRepository.findAllComCliente(); 
 }
 
     @Transactional
@@ -318,10 +316,7 @@ public Pedido solicitarDevolucao(Long pedidoId, String motivo, List<ItemDevoluca
     // Atualiza status para DEVOLUCAO
     pedido.setStatus(StatusPedido.DEVOLUCAO);
     pedido.setMotivoDevolucao(motivo);
-    
-    // Aqui você pode adicionar lógica adicional para registrar os itens específicos da devolução
-    // Por exemplo, pode adicionar uma lista de itens para devolução no pedido
-    
+        
     return pedidoRepository.save(pedido);
 }
 }

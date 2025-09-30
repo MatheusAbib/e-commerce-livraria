@@ -1054,7 +1054,7 @@
 .btn-novo-endereco,
 .btn-novo-cartao {
   background-color: transparent;
-  border: 1px solid var(--primary-color); /* Corrigido */
+  border: 1px solid var(--primary-color);
   color: var(--primary-color);
   padding: 5px 15px;
   font-size: 15px;

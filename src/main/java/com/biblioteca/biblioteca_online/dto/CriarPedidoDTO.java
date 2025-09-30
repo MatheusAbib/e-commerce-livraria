@@ -7,12 +7,10 @@ public class CriarPedidoDTO {
     private Long clienteId;
     private List<ItemPedidoDTO> itens;
     private Long enderecoId;
-    private Long cartaoId; // pode manter para compatibilidade
+    private Long cartaoId; 
     private String codigoCupom;
     private BigDecimal valorDesconto;
     private BigDecimal valorSubtotal; 
-
-    // NOVO: lista de pagamentos (cartões)
     private List<PagamentoDTO> pagamentos;
 
     // Getters e Setters

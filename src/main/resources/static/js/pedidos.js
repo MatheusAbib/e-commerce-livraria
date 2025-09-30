@@ -130,11 +130,10 @@
       }
 
 container.innerHTML = pedidos.map(pedido => {
-    // Usamos os valores já calculados e persistidos no backend
     const subtotal = pedido.valorSubtotal || 0;
     const frete = pedido.valorFrete || 0;
     const desconto = pedido.valorDesconto || 0;
-    const total = pedido.valorTotal || 0; // Sempre usamos o valor persistido
+    const total = pedido.valorTotal || 0; 
     const codigoCupom = pedido.codigoCupom || '';
 
     // Função para formatar valores monetários
@@ -276,7 +275,7 @@ function solicitarDevolucao(pedidoId) {
   document.getElementById('motivo-devolucao').value = '';
   
   // Encontrar o pedido no cache com comparação não estrita
-  const pedido = pedidosCache.find(p => p.id == pedidoId);  // Note o == em vez de ===
+  const pedido = pedidosCache.find(p => p.id == pedidoId);  
   
   if (!pedido) {
     console.error("Pedido não encontrado no cache. IDs disponíveis:", 

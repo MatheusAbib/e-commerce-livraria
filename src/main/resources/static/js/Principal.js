@@ -59,7 +59,6 @@
     });
 
     // Rest of your JavaScript functions...
-    // (Mantive todas as suas funções JavaScript originais aqui)
     let clienteLogado = null;
 
     // Função para carregar os dados completos do cliente
@@ -296,7 +295,6 @@
       document.getElementById('editar-nascimento').value = clienteLogado.nascimento || '';
       document.getElementById('editar-genero').value = clienteLogado.genero || '';
 
-      // ✅ Corrige o preenchimento do tipo de telefone
       const tipotelefone = clienteLogado.tipotelefone || '';
       const selectTipo = document.getElementById('editar-tipotelefone');
 
@@ -1259,7 +1257,6 @@ if (bandeiraSelect) {
       esconderFormularioLogin();
     }
 
-    // Função para fazer login
 // Função para fazer login
 async function fazerLogin() {
     const email = document.getElementById('login-email').value;
@@ -1309,9 +1306,8 @@ function logout() {
     localStorage.removeItem('clienteLogado');
     
     // RECARREGA A PÁGINA antes de fechar o modal
-    location.reload(); // ← ADICIONE ESTA LINHA
+    location.reload(); 
     
-    // O restante do código será executado após o reload
     atualizarUI(null);
     document.getElementById('profile-content').style.display = 'none';
     fecharModalLogout();
@@ -1384,7 +1380,7 @@ document.getElementById('form-login').addEventListener('submit', async function(
             
             // Fecha o modal e RECARREGA
             closeModalLogin();
-            location.reload(); // ← ADICIONE ESTA LINHA
+            location.reload(); 
             
         } else {
             const erro = await response.text();
@@ -1570,7 +1566,6 @@ document.getElementById('form-login').addEventListener('submit', async function(
         exibirProdutos(todosProdutos);
     }
 
-    // Adicione event listeners para aplicar filtros ao pressionar Enter
     document.querySelectorAll('.filtros-container input').forEach(input => {
         input.addEventListener('keyup', function(e) {
             if (e.key === 'Enter') {
@@ -1750,7 +1745,7 @@ function exibirModalProduto(produto) {
   }
 
   salvarCarrinho(carrinho);
-  exibirModalSucessoCarrinho(); // Substitui o alert pelo modal
+  exibirModalSucessoCarrinho(); 
 
   if (fromModal) fecharModalProduto();
   atualizarContadorCarrinho();
@@ -1791,7 +1786,7 @@ function exibirModalSucessoCarrinho() {
         
         // Cria o objeto do cupom
         const cupom = {
-            id: Date.now(), // Usa timestamp como ID único
+            id: Date.now(), 
             codigo: codigoCupom,
             desconto: desconto,
             valorMinimo: valorMinimo,
@@ -2181,8 +2176,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
   //SESSÃO CHATBOT
 
-//SESSÃO CHATBOT
-
 const apiKey = "AIzaSyAiHf5ACvaEZzwJAe7OeieT_EtxtnjUPUE"; 
 let clienteId = null;
 let historicoCompras = [];
@@ -2283,7 +2276,6 @@ async function chatbotEnviar() {
   // Guarda no histórico da conversa
   conversa.push({ role: "user", content: mensagem });
 
-  // Resumo simples do histórico: só títulos para o prompt (mais leve)
   const resumoHistorico = historicoCompras.length > 0
     ? historicoCompras.map(item => item.titulo).join(", ")
     : "sem histórico";

@@ -180,7 +180,6 @@ function recalcularTotaisConsistentes() {
   const freteText = document.getElementById('frete').textContent;
   let frete = parseFloat(freteText.replace('R$', '').replace(',', '.')) || 0;
   
-  // 🔹 CORREÇÃO: Se há cupons que zeram frete, mantém frete zerado
   if (cuponsAplicados.some(cupom => cupom.zerarFrete)) {
     frete = 0;
     document.getElementById('frete').textContent = 'R$ 0,00';
@@ -298,7 +297,6 @@ function atualizarResumoPagamento() {
       </div>
     `).join('');
 
-  // 🔹 CORREÇÃO: Calcula o total CORRETAMENTE considerando subtotal + frete - cupons
   const subtotalText = document.getElementById('subtotal').textContent;
   const subtotal = parseFloat(subtotalText.replace('R$', '').replace(',', '.'));
   
@@ -316,7 +314,7 @@ function atualizarResumoPagamento() {
         Cada cartão deve ter um valor mínimo de R$ 10,00
       </div>
     `;
-  } else if (Math.abs(totalPago - totalCompra) > 0.01) { // 🔹 Usa comparação com tolerância
+  } else if (Math.abs(totalPago - totalCompra) > 0.01) { 
     resumoCartoes.innerHTML += `
       <div class="text-danger mt-2">
         Atenção: O total dos cartões (R$ ${totalPago.toFixed(2)}) não corresponde 
@@ -523,13 +521,11 @@ window.addEventListener('DOMContentLoaded', () => {
         // Calcula subtotal e frete
         const subtotal = itensDetalhados.reduce((s, i) => s + (i.produto.precoVenda * i.quantidade), 0);
 
-        // 🔹 CORREÇÃO: Verifica se há cupons que zeram o frete antes de calcular
         const temCupomFreteGratis = cuponsAplicados.some(cupom => cupom.zerarFrete);
         let frete = 0;
 
         if (!temCupomFreteGratis) {
           // Só calcula o frete se NÃO houver cupom que zera o frete
-          // Tenta obter o estado do endereço selecionado, se houver
           const enderecoSelect = document.getElementById('select-endereco');
           let estado = '';
           
@@ -549,7 +545,6 @@ window.addEventListener('DOMContentLoaded', () => {
         // Verifica se há cupom aplicado
         const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
 
-        // 🔹 CORREÇÃO: Usa cuponsAplicados em vez de cupomAplicado
         if (cuponsAplicados.length > 0 && clienteLogado) {
           const descontoTotal = cuponsAplicados.reduce((total, cupom) => total + cupom.valorDesconto, 0);
           const valorFinal = Math.max(0, subtotal + frete - descontoTotal);
@@ -558,7 +553,6 @@ window.addEventListener('DOMContentLoaded', () => {
           document.getElementById('valor-desconto').textContent = `-R$ ${descontoTotal.toFixed(2)}`;
           document.getElementById('cupom-line').style.display = 'flex';
           
-          // 🔹 CORREÇÃO ADICIONAL: Se há cupons que zeram frete, força frete = 0
           if (cuponsAplicados.some(cupom => cupom.zerarFrete)) {
             document.getElementById('frete').textContent = 'R$ 0,00';
             // Recalcula o total com frete zerado
@@ -605,7 +599,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function atualizarCarrinho() {
       salvarCarrinhoUsuario(carrinho);
-      carregarCarrinho(); // Esta função que precisa ser ajustada
+      carregarCarrinho(); 
     }
 
 async function carregarEnderecos() {
@@ -837,7 +831,6 @@ async function carregarCartoes() {
   // Atualiza a UI
   atualizarCuponsAplicadosUI();
   
-  // 🔹 CORREÇÃO: Verifica se ainda há cupons que zeram o frete
   const aindaTemFreteGratis = cuponsAplicados.some(c => c.zerarFrete);
   
   if (!aindaTemFreteGratis) {
@@ -1682,7 +1675,6 @@ function toggleCuponsDisponiveis() {
       dataPedido: new Date().toISOString(),
     };
 
-    // 🔹 Ajuste para lidar com cupons que zeram a compra
     if (valorRestante > 0 && cartoesSelecionados.length > 0) {
       pedido.pagamentos = cartoesSelecionados
         .filter(c => c.id && c.valor > 0)

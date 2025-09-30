@@ -24,7 +24,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
        "SUM(i.quantidade * (i.precoUnitario - i.livro.precoCusto)) as lucroTotal " +
        "FROM ItemPedido i " +
        "JOIN i.pedido p " +
-       "WHERE p.status IN ('ENTREGUE', 'EM_TRANSITO', 'TROCADO') " +  // Alterado aqui
+       "WHERE p.status IN ('ENTREGUE', 'EM_TRANSITO', 'TROCADO') " + 
        "GROUP BY i.livro.titulo " +
        "ORDER BY lucroTotal DESC")
 List<Object[]> calcularLucrosPorLivro();

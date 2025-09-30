@@ -235,7 +235,7 @@
 /* Ajuste específico para o campo de telefone */
 #telefone {
   flex-grow: 1;
-  min-width: 0; /* Permite que o campo diminua */
+  min-width: 0; 
 }
 
 .telefone-container {
@@ -245,12 +245,12 @@
 }
 
 .telefone-container select {
-  flex: 0 0 100px; /* Largura fixa para o select de tipo */
+  flex: 0 0 100px; 
 }
 
 .telefone-container input {
-  flex: 1; /* Ocupa o restante do espaço */
-  min-width: 0; /* Permite que o campo diminua */
+  flex: 1; 
+  min-width: 0; 
 }
 
     input:focus, select:focus, textarea:focus {
@@ -459,7 +459,7 @@
   display: none;
 }
 
-/* Estilos específicos para o modal de erro */
+/* Estilos para o modal de erro */
 .modal-icon .fa-exclamation-circle {
   color: var(--danger-color);
 }

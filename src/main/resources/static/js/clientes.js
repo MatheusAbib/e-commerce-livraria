@@ -601,7 +601,6 @@ function fecharModalErro() {
     });
   }
 
-  // Agora trata o link exclusivo de CLIENTE: pedidos.html
   const linkStatusCliente = document.querySelector(`.sidebar a[href="pedidos.html"]`);
   if (!clienteLogado || clienteLogado.perfil === 'ADMIN') {
     if (linkStatusCliente) linkStatusCliente.style.display = 'none';

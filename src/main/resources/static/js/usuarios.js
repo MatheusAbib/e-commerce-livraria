@@ -1,4 +1,3 @@
- // Variável global para armazenar todos os clientes
 let todosClientes = [];
 
 // Variáveis para controle do status

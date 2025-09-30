@@ -36,7 +36,7 @@ function showLoadingState() {
 async function loadLogs() {
   try {
     showLoadingState();
-    await loadUsersMap();  // Garantir que usersMap está carregado
+    await loadUsersMap();  
 
     setTimeout(async () => {
       const response = await fetch('/api/logs');
@@ -74,7 +74,7 @@ function populateUserFilter() {
 
   uniqueUsers.forEach(userId => {
     const userName = usersMap[userId];
-    if (userName) {  // só adiciona se nome existe no usersMap
+    if (userName) {  
       const option = document.createElement('option');
       option.value = userId;
       option.textContent = userName;

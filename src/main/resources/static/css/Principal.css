@@ -40,7 +40,6 @@ body {
 
 
 /* Header Styles */
-/* Estilo para o botão de auth em diferentes estados */
 #btn-auth {
     transition: all 0.3s ease;
     display: flex;
@@ -74,8 +73,6 @@ body {
     white-space: nowrap;
     z-index: 100;
 }
-/* Estilos gerais */
-
 
 /* Header principal */
 #main-header {
@@ -194,11 +191,6 @@ body {
   font-weight: bold;
   animation: bounce 2s infinite;
 }
-
-/* Botão de login */
-
-
-
 
 .btn-primary:hover {
   background-color: #3fb0e6;

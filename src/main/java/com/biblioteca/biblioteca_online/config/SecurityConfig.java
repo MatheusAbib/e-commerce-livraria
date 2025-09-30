@@ -14,7 +14,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())       // desabilita CSRF para facilitar testes
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) // libera todas as requisições sem login
-            .httpBasic(Customizer.withDefaults()); // pode remover se quiser não usar basic auth
+            .httpBasic(Customizer.withDefaults()); 
 
         return http.build();
     }

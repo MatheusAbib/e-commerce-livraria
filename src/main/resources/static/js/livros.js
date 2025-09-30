@@ -217,7 +217,6 @@ function aplicarFiltros() {
   if (estoqueMax) url += `estoqueMax=${encodeURIComponent(estoqueMax)}&`;
   if (status) url += `status=${encodeURIComponent(status)}&`;
 
-  // Remove o último '&'
   url = url.slice(0, -1);
 
   const tbody = document.getElementById('livros-tbody');

@@ -36,23 +36,19 @@ public class LivroService {
     }
 
     public Livro salvar(Livro livro) {
-        // RN0062 – Valor de custo obrigatório
         if (livro.getPrecoCusto() == null || livro.getPrecoCusto().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Preço de custo deve ser maior que zero.");
         }
 
-        // RN0061 – Quantidade de itens deve ser maior que zero
         if (livro.getEstoque() == null || livro.getEstoque() <= 0) {
             throw new IllegalArgumentException("Quantidade em estoque deve ser maior que zero.");
         }
 
-        // RNF0064 – Data de entrada obrigatória
         if (livro.getDataEntrada() == null) {
             livro.setDataEntrada(LocalDate.now());
         }
 
-        // RN0013 – Definir valor de venda com margem de lucro
-        BigDecimal margemLucro = new BigDecimal("0.10"); // margem fixa de 30% (exemplo)
+        BigDecimal margemLucro = new BigDecimal("0.10");
         BigDecimal precoVenda = livro.getPrecoCusto().multiply(BigDecimal.ONE.add(margemLucro));
         livro.setPrecoVenda(precoVenda.setScale(2, RoundingMode.HALF_UP));
 
@@ -203,7 +199,6 @@ private void atualizarStatusPorEstoque(Livro livro) {
     }
 }
 
-// LivroService.java
 @Transactional
 public void processarCompra(Long livroId, Integer quantidade) {
     Livro livro = buscarPorId(livroId)
