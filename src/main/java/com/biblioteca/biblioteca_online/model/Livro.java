@@ -12,7 +12,6 @@ public class Livro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // RN0011 - Dados obrigatórios para cadastro
     @Column(nullable = false)
     private String titulo;
 
@@ -37,7 +36,7 @@ public class Livro {
 
     private String codigoBarras;
 
-      @Column(nullable = false)
+    @Column(nullable = false)
     private String editora;
 
     private String categoria;
@@ -55,6 +54,9 @@ public class Livro {
     private String motivoAtivacao;
 
     private LocalDate dataEntrada;
+
+    // NOVO CAMPO PARA A IMAGEM
+    private String imagemUrl;
 
     public Livro() {}
 
@@ -122,4 +124,7 @@ public class Livro {
 
     public String getCodigoBarras() { return codigoBarras; }
     public void setCodigoBarras(String codigoBarras) { this.codigoBarras = codigoBarras; }
+
+    public String getImagemUrl() { return imagemUrl; }
+    public void setImagemUrl(String imagemUrl) { this.imagemUrl = imagemUrl; }
 }

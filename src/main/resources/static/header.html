@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Biblioteca Online</title>
+  <title>Livraria Online</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
@@ -82,32 +82,28 @@
     }
 
     /* Header principal */
-    #main-header {
-      background: linear-gradient(135deg,var(--primary-color), var(--primary-light));
-      color: var(--light-text);
-      position: fixed;
-      width: 100%;
-      padding: 20px 2rem;
-      display: flex;
-      top: 0;
-      left: 0;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: var(--shadow);
-      z-index: 1000;
-      animation: fadeInDown 0.5s ease-out;
-    }
+#main-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: var(--light-text);
+  padding: 25px 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  z-index: 1000;
+  animation: fadeInDown 0.5s ease-out;
+}
 
     /* Ícone do menu */
     .menu-icon {
-      font-size: 1.5rem;
+      font-size: 1.9rem;
       cursor: pointer;
+      margin-right: 1.6rem;
       transition: var(--transition);
-      padding: 0.5rem;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .menu-icon:hover {
@@ -118,15 +114,29 @@
       transform: scale(0.95);
     }
 
-    /* Logo */
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      font-size: 1.5rem;
-      font-weight: bold;
-      cursor: default;
-      transition: var(--transition);
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.9rem;
+  font-weight: bold;
+  cursor: default;
+  transition: var(--transition);
+  color:#fff;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+    .logo i {
+      font-size: 2rem;
+      margin-left: 5px;
+      color: #fff;
+      transition: all 0.3s ease;
+    }
+
+    .logo:hover i {
+      transform: scale(1.05) rotate(-3deg);
     }
 
     .logo span {
@@ -150,23 +160,27 @@
     }
 
     /* Nome do cliente */
-    .cliente-nome {
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      background-color: rgba(255, 255, 255, 0.1);
-      transition: var(--transition);
-      cursor: default;
-      margin-right: 605px;
-      flex-grow: 1;
-      margin-left: 390px;
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
+.cliente-nome {
+  padding: 10px 30px;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: var(--transition);
+  cursor: default;
+  font-weight: 600;
+  font-size: 1.2rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  flex: 0 1 auto; 
+  margin: 0 auto;
+  white-space: nowrap;
+  min-width: 25%;
+}
 
-    .cliente-nome:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-    }
+.cliente-nome:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
 
     /* Ícones de perfil e carrinho */
     .profile-icon, .cart-icon {
@@ -275,79 +289,205 @@
       }
     }
 
-    .menu-icon {
-      font-size: 24px;
-      cursor: pointer;
-      margin-right: 15px;
-      transition: var(--transition);
-    }
-
-    .menu-icon:hover {
-      transform: scale(1.1);
-    }
-
     /* Sidebar Styles */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -300px;
-      height: 100%;
-      width: 300px;
-      background: linear-gradient(180deg, var(--secondary-color), var(--primary-color));
-      color: white;
-      padding: 30px 20px;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 999;
-      overflow-y: auto;
-      box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
-    }
+   .sidebar {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  height: 100%;
+  width: 320px;
+  background: linear-gradient(180deg, var(--secondary-color), var(--primary-color));
+  color: white;
+  padding: 30px 25px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  overflow-y: auto;
+  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-    .sidebar.show {
-      left: 0;
-    }
+.sidebar.show {
+  left: 0;
+  transform: translateX(0);
+}
 
-    .sidebar h3 {
-      margin-bottom: 30px;
-      font-size: 1.5rem;
-      font-weight: 600;
-      text-align: center;
-      position: relative;
-      padding-bottom: 15px;
-    }
+.sidebar h3 {
+  margin-bottom: 35px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+  position: relative;
+  padding-bottom: 18px;
+  font-family: 'Playfair Display', serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
-    .sidebar h3::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 50px;
-      height: 3px;
-      background-color: var(--accent-color);
-      border-radius: 3px;
-      font-family: 'Playfair Display', serif;
-    }
+.sidebar a {
+  display: flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+  margin: 12px 0;
+  padding: 14px 18px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
 
-    .sidebar a {
-      display: flex;
-      align-items: center;
-      color: white;
-      text-decoration: none;
-      margin: 15px 0;
-      padding: 12px 15px;
-      border-radius: var(--border-radius);
-      transition: var(--transition);
-    }
+.sidebar a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
 
-    .sidebar a i {
-      margin-right: 10px;
-      font-size: 1.1rem;
-    }
+.sidebar a:hover::before {
+  left: 100%;
+}
 
-    .sidebar a:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      transform: translateX(5px);
-    }
+.sidebar a i {
+  margin-right: 12px;
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.sidebar a:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(8px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar a:hover i {
+  transform: scale(1.1);
+}
+
+.sidebar a.active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 15px rgba(72, 149, 239, 0.3);
+}
+
+.sidebar a.active::after {
+  content: '';
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent-color);
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 280px;
+    left: -280px;
+    padding: 25px 20px;
+  }
+  
+  .sidebar h3 {
+    font-size: 1.4rem;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+  }
+  
+  .sidebar a {
+    padding: 12px 15px;
+    margin: 10px 0;
+    font-size: 0.95rem;
+  }
+  
+  .sidebar a i {
+    font-size: 1.1rem;
+    margin-right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 100%;
+    left: -100%;
+    padding: 20px 15px;
+  }
+  
+  .sidebar h3 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+  
+  .sidebar a {
+    padding: 15px;
+    margin: 8px 0;
+    border-radius: 10px;
+  }
+  
+  .sidebar a:hover {
+    transform: translateX(5px);
+  }
+  
+  .sidebar.show a {
+    cursor: pointer;
+  }
+}
+
+/* Animações para a sidebar */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.sidebar.show a {
+  animation: slideInLeft 0.4s ease-out both;
+}
+
+.sidebar.show a:nth-child(1) { animation-delay: 0.1s; }
+.sidebar.show a:nth-child(2) { animation-delay: 0.15s; }
+.sidebar.show a:nth-child(3) { animation-delay: 0.2s; }
+.sidebar.show a:nth-child(4) { animation-delay: 0.25s; }
+.sidebar.show a:nth-child(5) { animation-delay: 0.3s; }
+.sidebar.show a:nth-child(6) { animation-delay: 0.35s; }
+.sidebar.show a:nth-child(7) { animation-delay: 0.4s; }
+.sidebar.show a:nth-child(8) { animation-delay: 0.45s; }
+.sidebar.show a:nth-child(9) { animation-delay: 0.5s; }
+.sidebar.show a:nth-child(10) { animation-delay: 0.55s; }
+
+
 
     /* Buttons */
     .btn {
@@ -400,16 +540,16 @@
     <a href="pedidosADMIN.html"id="link-pedidosADMIN"><i class="fas fa-truck"></i> Gerenciamento de Pedidos</a>
     <a href="livros.html" id="link-livros"><i class="fas fa-book"></i> Cadastrar Livro</a>
     <a href="lucros.html" id="link-lucros"><i class="fas fa-chart-bar"></i> Lucro dos Livros</a>
-
-    
+    <a href="CupomDesconto.html" id="link-cupom"><i class="fas fa-money-bill-wave"></i> Cupons de Desconto</a>
   </div>
 
   <!-- Header -->
   <header id="main-header">
     <span class="menu-icon" onclick="toggleSidebar()"><i class="fas fa-bars"></i></span>
-    <div class="logo">
-      <span>Livros Online</span>
-    </div>
+      <div class="logo">
+        <span>Livros Online</span>
+        <i class="fas fa-book-reader"></i>
+      </div>
     <span class="cliente-nome" id="nome-cliente">Visitante</span>
     
   </header>
@@ -421,7 +561,6 @@
       sidebar.classList.toggle('show');
     }
 
-    // Função para alternar entre login/logout
     function handleAuthClick() {
       const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
       if (clienteLogado) {
@@ -435,14 +574,11 @@
       logout();
     }
 
-    // Funções para o modal de logout
     function abrirModalLogout() {
-      // Implemente esta função se tiver um modal de logout
-      logout(); // Por enquanto, vamos chamar logout diretamente
+      logout(); 
     }
 
     function logout() {
-      // Limpa o carrinho temporário ao deslogar
       limparCarrinhoVisitante();
       
       localStorage.removeItem('clienteLogado');
@@ -454,7 +590,6 @@
       localStorage.removeItem('carrinhoVisitante');
     }
 
-    // Atualiza UI do header conforme login
     function atualizarUI(usuario) {
       const nomeCliente = document.getElementById('nome-cliente');
       const btnAuth = document.getElementById('btn-auth');
@@ -464,13 +599,12 @@
       if (usuario) {
         nomeCliente.textContent = usuario.nome;
         
-        // Altera para ícone de logout com tooltip
         btnAuth.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
-        btnAuth.title = 'Sair'; // Tooltip para acessibilidade
+        btnAuth.title = 'Sair'; 
         
         profileIcon.style.display = 'inline-block';
-        cartIcon.style.display = 'inline-block'; // Mostra o carrinho
-        atualizarContadorCarrinho(); // Atualiza o contador
+        cartIcon.style.display = 'inline-block'; 
+        atualizarContadorCarrinho(); 
       } else {
         nomeCliente.textContent = 'Visitante';
         
@@ -479,7 +613,7 @@
         btnAuth.removeAttribute('title');
         
         profileIcon.style.display = 'none';
-        cartIcon.style.display = 'none'; // Esconde o carrinho
+        cartIcon.style.display = 'none'; 
       }
     }
 
@@ -490,21 +624,18 @@
       if (contador) contador.textContent = total;
     }
 
-    // Função para obter o carrinho do usuário ATUAL
     function obterCarrinho() {
       const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      if (!clienteLogado) return []; // Retorna vazio se não estiver logado
+      if (!clienteLogado) return []; 
       
       const todosCarrinhos = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
-      return todosCarrinhos[clienteLogado.id] || []; // Retorna o carrinho específico ou vazio
+      return todosCarrinhos[clienteLogado.id] || []; 
     }
 
-    // Mostra o formulário de login
     function openModalLogin() {
-      window.location.href = 'login.html'; // Redireciona para a página de login
+      window.location.href = 'login.html'; 
     }
 
-    // Inicializações quando a página carrega
 window.addEventListener('DOMContentLoaded', () => {
   const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
 
@@ -521,7 +652,6 @@ const linksRestritos = [
   'link-pedidosADMIN'
 ];
 
-// Se o perfil não for ADMIN, oculta os links restritos
 if (!clienteLogado || clienteLogado.perfil !== 'ADMIN') {
   linksRestritos.forEach(id => {
     const el = document.getElementById(id);

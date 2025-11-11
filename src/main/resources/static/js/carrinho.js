@@ -324,22 +324,48 @@ function atualizarResumoPagamento() {
   }
 }
     // Funções para gerenciar carrinho por usuário
-    function obterCarrinhoUsuario() {
-      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      if (!clienteLogado) return [];
-      
-      const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
-      return carrinhosPorUsuario[clienteLogado.id] || [];
-    }
+function obterCarrinhoUsuario() {
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) return [];
+    
+    // USA A MESMA ESTRUTURA DO PRINCIPAL.JS
+    const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
+    return carrinhosPorUsuario[clienteLogado.id] || [];
+}
 
-    function salvarCarrinhoUsuario(carrinho) {
-      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      if (!clienteLogado) return;
-      
-      const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
-      carrinhosPorUsuario[clienteLogado.id] = carrinho;
-      localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhosPorUsuario));
+function salvarCarrinhoUsuario(carrinho) {
+    const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+    if (!clienteLogado) return;
+    
+    // USA A MESMA ESTRUTURA DO PRINCIPAL.JS
+    const carrinhosPorUsuario = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
+    carrinhosPorUsuario[clienteLogado.id] = carrinho;
+    localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhosPorUsuario));
+    
+    // ATUALIZA O CONTADOR GLOBAL
+    atualizarContadorCarrinhoGlobal();
+}
+
+// Função para atualizar o contador global (chamada do carrinho.js)
+function atualizarContadorCarrinhoGlobal() {
+    const carrinho = obterCarrinhoUsuario();
+    const totalItens = carrinho.reduce((total, item) => total + (item.quantidade || 1), 0);
+    
+    // Atualiza o contador na página do carrinho (se existir)
+    const contadorCarrinho = document.getElementById('cart-count-carrinho');
+    if (contadorCarrinho) {
+        contadorCarrinho.textContent = totalItens;
+        contadorCarrinho.style.display = totalItens > 0 ? 'flex' : 'none';
     }
+    
+    // Também atualiza o contador principal (para quando voltar à página principal)
+    const contadorPrincipal = document.getElementById('cart-count');
+    if (contadorPrincipal) {
+        contadorPrincipal.textContent = totalItens;
+        contadorPrincipal.style.display = totalItens > 0 ? 'flex' : 'none';
+    }
+}
+
 function limparCarrinho() {
   if (confirm('Tem certeza que deseja limpar seu carrinho?')) {
     carrinho = [];
@@ -597,10 +623,37 @@ window.addEventListener('DOMContentLoaded', () => {
       atualizarCarrinho();
     }
 
-    function atualizarCarrinho() {
-      salvarCarrinhoUsuario(carrinho);
-      carregarCarrinho(); 
-    }
+function atualizarCarrinho() {
+    salvarCarrinhoUsuario(carrinho);
+    carregarCarrinho();
+    atualizarContadorCarrinhoGlobal(); // ADICIONE ESTA LINHA
+}
+
+function alterarQuantidadeCarrinho(idProduto, delta, estoqueMax = Infinity) {
+    const item = carrinho.find(i => i.id === idProduto);
+    if (!item) return;
+    const novaQtd = item.quantidade + delta;
+    if (novaQtd < 1 || novaQtd > estoqueMax) return;
+    item.quantidade = novaQtd;
+    atualizarCarrinho();
+    atualizarContadorCarrinhoGlobal(); // ADICIONE
+}
+
+function atualizarQuantidadeCarrinho(idProduto, novaQtd, estoqueMax) {
+    const quantidadeNum = parseInt(novaQtd);
+    if (isNaN(quantidadeNum)) return;
+    const item = carrinho.find(i => i.id === idProduto);
+    if (!item) return;
+    item.quantidade = Math.max(1, Math.min(quantidadeNum, estoqueMax));
+    atualizarCarrinho();
+    atualizarContadorCarrinhoGlobal(); // ADICIONE
+}
+
+function removerDoCarrinho(idProduto) {
+    carrinho = carrinho.filter(i => i.id !== idProduto);
+    atualizarCarrinho();
+    atualizarContadorCarrinhoGlobal(); // ADICIONE
+}
 
 async function carregarEnderecos() {
   const cliente = JSON.parse(localStorage.getItem('clienteLogado'));

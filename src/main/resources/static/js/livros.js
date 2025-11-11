@@ -1,84 +1,104 @@
-   function abrirFormulario(id = null) {
+  function abrirFormulario(id = null) {
     document.getElementById('form-container').style.display = 'block';
     if (id) carregarLivro(id);
     window.scrollTo({top: 0, behavior: 'smooth'});
   }
 
-  function fecharFormulario() {
-    document.getElementById('form-livro').reset();
-    document.getElementById('livro-id').value = '';
-    document.getElementById('form-container').style.display = 'none';
-  }
-
+function fecharFormulario() {
+  document.getElementById('form-livro').reset();
+  document.getElementById('livro-id').value = '';
+  document.getElementById('preview-container').style.display = 'none';
+  document.getElementById('form-container').style.display = 'none';
+}
   async function carregarLivro(id) {
-    const res = await fetch(`/api/livros/${id}`);
-    const livro = await res.json();
-    document.getElementById('livro-id').value = livro.id;
-    document.getElementById('titulo').value = livro.titulo;
-    document.getElementById('autor').value = livro.autor;
-    document.getElementById('editora').value = livro.editora;
-    document.getElementById('categoria').value = livro.categoria;
-    document.getElementById('edicao').value = livro.edicao;
-    document.getElementById('isbn').value = livro.isbn;
-    document.getElementById('paginas').value = livro.paginas;
-    document.getElementById('sinopse').value = livro.sinopse;
-    document.getElementById('altura').value = livro.altura;
-    document.getElementById('largura').value = livro.largura;
-    document.getElementById('profundidade').value = livro.profundidade;
-    document.getElementById('peso').value = livro.peso;
-    document.getElementById('codigoBarras').value = livro.codigoBarras;
-    document.getElementById('precoCusto').value = livro.precoCusto;
-    document.getElementById('estoque').value = livro.estoque;
-    document.getElementById('dataEntrada').value = livro.dataEntrada;
-    abrirFormulario();
+  const res = await fetch(`/api/livros/${id}`);
+  const livro = await res.json();
+  
+  document.getElementById('livro-id').value = livro.id;
+  document.getElementById('titulo').value = livro.titulo;
+  document.getElementById('autor').value = livro.autor;
+  document.getElementById('editora').value = livro.editora;
+  document.getElementById('categoria').value = livro.categoria;
+  document.getElementById('edicao').value = livro.edicao;
+  document.getElementById('isbn').value = livro.isbn;
+  document.getElementById('paginas').value = livro.paginas;
+  document.getElementById('sinopse').value = livro.sinopse;
+  document.getElementById('altura').value = livro.altura;
+  document.getElementById('largura').value = livro.largura;
+  document.getElementById('profundidade').value = livro.profundidade;
+  document.getElementById('peso').value = livro.peso;
+  document.getElementById('codigoBarras').value = livro.codigoBarras;
+  document.getElementById('precoCusto').value = livro.precoCusto;
+  document.getElementById('estoque').value = livro.estoque;
+  document.getElementById('dataEntrada').value = livro.dataEntrada;
+  
+  const previewContainer = document.getElementById('preview-container');
+  const previewImagem = document.getElementById('preview-imagem');
+  if (livro.imagemUrl) {
+    previewImagem.src = `/uploads/${livro.imagemUrl}`;
+    previewContainer.style.display = 'block';
+  } else {
+    previewContainer.style.display = 'none';
+  }
+  
+  abrirFormulario();
+}
+
+document.getElementById('form-livro').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const id = document.getElementById('livro-id').value;
+
+  const formData = new FormData();
+  
+  const livro = {
+    titulo: document.getElementById('titulo').value,
+    autor: document.getElementById('autor').value,
+    editora: document.getElementById('editora').value,
+    categoria: document.getElementById('categoria').value,
+    edicao: parseInt(document.getElementById('edicao').value) || null,
+    isbn: document.getElementById('isbn').value,
+    paginas: parseInt(document.getElementById('paginas').value) || null,
+    sinopse: document.getElementById('sinopse').value,
+    altura: parseFloat(document.getElementById('altura').value) || null,
+    largura: parseFloat(document.getElementById('largura').value) || null,
+    profundidade: parseFloat(document.getElementById('profundidade').value) || null,
+    peso: parseFloat(document.getElementById('peso').value) || null,
+    codigoBarras: document.getElementById('codigoBarras').value,
+    precoCusto: parseFloat(document.getElementById('precoCusto').value),
+    estoque: parseInt(document.getElementById('estoque').value),
+    dataEntrada: document.getElementById('dataEntrada').value
+  };
+  
+  formData.append('livro', new Blob([JSON.stringify(livro)], { type: 'application/json' }));
+  
+  const imagemInput = document.getElementById('imagem');
+  if (imagemInput.files[0]) {
+    formData.append('imagem', imagemInput.files[0]);
   }
 
-  document.getElementById('form-livro').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const id = document.getElementById('livro-id').value;
+  const metodo = id ? 'PUT' : 'POST';
+  const url = id ? `/api/livros/${id}/com-imagem` : '/api/livros/com-imagem';
 
-    const livro = {
-      titulo: document.getElementById('titulo').value,
-      autor: document.getElementById('autor').value,
-      editora: document.getElementById('editora').value,
-      categoria: document.getElementById('categoria').value,
-      edicao: parseInt(document.getElementById('edicao').value) || null,
-      isbn: document.getElementById('isbn').value,
-      paginas: parseInt(document.getElementById('paginas').value) || null,
-      sinopse: document.getElementById('sinopse').value,
-      altura: parseFloat(document.getElementById('altura').value) || null,
-      largura: parseFloat(document.getElementById('largura').value) || null,
-      profundidade: parseFloat(document.getElementById('profundidade').value) || null,
-      peso: parseFloat(document.getElementById('peso').value) || null,
-      codigoBarras: document.getElementById('codigoBarras').value,
-      precoCusto: parseFloat(document.getElementById('precoCusto').value),
-      estoque: parseInt(document.getElementById('estoque').value),
-      dataEntrada: document.getElementById('dataEntrada').value
-    };
+  try {
+    const response = await fetch(url, {
+      method: metodo,
+      body: formData
+    });
 
-    const metodo = id ? 'PUT' : 'POST';
-    const url = id ? `/api/livros/${id}` : '/api/livros';
-
-    try {
-      const response = await fetch(url, {
-        method: metodo,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(livro)
-      });
-
-      if (response.ok) {
-        exibirNotificacao('Livro salvo com sucesso!', 'success');
-        fecharFormulario();
-        carregarLivros();
-      } else {
-        const erro = await response.json();
-        exibirNotificacao(erro.message || 'Erro ao salvar livro', 'error');
-      }
-    } catch (error) {
-      exibirNotificacao('Erro na comunicação com o servidor', 'error');
-      console.error('Erro:', error);
+    if (response.ok) {
+      exibirNotificacao('Livro salvo com sucesso!', 'success');
+      fecharFormulario();
+      carregarLivros();
+    } else {
+      const erro = await response.text();
+      exibirNotificacao(erro || 'Erro ao salvar livro', 'error');
     }
-  });
+  } catch (error) {
+    exibirNotificacao('Erro na comunicação com o servidor', 'error');
+    console.error('Erro:', error);
+  }
+});
+
 
   function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
@@ -111,7 +131,6 @@ async function carregarLivros(filtros = {}) {
         const resultado = await response.json();
         todosLivros = resultado.livros || [];
         
-        // Atualiza a contagem
         const countFiltered = resultado.countFiltered || todosLivros.length;
         const countTotal = resultado.countTotal || todosLivros.length;
         
@@ -220,7 +239,6 @@ function aplicarFiltros() {
   url = url.slice(0, -1);
 
   const tbody = document.getElementById('livros-tbody');
-  // Mostra mensagem de carregando, ocupando todas as colunas da tabela
   tbody.innerHTML = `
     <tr>
       <td colspan="10" style="text-align:center; font-style: italic; padding: 15px;">
@@ -257,11 +275,9 @@ function limparFiltros() {
     
     document.getElementById('filtro-status').value = '';
     
-    // Recarrega os livros sem filtros
     carregarLivros();
 }
 
-// Adiciona event listeners para aplicar filtros ao pressionar Enter
 document.querySelectorAll('.filtros-container input').forEach(input => {
     input.addEventListener('keyup', function(e) {
         if (e.key === 'Enter') {
@@ -270,12 +286,10 @@ document.querySelectorAll('.filtros-container input').forEach(input => {
     });
 });
 
-// Carrega os livros quando a página é aberta
 window.addEventListener('DOMContentLoaded', () => {
     carregarLivros();
 });
 
-// Função para abrir modal de detalhes do livro
 async function abrirModalDetalhes(id) {
   const res = await fetch(`/api/livros/${id}`);
   if (!res.ok) {
@@ -284,42 +298,116 @@ async function abrirModalDetalhes(id) {
   }
   const livro = await res.json();
 
+  let imagemHtml = '';
+  if (livro.imagemUrl) {
+    imagemHtml = `
+      <div style="text-align: center; margin-bottom: 20px;">
+        <strong style="display: block; margin-bottom: 10px;">Capa do Livro:</strong>
+        <img src="/uploads/${livro.imagemUrl}" 
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+             style="max-width: 250px; max-height: 300px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" 
+             alt="Capa de ${livro.titulo}">
+        <div style="display: none; background: #f8f9fa; padding: 40px; border-radius: 8px; border: 2px dashed #ddd;">
+          <i class="fas fa-book" style="font-size: 3rem; color: #6c757d; margin-bottom: 10px; display: block;"></i>
+          <p style="color: #6c757d; margin: 0;">Imagem não disponível</p>
+        </div>
+      </div>
+    `;
+  } else {
+    imagemHtml = `
+      <div style="text-align: center; margin-bottom: 20px;">
+        <strong style="display: block; margin-bottom: 10px;">Capa do Livro:</strong>
+        <div style="background: #f8f9fa; padding: 40px; border-radius: 8px; border: 2px dashed #ddd;">
+          <i class="fas fa-book" style="font-size: 3rem; color: #6c757d; margin-bottom: 10px; display: block;"></i>
+          <p style="color: #6c757d; margin: 0;">Sem imagem disponível</p>
+        </div>
+      </div>
+    `;
+  }
+
   const conteudo = `
-    <div class="detalhes-grid">
-      <div><strong>ID:</strong> ${livro.id}</div>
-      <div><strong>Título:</strong> ${livro.titulo}</div>
-      <div><strong>Autor:</strong> ${livro.autor}</div>
-      <div><strong>Editora:</strong> ${livro.editora ?? '-'}</div>
-      <div><strong>Categoria:</strong> ${livro.categoria ?? '-'}</div>
-      <div><strong>Edição:</strong> ${livro.edicao ?? '-'}</div>
-      <div><strong>ISBN:</strong> ${livro.isbn ?? '-'}</div>
-      <div><strong>Páginas:</strong> ${livro.paginas ?? '-'}</div>
-      <div class="full-width"><strong>Sinopse:</strong><br> ${livro.sinopse ?? '-'}</div>
-      <div><strong>Dimensões:</strong> ${livro.altura ?? '-'} x ${livro.largura ?? '-'} x ${livro.profundidade ?? '-'} cm</div>
-      <div><strong>Peso:</strong> ${livro.peso ?? '-'} g</div>
-      <div><strong>Código de Barras:</strong> ${livro.codigoBarras ?? '-'}</div>
-      <div><strong>Preço de Venda:</strong> R$ ${livro.precoVenda?.toFixed(2) ?? '-'}</div>
-      <div><strong>Preço de Custo:</strong> R$ ${livro.precoCusto?.toFixed(2) ?? '-'}</div>
-      <div><strong>Estoque:</strong> ${livro.estoque}</div>
-      <div><strong>Data de Entrada:</strong> ${livro.dataEntrada ?? '-'}</div>
-      <div><strong>Status:</strong> ${livro.ativo ? '<span class="status-ativo">Ativo</span>' : '<span class="status-inativo">Inativo</span>'}</div>
+    <div style="max-height: 70vh; overflow-y: auto; padding-right: 10px;">
+      ${imagemHtml}
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
+        <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h4 style="margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 8px;">
+            <i class="fas fa-info-circle"></i> Informações Básicas
+          </h4>
+          <div style="display: grid; gap: 8px;">
+            <div><strong>ID:</strong> ${livro.id}</div>
+            <div><strong>Título:</strong> ${livro.titulo}</div>
+            <div><strong>Autor:</strong> ${livro.autor}</div>
+            <div><strong>Editora:</strong> ${livro.editora ?? '-'}</div>
+            <div><strong>Categoria:</strong> ${livro.categoria ?? '-'}</div>
+            <div><strong>Edição:</strong> ${livro.edicao ?? '-'}</div>
+            <div><strong>ISBN:</strong> ${livro.isbn ?? '-'}</div>
+            <div><strong>Páginas:</strong> ${livro.paginas ?? '-'}</div>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 15px; border-radius: 8px;">
+          <h4 style="margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 8px;">
+            <i class="fas fa-cube"></i> Dimensões
+          </h4>
+          <div style="display: grid; gap: 8px;">
+            <div><strong>Altura:</strong> ${livro.altura ? livro.altura + ' cm' : '-'}</div>
+            <div><strong>Largura:</strong> ${livro.largura ? livro.largura + ' cm' : '-'}</div>
+            <div><strong>Profundidade:</strong> ${livro.profundidade ? livro.profundidade + ' cm' : '-'}</div>
+            <div><strong>Peso:</strong> ${livro.peso ? livro.peso + ' g' : '-'}</div>
+            <div><strong>Código de Barras:</strong> ${livro.codigoBarras ?? '-'}</div>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h4 style="margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 8px;">
+            <i class="fas fa-chart-line"></i> Estoque e Preços
+          </h4>
+          <div style="display: grid; gap: 8px;">
+            <div><strong>Preço de Venda:</strong> ${livro.precoVenda ? 'R$ ' + livro.precoVenda.toFixed(2) : '-'}</div>
+            <div><strong>Preço de Custo:</strong> ${livro.precoCusto ? 'R$ ' + livro.precoCusto.toFixed(2) : '-'}</div>
+            <div><strong>Estoque:</strong> ${livro.estoque}</div>
+            <div><strong>Data de Entrada:</strong> ${livro.dataEntrada ? new Date(livro.dataEntrada).toLocaleDateString('pt-BR') : '-'}</div>
+            <div>
+              <strong>Status:</strong> 
+              ${livro.ativo ? 
+                '<span style="background: var(--success-color); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8em;"><i class="fas fa-check"></i> Ativo</span>' : 
+                '<span style="background: var(--danger-color); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8em;"><i class="fas fa-times"></i> Inativo</span>'
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      ${livro.sinopse ? `
+        <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h4 style="margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 8px;">
+            <i class="fas fa-file-alt"></i> Sinopse
+          </h4>
+          <p style="line-height: 1.6; margin: 0; text-align: justify; white-space: pre-line;">${livro.sinopse}</p>
+        </div>
+      ` : ''}
     </div>
   `;
 
   document.getElementById('detalhes-conteudo').innerHTML = conteudo;
   document.getElementById('modal-detalhes').style.display = 'flex';
+  
+  // Adiciona a classe active para animação
+  setTimeout(() => {
+    document.getElementById('modal-detalhes').classList.add('active');
+  }, 10);
 }
 
 function fecharModalDetalhes() {
   document.getElementById('modal-detalhes').style.display = 'none';
 }
 
-// Modal exclusão
 let idParaExcluir = null;
 
 function abrirModalExclusao(id, titulo) {
   idParaExcluir = id;
-  document.getElementById('modal-msg').textContent = `Tem certeza que deseja excluir permanentemente o livro "${titulo}"? Esta ação não pode ser desfeita.`;
+  document.getElementById('modal-msg').textContent = `Deseja excluir permanentemente o livro "${titulo}"? Esta ação não pode ser desfeita.`;
   document.getElementById('modal-excluir').style.display = 'flex';
 }
 
@@ -466,3 +554,20 @@ function exibirModalErro(mensagem) {
 function fecharModalErro() {
   document.getElementById('modalErro').style.display = 'none';
 }
+
+document.getElementById('imagem').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  const previewContainer = document.getElementById('preview-container');
+  const previewImagem = document.getElementById('preview-imagem');
+  
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      previewImagem.src = e.target.result;
+      previewContainer.style.display = 'block';
+    }
+    reader.readAsDataURL(file);
+  } else {
+    previewContainer.style.display = 'none';
+  }
+});

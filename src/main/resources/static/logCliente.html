@@ -3,279 +3,475 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Meu Histórico de Atividades</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Livraria Online</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234a6fa5'><path d='M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z'/></svg>">
   <style>
- body {
+    :root {
+      --accent-color: #4895ef;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+      --success-color: #4cc9f0;
+      --danger-color: #f72585;
+      --warning-color: #f8961e;
+      --info-color: #4895ef;
+      --text-color: #333;
+      --text-light: #6c757d;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+      --light-text: #fff;
+      --primary-color: #4a6fa5;
+      --primary-light: #90a9d1;
+      --secondary-color: #166088;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      color: var(--dark-color);
+    }
+   
+    body {
       font-family: 'Montserrat', sans-serif;
+      background-color: #eff4fb !important;
+      color: var(--text-color);
+      line-height: 1.6;
       margin: 0;
       padding: 0;
-      background-color: #f5f5f5;
-      color: #333;
     }
-    
-    main {
-      margin-top: 100px;
-      margin-left: 10px;
-      padding: 20px;
-    }
-    
 
-    
-    .log-container {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    /* Container principal */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
       padding: 20px;
+      margin-top: 90px;
+    }
+
+    /* Header da página */
+    .page-header {
+      background: linear-gradient(135deg, var(--text-color), #343a40f8);
+      color: var(--light-text);
+      margin: -30px calc(-50vw + 50%) 40px calc(-50vw + 50%);
+      padding: 40px 20px;
+      text-align: center;
+      position: relative;
+      width: 100vw;
+    }
+
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 2.2rem;
+      margin: 0 0 15px 0;
+      letter-spacing: 1px;
+    }
+
+    .page-title i, h1 {
+      color: var(--light-text);
+    }
+
+    .page-description {
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    /* Botões */
+    button, .btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover, .btn:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-2px);
+      box-shadow: var(--box-shadow);
+    }
+
+    button i, .btn i {
+      font-size: 1em;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);  
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .btn-outline:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-limpar {
+      background: transparent;
+      color: var(--danger-color);
+      border: 2px solid var(--danger-color);
+      padding: 10px 20px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-limpar:hover {
+      background: var(--danger-color);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    /* Filtros */
+    .filtros-container {
+      background: white;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin-bottom: 30px;
+    }
+
+    .filtro-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 20px;
     }
-    
-    h1, h2 {
-      color: #2c3e50;
+
+    .filtro-header h3 {
+      margin: 0;
+      color: var(--primary-color);
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    
+
+    .filtros-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .filtro-item {
+      margin-bottom: 15px;
+    }
+
+    .filtro-item label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+
+    .filtro-item input,
+    .filtro-item select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e9ecef;
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      transition: var(--transition);
+      background: #f8f9fa;
+    }
+
+    .filtro-item input:focus,
+    .filtro-item select:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+      background: white;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+    }
+
+    /* Tabela */
+    .table-container {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      background: white;
     }
-    
-    th, td {
-      padding: 12px 15px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    
+
     th {
+      background: linear-gradient(135deg, var(--primary-color));
+      color: white;
+      padding: 20px 15px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+    }
+
+    th:first-child {
+      border-radius: var(--border-radius) 0 0 0;
+    }
+
+    th:last-child {
+      border-radius: 0 var(--border-radius) 0 0;
+    }
+
+    td {
+      padding: 18px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      transition: var(--transition);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
       background-color: #f8f9fa;
+      transform: translateX(5px);
+    }
+
+    /* Classes de nível de log */
+    .log-level-info {
+      color: var(--info-color);
       font-weight: 600;
     }
     
-    tr:hover {
-      background-color: #f5f5f5;
-    }
-    
-    .log-level-info {
-      color: #3498db;
-    }
-    
     .log-level-warning {
-      color: #f39c12;
+      color: var(--warning-color);
+      font-weight: 600;
     }
     
     .log-level-error {
-      color: #e74c3c;
+      color: var(--danger-color);
+      font-weight: 600;
     }
     
     .log-level-success {
       color: #2ecc71;
+      font-weight: 600;
     }
-    
-    .filters {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-    
-    label {
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    
-    select, input {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      min-width: 150px;
-    }
-    
-    button {
-      padding: 8px 16px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    
-    button:hover {
-      background-color: #2980b9;
-    }
-    
+
+    /* Paginação */
     .pagination {
       display: flex;
       justify-content: center;
       gap: 10px;
       margin-top: 20px;
+      padding-bottom: 2.5%;
     }
     
     .pagination button {
-      padding: 8px 12px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: var(--border-radius);
+      background: var(--light-color);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .pagination button:hover {
+      background: var(--primary-color);
+      color: white;
+      transform: translateY(-2px);
     }
     
     .pagination button.active {
-      background-color: #2c3e50;
+      background: var(--primary-color);
+      color: white;
     }
-    
+
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+      font-size: 1.1rem;
+    }
+
+    /* Animações */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeInUp 0.4s ease-out;
+    }
+
+    .table-container {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Responsividade */
     @media (max-width: 768px) {
-      
-      main {
-        margin-left: 0;
+      .container {
+        margin-top: 80px;
+        padding: 0 20px;
       }
-      
-      .menu-icon {
-        display: block;
+
+      .page-title {
+        font-size: 2rem;
       }
-      
-      .filters {
+
+      .page-description {
+        font-size: 1rem;
+        padding: 0 10px;
+      }
+
+      .filtros-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full-width {
         flex-direction: column;
       }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      th, td {
+        padding: 12px 8px;
+        font-size: 0.85rem;
+      }
+
+      .filtro-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
     }
 
-    .filters-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  align-items: flex-end;
-}
+    @media (max-width: 576px) {
+      .page-header {
+        padding: 30px 15px;
+      }
 
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  min-width: 150px;
-}
-
-.filter-group label {
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #4a6fa5;
-}
-
-.filter-group select,
-.filter-group input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-.filter-buttons {
-  display: flex;
-  gap: 10px;
-}
-  .btn-limpar {
-  background-color: transparent;
-  color: var(--danger-color);
-  border: 1px solid var(--danger-color);
-  padding: 8px 15px;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-size: 14px;
-  transition: var(--transition);
-}
-
-.btn-limpar:hover {
-  background-color: var(--danger-color);
-  color: white;
-}
-button.btn {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-button.btn.apply {
-  background-color: #4a6fa5;
-  color: white;
-}
-
-button.btn.apply:hover {
-  background-color: #3d5c88;
-}
-
-button.btn.clear {
-  background-color: #ccc;
-  color: #333;
-}
-
-button.btn.clear:hover {
-  background-color: #aaa;
-}
-
- .loading-state {
-      text-align: center;
-      padding: 20px;
-      color: #666;
+      .filtro-header h3 {
+        font-size: 1.1rem;
+      }
     }
-
   </style>
 </head>
 <body>
   <div id="header-container"></div>
+
   <script>
- fetch('header.html')
-    .then(response => response.text())
-    .then(data => {
-      const container = document.getElementById('header-container');
-      container.innerHTML = data;
+    fetch('header.html')
+      .then(response => response.text())
+      .then(data => {
+        const container = document.getElementById('header-container');
+        container.innerHTML = data;
 
-      // Executa os scripts que vieram dentro do header.html (se houver)
-      const scripts = container.querySelectorAll('script');
-      scripts.forEach(oldScript => {
-        const newScript = document.createElement('script');
-        if (oldScript.src) {
-          newScript.src = oldScript.src;
-        } else {
-          newScript.textContent = oldScript.textContent;
-        }
-        document.body.appendChild(newScript);
-      });
-
-      // Atualiza o nome do cliente no header
-      const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      const nomeSpan = document.getElementById('nome-cliente');
-      if (nomeSpan && clienteLogado) {
-        nomeSpan.textContent = clienteLogado.nome;
-      }
-
-      // Oculta links restritos para perfis que não são ADMIN
-      const idsRestritos = [
-        'link-usuarios',
-        'link-log',
-        'link-lucros',
-        'link-livros',
-        'link-pedidosADMIN'
-      ];
-      if (!clienteLogado || clienteLogado.perfil !== 'ADMIN') {
-        idsRestritos.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.style.display = 'none';
+        // Executar scripts do header.html
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+          const newScript = document.createElement('script');
+          if (oldScript.src) {
+            newScript.src = oldScript.src;
+          } else {
+            newScript.textContent = oldScript.textContent;
+          }
+          document.body.appendChild(newScript);
         });
-      }
 
-      // Oculta o link "Status do Pedido" (pedidos.html) para ADMINs
-      const linkStatusCliente = container.querySelector('a[href="pedidos.html"]');
-      if (!clienteLogado || clienteLogado.perfil === 'ADMIN') {
-        if (linkStatusCliente) linkStatusCliente.style.display = 'none';
-      }
-    });
+        // Atualiza nome do cliente
+        const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+        const nomeSpan = document.getElementById('nome-cliente');
+        if (nomeSpan && clienteLogado) {
+          nomeSpan.textContent = clienteLogado.nome;
+        }
+
+        // Oculta links restritos para perfis que não são ADMIN
+        const idsRestritos = [
+          'link-usuarios',
+          'link-log',
+          'link-lucros',
+          'link-livros',
+          'link-pedidosADMIN'
+        ];
+        if (!clienteLogado || clienteLogado.perfil !== 'ADMIN') {
+          idsRestritos.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+          });
+        }
+
+        // Oculta o link "Status do Pedido" (pedidos.html) para ADMINs
+        const linkStatusCliente = container.querySelector('a[href="pedidos.html"]');
+        if (!clienteLogado || clienteLogado.perfil === 'ADMIN') {
+          if (linkStatusCliente) linkStatusCliente.style.display = 'none';
+        }
+      });
   </script>
 
-  <main>
-    <div class="log-container">
-      <h2>Meu Histórico de Atividades</h2>
+  <div class="container">
+    <!-- Header da Página -->
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-history"></i> Meu Histórico de Atividades
+      </h1>
+      <p class="page-description">
+        Acompanhe todas as suas atividades no sistema. Visualize seu histórico de logins, compras e demais ações realizadas.
+      </p>
+    </div>
 
-      <div class="filters-container">
-        <div class="filter-group">
+    <!-- Filtros -->
+    <div class="filtros-container">
+      <div class="filtro-header">
+        <h3><i class="fas fa-filter"></i> Filtrar Minhas Atividades</h3>
+      </div>
+      
+      <div class="filtros-grid">
+        <!-- Filtro por Ação -->
+        <div class="filtro-item">
           <label for="filter-action">Ação</label>
           <select id="filter-action">
-            <option value="">Todas</option>
+            <option value="">Todas as ações</option>
             <option value="login">Login</option>
             <option value="compra">Compra</option>
             <option value="cadastro">Cadastro</option>
@@ -288,15 +484,17 @@ button.btn.clear:hover {
           </select>
         </div>
 
-        <div class="filter-group">
+        <!-- Filtro por Data -->
+        <div class="filtro-item">
           <label for="filter-date">Data</label>
           <input type="date" id="filter-date">
         </div>
 
-        <div class="filter-group">
+        <!-- Filtro por Nível -->
+        <div class="filtro-item">
           <label for="filter-level">Nível</label>
           <select id="filter-level">
-            <option value="">Todos</option>
+            <option value="">Todos os níveis</option>
             <option value="info">Informação</option>
             <option value="warning">Aviso</option>
             <option value="error">Erro</option>
@@ -304,12 +502,20 @@ button.btn.clear:hover {
           </select>
         </div>
 
-        <div class="filter-buttons">
-          <button class="btn apply" onclick="applyFilters(true)"><i class="fas fa-check"></i> Aplicar Filtros</button>
-          <button class="btn-limpar" onclick="clearFilters()"><i class="fas fa-broom"></i> Limpar Filtros</button>
+        <!-- Botões de Ação -->
+        <div class="filtro-item full-width">
+          <button class="btn btn-primary" onclick="applyFilters(true)">
+            <i class="fas fa-check"></i> Aplicar Filtros
+          </button>
+          <button class="btn btn-limpar" onclick="clearFilters()">
+            <i class="fas fa-broom"></i> Limpar Filtros
+          </button>
         </div>
       </div>
+    </div>
 
+    <!-- Tabela de Logs -->
+    <div class="table-container">
       <table id="log-table">
         <thead>
           <tr>
@@ -319,12 +525,16 @@ button.btn.clear:hover {
             <th>Nível</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+          <!-- Logs serão carregados aqui via JavaScript -->
+        </tbody>
       </table>
-
-      <div class="pagination" id="pagination"></div>
+      
+      <div class="pagination" id="pagination">
+        <!-- Paginação será gerada dinamicamente -->
+      </div>
     </div>
-  </main>
+  </div>
 
   <script>
     const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
@@ -339,7 +549,7 @@ button.btn.clear:hover {
         <tr>
           <td colspan="4" class="loading-state">
             <i class="fas fa-spinner fa-spin"></i>
-            <p>Carregando dados...</p>
+            <p>Carregando seus dados...</p>
           </td>
         </tr>
       `;
@@ -406,7 +616,13 @@ button.btn.clear:hover {
       const logs = filteredLogs.slice(start, end);
 
       if (logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum registro encontrado</td></tr>';
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align:center; padding: 40px; color: var(--text-light);">
+              <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+              Nenhuma atividade encontrada
+            </td>
+          </tr>`;
         return;
       }
 
@@ -455,7 +671,7 @@ button.btn.clear:hover {
       if (totalPages <= 1) return;
 
       const prev = document.createElement('button');
-      prev.innerHTML = '&laquo;';
+      prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
       prev.disabled = currentPage === 1;
       prev.onclick = () => { currentPage--; renderLogs(); renderPagination(); };
       pagination.appendChild(prev);
@@ -469,13 +685,17 @@ button.btn.clear:hover {
       }
 
       const next = document.createElement('button');
-      next.innerHTML = '&raquo;';
+      next.innerHTML = '<i class="fas fa-chevron-right"></i>';
       next.disabled = currentPage === totalPages;
       next.onclick = () => { currentPage++; renderLogs(); renderPagination(); };
       pagination.appendChild(next);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      if (!clienteLogado) {
+        window.location.href = 'login.html';
+        return;
+      }
       loadLogs();
     });
   </script>

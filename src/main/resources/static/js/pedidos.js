@@ -1,4 +1,4 @@
-  let pedidosDevolucao = [];
+    let pedidosDevolucao = [];
     let pedidosCache = [];
     let intervaloMonitoramento = null;
 
@@ -319,162 +319,152 @@ function fecharModalDevolucao() {
   document.getElementById('modal-devolucao').style.display = 'none';
 }
 
-// Adicione o evento de submit do formulário
+
 document.getElementById('form-devolucao').addEventListener('submit', async function(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const pedidoId = Number.parseInt(document.getElementById('pedido-id-devolucao').value, 10);
-  const motivo = document.getElementById('motivo-devolucao').value;
-  const checkboxes = document.querySelectorAll('input[name="item-devolucao"]:checked');
+    const pedidoId = Number.parseInt(document.getElementById('pedido-id-devolucao').value, 10);
+    const motivo = document.getElementById('motivo-devolucao').value;
+    const checkboxes = document.querySelectorAll('input[name="item-devolucao"]:checked');
 
-const itensDevolucao = Array.from(checkboxes).map(checkbox => {
-    const rawId = checkbox.dataset.itemId;
-    const itemPedidoId = Number.parseInt(rawId, 10);
-    const quantidadeInput = document.querySelector(`.quantidade-input[data-item-id="${rawId}"]`);
-    const quantidade = Number.parseInt(quantidadeInput?.value ?? '1', 10);
+    const itensDevolucao = Array.from(checkboxes).map(checkbox => {
+        const rawId = checkbox.dataset.itemId;
+        const itemPedidoId = Number.parseInt(rawId, 10);
+        const quantidadeInput = document.querySelector(`.quantidade-input[data-item-id="${rawId}"]`);
+        const quantidade = Number.parseInt(quantidadeInput?.value ?? '1', 10);
 
-    if (Number.isNaN(itemPedidoId)) {
-        throw new Error('Item da devolução sem ID válido.');
-    }
-    if (!Number.isInteger(quantidade) || quantidade < 1) {
-        throw new Error('Quantidade inválida para um dos itens selecionados.');
-    }
+        if (Number.isNaN(itemPedidoId)) {
+            throw new Error('Item da devolução sem ID válido.');
+        }
+        if (!Number.isInteger(quantidade) || quantidade < 1) {
+            throw new Error('Quantidade inválida para um dos itens selecionados.');
+        }
 
-    return { itemPedidoId, quantidade };
-});
-
-  if (!motivo || !motivo.trim()) {
-    alert('Informe o motivo da devolução.');
-    return;
-  }
-  if (itensDevolucao.length === 0) {
-    alert('Selecione ao menos um item.');
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`/api/pedidos/${pedidoId}/devolucao`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({ motivo, itens: itensDevolucao })
+        return { itemPedidoId, quantidade };
     });
 
-    if (!response.ok) {
-      let errText = 'Erro ao solicitar devolução';
-      try {
-        const data = await response.json();
-        errText = data.mensagem || data.message || JSON.stringify(data);
-      } catch {
-        errText = await response.text();
-      }
-      throw new Error(errText);
+    if (!motivo || !motivo.trim()) {
+        alert('Informe o motivo da devolução.');
+        return;
+    }
+    if (itensDevolucao.length === 0) {
+        alert('Selecione ao menos um item.');
+        return;
     }
 
-    const updatedPedido = await response.json();
-    const index = pedidosCache.findIndex(p => p.id === updatedPedido.id);
-    if (index !== -1) pedidosCache[index] = updatedPedido;
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/pedidos/${pedidoId}/devolucao`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ motivo, itens: itensDevolucao })
+        });
 
-    document.getElementById('modal-devolucao').style.display = 'none';
+        if (!response.ok) {
+            let errText = 'Erro ao solicitar devolução';
+            try {
+                const data = await response.json();
+                errText = data.mensagem || data.message || JSON.stringify(data);
+            } catch {
+                errText = await response.text();
+            }
+            throw new Error(errText);
+        }
 
-    const currentTab = document.querySelector('.tab.active').id;
-    if (currentTab === 'tab-pedidos') {
-      exibirPedidosFiltrados(pedidosCache, false);
-    } else if (currentTab === 'tab-historico') {
-      exibirPedidosFiltrados(pedidosCache, true);
-    } else if (currentTab === 'tab-devolucao') {
-      exibirPedidos(pedidosCache.filter(p => p.status === 'DEVOLUCAO'));
+        const updatedPedido = await response.json();
+        const index = pedidosCache.findIndex(p => p.id === updatedPedido.id);
+        if (index !== -1) pedidosCache[index] = updatedPedido;
+
+        document.getElementById('modal-devolucao').style.display = 'none';
+
+
+        const currentTab = document.querySelector('.tab.active').id;
+        if (currentTab === 'tab-pedidos') {
+            exibirPedidosFiltrados(pedidosCache, false);
+        } else if (currentTab === 'tab-historico') {
+            exibirPedidosFiltrados(pedidosCache, true);
+        } else if (currentTab === 'tab-devolucao') {
+            exibirPedidos(pedidosCache.filter(p => p.status === 'DEVOLUCAO'));
+        }
+
+        alert('Devolução solicitada com sucesso! O estoque será reposto após a confirmação de troca.');
+
+    } catch (error) {
+        console.error('Erro ao solicitar devolução:', error);
+        alert(`Erro: ${error.message}`);
     }
-
-    alert('Devolução solicitada com sucesso!');
-  } catch (error) {
-    console.error('Erro ao solicitar devolução:', error);
-    alert(`Erro: ${error.message}`);
-  }
 });
-
 
 
     async function atualizarStatusPedido(pedidoId, novoStatus) {
-  try {
-    const token = localStorage.getItem('token');
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
-      method: 'PUT',
-      headers: headers,
-      body: JSON.stringify({ novoStatus })
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Erro ao atualizar status');
-    }
-
-    const updatedPedido = await response.json();
-    const index = pedidosCache.findIndex(p => p.id === updatedPedido.id);
-    if (index !== -1) {
-      pedidosCache[index] = updatedPedido;
-    }
-
-    if (novoStatus === 'CANCELADO' || novoStatus === 'TROCADO') {
-      try {
-        const estoqueResponse = await fetch(`/api/estoque/reentrada`, {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify({ pedidoId })
+        const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
+            method: 'PUT',
+            headers: headers,
+            body: JSON.stringify({ novoStatus })
         });
-        if (!estoqueResponse.ok) {
-          console.warn(`Falha ao reentrar estoque do pedido ${pedidoId}`);
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Erro ao atualizar status');
         }
-      } catch (e) {
-        console.error(`Erro na reentrada de estoque para o pedido ${pedidoId}:`, e);
-      }
+
+        const updatedPedido = await response.json();
+        const index = pedidosCache.findIndex(p => p.id === updatedPedido.id);
+        if (index !== -1) {
+            pedidosCache[index] = updatedPedido;
+        }
+
+        // SE FOR TROCA, REPÕE O ESTOQUE
+        if (novoStatus === 'TROCADO') {
+            await reporEstoquePedido(pedidoId);
+        }
+
+        const mensagem = getMensagemStatus(novoStatus, pedidoId);
+        adicionarNotificacao(
+            'Status do pedido atualizado',
+            mensagem,
+            'pedido'
+        );
+
+        // Recarrega os pedidos da aba atual
+        const currentTab = document.querySelector('.tab.active').id;
+        if (currentTab === 'tab-pedidos') {
+            exibirPedidosFiltrados(pedidosCache, false);
+        } else if (currentTab === 'tab-historico') {
+            exibirPedidosFiltrados(pedidosCache, true);
+        } else {
+            const statusMap = {
+                'tab-devolucao': 'DEVOLUCAO',
+                'tab-devolvidos': 'DEVOLVIDO',
+                'tab-trocados': 'TROCADO',
+                'tab-cancelado': 'CANCELADO'
+            };
+            const status = statusMap[currentTab];
+            if (status) {
+                const filtered = pedidosCache.filter(p => p.status === status);
+                exibirPedidos(filtered);
+            }
+        }
+
+        return updatedPedido;
+
+    } catch (error) {
+        console.error('Erro ao atualizar status:', error);
+        adicionarNotificacao(
+            'Erro ao atualizar pedido',
+            `Não foi possível atualizar o status do pedido #${pedidoId}: ${error.message}`,
+            'error'
+        );
+        throw error;
     }
-    
-    const mensagem = getMensagemStatus(novoStatus, pedidoId);
-    adicionarNotificacao(
-      'Status do pedido atualizado',
-      mensagem,
-      'pedido'
-    );
-    
-    // Recarrega os pedidos da aba atual sem mudar de tab
-    const currentTab = document.querySelector('.tab.active').id;
-    if (currentTab === 'tab-pedidos') {
-      exibirPedidosFiltrados(pedidosCache, false);
-    } else if (currentTab === 'tab-historico') {
-      exibirPedidosFiltrados(pedidosCache, true);
-    } else {
-      // Para outras abas específicas (devolução, devolvidos, etc.)
-      const statusMap = {
-        'tab-devolucao': 'DEVOLUCAO',
-        'tab-devolvidos': 'DEVOLVIDO',
-        'tab-trocados': 'TROCADO',
-        'tab-cancelado': 'CANCELADO'
-      };
-      const status = statusMap[currentTab];
-      if (status) {
-        const filtered = pedidosCache.filter(p => p.status === status);
-        exibirPedidos(filtered);
-      }
-    }
-    
-    return updatedPedido;
-    
-  } catch (error) {
-    console.error('Erro ao atualizar status:', error);
-    adicionarNotificacao(
-      'Erro ao atualizar pedido',
-      `Não foi possível atualizar o status do pedido #${pedidoId}: ${error.message}`,
-      'error'
-    );
-    throw error;
-  }
 }
 
     function getMensagemStatus(status, pedidoId) {
@@ -491,52 +481,56 @@ const itensDevolucao = Array.from(checkboxes).map(checkbox => {
     }
 
 async function cancelarPedido(pedidoId) {
-  if (!confirm('Deseja realmente cancelar este pedido?')) {
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem('token');
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
-      method: 'PUT',
-      headers: headers,
-      body: JSON.stringify({ novoStatus: 'CANCELADO' })
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Erro ao cancelar pedido');
+    if (!confirm('Deseja realmente cancelar este pedido?')) {
+        return;
     }
 
-    const updatedPedido = await response.json();
-    const index = pedidosCache.findIndex(p => p.id === updatedPedido.id);
-    if (index !== -1) {
-      pedidosCache[index] = updatedPedido;
+    try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        // 1. Primeiro cancela o pedido
+        const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
+            method: 'PUT',
+            headers: headers,
+            body: JSON.stringify({ novoStatus: 'CANCELADO' })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Erro ao cancelar pedido');
+        }
+
+        const updatedPedido = await response.json();
+        const index = pedidosCache.findIndex(p => p.id === updatedPedido.id);
+        if (index !== -1) {
+            pedidosCache[index] = updatedPedido;
+        }
+
+        // 2. AGORA REPÕE O ESTOQUE DOS LIVROS
+        await reporEstoquePedido(pedidoId);
+
+        adicionarNotificacao(
+            'Pedido cancelado',
+            `Seu pedido #${pedidoId} foi cancelado com sucesso. O estoque dos livros foi reposto.`,
+            'pedido'
+        );
+
+        // Recarrega os pedidos da aba atual
+        const currentTab = document.querySelector('.tab.active').id;
+        if (currentTab === 'tab-pedidos') {
+            exibirPedidosFiltrados(pedidosCache, false);
+        } else if (currentTab === 'tab-historico') {
+            exibirPedidosFiltrados(pedidosCache, true);
+        }
+
+        alert('Pedido cancelado com sucesso. O estoque dos livros foi reposto.');
+
+    } catch (error) {
+        console.error('Erro ao cancelar pedido:', error);
+        alert(`Erro: ${error.message}`);
     }
-
-    adicionarNotificacao(
-      'Pedido cancelado',
-      `Seu pedido #${pedidoId} foi cancelado com sucesso.`,
-      'pedido'
-    );
-
-    // Recarrega os pedidos da aba atual sem mudar para a tab de cancelados
-    const currentTab = document.querySelector('.tab.active').id;
-    if (currentTab === 'tab-pedidos') {
-      exibirPedidosFiltrados(pedidosCache, false);
-    } else if (currentTab === 'tab-historico') {
-      exibirPedidosFiltrados(pedidosCache, true);
-    }
-
-    alert('Pedido cancelado com sucesso.');
-
-  } catch (error) {
-    console.error('Erro ao cancelar pedido:', error);
-    alert(`Erro: ${error.message}`);
-  }
 }
 
 async function excluirPedidoCancelado(pedidoId) {
@@ -971,3 +965,45 @@ function verificarCuponsTroca() {
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('show');
   }
+
+  // Função para repor estoque quando houver cancelamento ou troca
+async function reporEstoquePedido(pedidoId) {
+    try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        console.log(`Repondo estoque para pedido ${pedidoId}...`);
+        
+        // Busca os detalhes do pedido para obter os itens
+        const response = await fetch(`/api/pedidos/${pedidoId}`);
+        if (!response.ok) {
+            throw new Error('Erro ao buscar detalhes do pedido');
+        }
+        
+        const pedido = await response.json();
+        
+        // Para cada item do pedido, repõe o estoque
+        for (const item of pedido.itens) {
+            if (item.livro && item.livro.id) {
+                console.log(`Repondo ${item.quantidade} unidades do livro ${item.livro.id}`);
+                
+                const reporResponse = await fetch(`/api/livros/${item.livro.id}/repor-estoque?quantidade=${item.quantidade}&motivo=Pedido%20${pedidoId}%20cancelado/trocado`, {
+                    method: 'PUT',
+                    headers: headers
+                });
+                
+                if (!reporResponse.ok) {
+                    console.warn(`Erro ao repor estoque do livro ${item.livro.id}`);
+                } else {
+                    console.log(`✅ Estoque do livro ${item.livro.id} reposto com sucesso`);
+                }
+            }
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Erro ao repor estoque do pedido:', error);
+        return false;
+    }
+}

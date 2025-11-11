@@ -1,4 +1,5 @@
-  $(document).ready(function(){
+// NOTE: automatic patch: replaced hardcoded localhost:8080 with window.location.origin
+ $(document).ready(function(){
       $('.hero-carousel').slick({
         dots: true,
         infinite: true,
@@ -6,7 +7,7 @@
         fade: true,
         cssEase: 'linear',
         autoplay: true,
-        autoplaySpeed: 5000,
+        autoplaySpeed: 3500,
         arrows: true
       });
     });
@@ -238,7 +239,7 @@
                               <button onclick="editarCartao(${index})" class="btn btn-primary btn-sm">
                                 <i class="fas fa-edit"></i> Editar
                               </button>
-                              <button onclick="confirmarExclusaoCartao(${cartao.id})" class="btn btn-danger btn-sm" style="margin-left: 5px;">
+                              <button onclick="confirmarExclusaoCartao(${cartao.id})" class="btn btn-danger btn-sm" style="margin-left: 5px;  ">
                                 <i class="fas fa-trash"></i> Excluir
                               </button>
                           </div>
@@ -649,7 +650,6 @@ async function confirmarExclusaoEndereco(enderecoId) {
   }
 }
 
-// Função para debug - ver detalhes do erro
 async function debugExclusaoEndereco(enderecoId) {
   try {
     console.log('Tentando excluir endereço ID:', enderecoId);
@@ -1268,7 +1268,7 @@ async function fazerLogin() {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/clientes/login', {
+        const response = await fetch('window.location.origin/clientes/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1444,7 +1444,7 @@ document.getElementById('form-login').addEventListener('submit', async function(
     }
 
     function confirmarLogout() {
-      logout(); // Chama a função de logout existente
+      logout(); 
       fecharModalLogout();
     }
 
@@ -1453,26 +1453,24 @@ document.getElementById('form-login').addEventListener('submit', async function(
       return JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
     }
 
-    // Função para obter o carrinho do usuário ATUAL
     function obterCarrinho() {
       const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      if (!clienteLogado) return []; // Retorna vazio se não estiver logado
+      if (!clienteLogado) return []; 
       
       const todosCarrinhos = obterTodosCarrinhos();
-      return todosCarrinhos[clienteLogado.id] || []; // Retorna o carrinho específico ou vazio
+      return todosCarrinhos[clienteLogado.id] || []; 
     }
 
-    // Função para salvar o carrinho do usuário atual
     function salvarCarrinho(carrinho) {
       const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
-      if (!clienteLogado) return; // Não salva se não estiver logado
+      if (!clienteLogado) return; 
       
       const todosCarrinhos = obterTodosCarrinhos();
-      todosCarrinhos[clienteLogado.id] = carrinho; // Atualiza apenas o carrinho deste usuário
+      todosCarrinhos[clienteLogado.id] = carrinho;
       localStorage.setItem('carrinhosPorUsuario', JSON.stringify(todosCarrinhos));
     }
 
-    // Função para limpar completamente os dados do carrinho (para debug)
+
     function limparTodosCarrinhos() {
       localStorage.removeItem('carrinhosPorUsuario');
     }
@@ -1598,7 +1596,6 @@ document.getElementById('form-login').addEventListener('submit', async function(
         exibirProdutos(resultados);
     }
 
-    // Função para exibir os produtos na grade
     function exibirProdutos(produtos) {
         const produtosGrid = document.getElementById('produtos-grid');
         
@@ -1618,15 +1615,16 @@ document.getElementById('form-login').addEventListener('submit', async function(
                     <p>${produto.autor || 'Autor desconhecido'}</p>
                     <p class="produto-preco">R$ ${produto.precoVenda?.toFixed(2) || '0,00'}</p>
                     <div class="produto-botoes">
-                        <button class="btn btn-ver" onclick="verDetalhesProduto(${produto.id})">Ver</button>
-                        <button class="btn btn-adicionar" onclick="adicionarAoCarrinho(${produto.id})" ${!produto.ativo || produto.estoque <= 0 ? 'disabled title="Produto indisponível"' : ''}><i class="fas fa-cart-plus"></i> Adicionar</button>
+                  <button class="btn btn-icon btn-ver" onclick="verDetalhesProduto(${produto.id})" title="Ver detalhes">
+                    <i class="fas fa-eye"></i>
+                  </button>                        
+                    <button class="btn btn-adicionar" onclick="adicionarAoCarrinho(${produto.id})" ${!produto.ativo || produto.estoque <= 0 ? 'disabled title="Produto indisponível"' : ''}><i class="fas fa-cart-plus"></i> Adicionar</button>
                     </div>
                 </div>
             </div>
         `).join('');
     }
 
-    // Função para ver detalhes do produto
     async function verDetalhesProduto(idProduto) {
       try {
         const response = await fetch(`/api/livros/${idProduto}`);
@@ -1677,9 +1675,9 @@ function exibirModalProduto(produto) {
           <button onclick="alterarQuantidade(${produto.id}, 1)">+</button>
         </div>
 
-        <button class="btn btn-adicionar btn-lg" onclick="adicionarAoCarrinho(${produto.id}, true)" ${produto.estoque <= 0 ? 'disabled' : ''}>
-          Adicionar ao Carrinho
-        </button>
+<button class="btn btn-adicionar btn-lg" onclick="adicionarAoCarrinho(${produto.id}, true)" ${produto.estoque <= 0 ? 'disabled' : ''}>
+  <i class="fas fa-cart-plus"></i> Adicionar ao Carrinho
+</button>
       `}
     </div>
   `;
@@ -1687,7 +1685,6 @@ function exibirModalProduto(produto) {
   showModal('modal-produto');
 }
 
-    // Função para fechar o modal do produto
     function fecharModalProduto() {
       hideModal('modal-produto');
     }
@@ -1716,7 +1713,8 @@ function exibirModalProduto(produto) {
     }
 
     // Função para adicionar produto ao carrinho
-  function adicionarAoCarrinho(idProduto, fromModal = false) {
+  // Função para adicionar produto ao carrinho - VERSÃO CORRIGIDA
+function adicionarAoCarrinho(idProduto, fromModal = false) {
   const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
   
   if (!clienteLogado) {
@@ -1727,6 +1725,13 @@ function exibirModalProduto(produto) {
     return;
   }
 
+  // Busca o produto na lista para verificar o estoque
+  const produto = todosProdutos.find(p => p.id === idProduto);
+  if (!produto) {
+    alert('Produto não encontrado!');
+    return;
+  }
+
   const quantidade = fromModal 
     ? parseInt(document.getElementById(`quantidade-${idProduto}`).value)
     : 1;
@@ -1734,6 +1739,21 @@ function exibirModalProduto(produto) {
   let carrinho = obterCarrinho();
   const itemExistente = carrinho.find(item => item.id === idProduto);
 
+  // Verifica se já atingiu o estoque máximo
+  const quantidadeTotalNoCarrinho = itemExistente ? itemExistente.quantidade + quantidade : quantidade;
+  
+  if (quantidadeTotalNoCarrinho > produto.estoque) {
+    const disponivel = produto.estoque - (itemExistente ? itemExistente.quantidade : 0);
+    
+    if (disponivel <= 0) {
+      alert(`❌ Este produto já está no carrinho com a quantidade máxima disponível (${produto.estoque} unidades).`);
+    } else {
+      alert(`⚠️ Você já tem ${itemExistente ? itemExistente.quantidade : 0} unidades no carrinho.\nSó é possível adicionar mais ${disponivel} unidade(s).`);
+    }
+    return;
+  }
+
+  // Atualiza ou adiciona o item
   if (itemExistente) {
     itemExistente.quantidade += quantidade;
   } else {
@@ -2106,7 +2126,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Busca os dados atualizados do cliente no backend
-    const response = await fetch(`http://localhost:8080/clientes/${clienteLocal.id}`);
+    const response = await fetch(`window.location.origin/clientes/${clienteLocal.id}`);
     if (!response.ok) {
       throw new Error('Erro ao buscar dados atualizados do cliente');
     }
@@ -2142,7 +2162,6 @@ function esconderLinksRestritos() {
     'link-pedidosADMIN'
   ];
 
-  // Se não estiver logado ou não for ADMIN, oculta os links restritos
   if (!clienteLogado || clienteLogado.perfil !== 'ADMIN') {
     idsRestritos.forEach(id => {
       const el = document.getElementById(id);
@@ -2150,13 +2169,11 @@ function esconderLinksRestritos() {
     });
   }
 
-  // Se for ADMIN, oculta o "Status do Pedido" (somente para clientes)
   const linkStatusCliente = document.getElementById('link-status-cliente');
   if (clienteLogado && clienteLogado.perfil === 'ADMIN') {
     if (linkStatusCliente) linkStatusCliente.style.display = 'none';
   }
 
-  // Se não estiver logado, também esconde o "Status do Pedido"
   if (!clienteLogado) {
     if (linkStatusCliente) linkStatusCliente.style.display = 'none';
   }
@@ -2386,7 +2403,7 @@ async function carregarHistorico(clienteId) {
   try {
     console.log("Buscando histórico para cliente:", clienteId);
     
-    const response = await fetch(`http://localhost:8080/api/pedidos/historico/${clienteId}`);
+    const response = await fetch(`window.location.origin/api/pedidos/historico/${clienteId}`);
     
     if (!response.ok) {
       throw new Error(`Erro HTTP: ${response.status}`);

@@ -9,12 +9,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/Principal.css">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css"/>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234a6fa5'><path d='M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z'/></svg>">
 </head>
-  
+  <style>
+    body{
+      background-color: #eff4fb !important;
+    }
+  </style>
 <body>
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
@@ -31,6 +36,7 @@
   <a href="livros.html" id="link-livros"><i class="fas fa-book"></i> Cadastrar Livro</a>
   <a href="lucros.html" id="link-lucros"><i class="fas fa-chart-bar"></i> Lucro dos Livros</a>
   <a href="CupomDesconto.html" id="link-cupom"><i class="fas fa-money-bill-wave"></i> Cupons de Desconto</a>
+
 </div>
 
   <!-- Header -->
@@ -110,86 +116,63 @@
       </div>
     </div>
 
-    
-
-    <!-- Produtos Section -->
-   <section class="produtos-container">
-<h2>
-   Nosso Acervo de Livros
-</h2>
-  
-  <!-- Filtros -->
-  <div class="filtros-container">
-    <div class="filtro-header">
-      <h3><i class="fas fa-filter"></i> Filtrar Livros</h3>
-      <button class="btn btn-outline btn-limpar" onclick="limparFiltros()">
-        <i class="fas fa-broom"></i> Limpar Filtros
-      </button>
-    </div>
-    
-    <div class="filtros-grid">
-      <!-- Filtro por Título -->
-      <div class="filtro-item">
-        <label for="filtro-titulo">Título</label>
-        <input type="text" id="filtro-titulo" placeholder="Digite o título">
+<!-- Cupons Section -->
+    <section class="cupons-container">
+      <h2>Cupons de Desconto</h2>
+      <div class="cupons-grid" id="cupons-grid">
+        <!-- Cupom 1 -->
+        <div class="cupom-card">
+          <div class="cupom-header">
+            <h3>Desconto de 10%</h3>
+            <span class="cupom-valor">10% OFF</span>
+          </div>
+          <div class="cupom-body">
+            <p>Use em qualquer compra acima de R$ 50,00</p>
+            <p class="cupom-codigo" id="cupom-1-codigo">Clique em "Pegar Cupom"</p>
+            <button class="btn-pegar-cupom" onclick="gerarCupom(1, 10, 50)">Pegar Cupom</button>
+          </div>
+        </div>
+        
+        <!-- Cupom 2 -->
+        <div class="cupom-card">
+          <div class="cupom-header">
+            <h3>Desconto de 15%</h3>
+            <span class="cupom-valor">15% OFF</span>
+          </div>
+          <div class="cupom-body">
+            <p>Use em qualquer compra acima de R$ 100,00</p>
+            <p class="cupom-codigo" id="cupom-2-codigo">Clique em "Pegar Cupom"</p>
+            <button class="btn-pegar-cupom" onclick="gerarCupom(2, 15, 100)">Pegar Cupom</button>
+          </div>
+        </div>
+        
+        <!-- Cupom 3 -->
+        <div class="cupom-card">
+          <div class="cupom-header">
+            <h3>Desconto de 20%</h3>
+            <span class="cupom-valor">20% OFF</span>
+          </div>
+          <div class="cupom-body">
+            <p>Use em qualquer compra acima de R$ 150,00</p>
+            <p class="cupom-codigo" id="cupom-3-codigo">Clique em "Pegar Cupom"</p>
+            <button class="btn-pegar-cupom" onclick="gerarCupom(3, 20, 150)">Pegar Cupom</button>
+          </div>
+        </div>
+        
+        <!-- Cupom 4 -->
+        <div class="cupom-card">
+          <div class="cupom-header">
+            <h3>Desconto de R$ 30</h3>
+            <span class="cupom-valor">R$ 30 OFF</span>
+          </div>
+          <div class="cupom-body">
+            <p>Use em qualquer compra acima de R$ 200,00</p>
+            <p class="cupom-codigo" id="cupom-4-codigo">Clique em "Pegar Cupom"</p>
+            <button class="btn-pegar-cupom" onclick="gerarCupom(4, 30, 200, 'fixed')">Pegar Cupom</button>
+          </div>
+        </div>
       </div>
-      
-      <!-- Filtro por Autor -->
-      <div class="filtro-item">
-        <label for="filtro-autor">Autor</label>
-        <input type="text" id="filtro-autor" placeholder="Digite o autor">
-      </div>
-      
-      <!-- Filtro por Editora -->
-      <div class="filtro-item">
-        <label for="filtro-editora">Editora</label>
-        <input type="text" id="filtro-editora" placeholder="Digite a editora">
-      </div>
-      
-      <!-- Filtro por ISBN -->
-      <div class="filtro-item">
-        <label for="filtro-isbn">ISBN</label>
-        <input type="text" id="filtro-isbn" placeholder="Digite o ISBN">
-      </div>
-      
-      <!-- Filtro por Categoria -->
-      <div class="filtro-item">
-        <label for="filtro-categoria">Categoria</label>
-        <select id="filtro-categoria">
-          <option value="">Todas</option>
-          <!-- As opções serão preenchidas via JavaScript -->
-        </select>
-      </div>
-      
-      <!-- Filtro por Preço -->
-      <div class="filtro-item">
-        <label for="filtro-preco">Preço Máximo</label>
-        <input type="number" id="filtro-preco" placeholder="R$ máximo" min="0" step="0.01">
-      </div>
-      
-      <!-- Filtro por Disponibilidade -->
-      <div class="filtro-item">
-        <label for="filtro-disponivel">Disponibilidade</label>
-        <select id="filtro-disponivel">
-          <option value="">Todos</option>
-          <option value="disponivel">Disponíveis</option>
-          <option value="esgotado">Esgotados</option>
-        </select>
-      </div>
-      
-      <!-- Botão de Aplicar Filtros -->
-      <div class="filtro-item full-width">
-        <button class="btn btn-filtrar" onclick="aplicarFiltros()">
-          <i class="fas fa-check"></i> Aplicar Filtros
-        </button>
-      </div>
-    </div>
-  </div>
-  
-  <div class="produtos-grid" id="produtos-grid">
-    <!-- Os produtos serão carregados aqui via JavaScript -->
-  </div>
-</section>
+    </section>
   </main>
 
   <!-- Footer -->
@@ -197,7 +180,7 @@
     <div class="footer-container">
       <div class="footer-col">
         <h3>Sobre Nós</h3>
-        <p>Somos a maior Livraria online do país, com milhares de títulos para todos os gostos.</p>
+        <p>Somos a maior biblioteca online do país, com milhares de títulos para todos os gostos.</p>
         <div class="social-links">
           <a href="#"><i class="fab fa-facebook-f"></i></a>
           <a href="#"><i class="fab fa-twitter"></i></a>
@@ -274,8 +257,8 @@
           </div>
         </div>
         <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
-          <button type="button" class="btn btn-cancelar" onclick="closeModalLogin()"><i class="fas fa-times"></i>Cancelar</button>
-          <button type="submit" class="btn btn-salvar"> <i class="fas fa-sign-in-alt"></i>Entrar</button>
+          <button type="button" class="btn btn-cancelar" onclick="closeModalLogin()">Cancelar</button>
+          <button type="submit" class="btn btn-salvar">Entrar</button>
         </div>
       </form>
     </div>
@@ -290,9 +273,9 @@
       </div>
       <div style="padding: 20px;">
         <p>Tem certeza que deseja sair da sua conta?</p>
-        <div style="margin-top: 40px; display: flex; gap: 10px; justify-content: flex-end;">
-          <button onclick="fecharModalLogout()" class="btn btn-cancelar"><i class="fas fa-times"></i>Cancelar</button>
-          <button onclick="confirmarLogout()" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i>Sair</button>
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+          <button onclick="fecharModalLogout()" class="btn btn-cancelar">Cancelar</button>
+          <button onclick="confirmarLogout()" class="btn btn-danger">Sair</button>
         </div>
       </div>
     </div>
@@ -406,7 +389,7 @@
         </div>
         <div style="margin-top: 20px; display: flex; gap: 10px;">
           <button type="submit" class="btn btn-salvar">Alterar Senha</button>
-          <button type="button" class="btn btn-cancelar" onclick="fecharModalSenha()"><i class="fas fa-times"></i>Cancelar</button>
+          <button type="button" class="btn btn-cancelar" onclick="fecharModalSenha()">Cancelar</button>
         </div>
       </form>
     </div>

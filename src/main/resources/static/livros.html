@@ -3,338 +3,375 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Biblioteca Online</title>
+  <title>Livraria Online</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/Livros.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234a6fa5'><path d='M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z'/></svg>">
 </head>
 <body>
- <div id="header-container"></div>
-<script>
-  fetch('header.html')
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('header-container').innerHTML = data;
+  <div id="header-container"></div>
 
-      // Aguarde o DOM do header carregar
-      setTimeout(() => {
-        const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
+  <script>
+    fetch('header.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('header-container').innerHTML = data;
 
-        if (clienteLogado) {
-          const nomeSpan = document.getElementById('nome-cliente');
-          if (nomeSpan) nomeSpan.textContent = clienteLogado.nome;
+        // Aguarde o DOM do header carregar
+        setTimeout(() => {
+          const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
 
-          // Links que apenas ADMIN pode ver
-          const linksAdmin = [
-            'link-log',
-            'link-usuarios',
-            'link-lucros',
-            'link-livros',
-            'link-pedidosADMIN'
-          ];
+          if (clienteLogado) {
+            const nomeSpan = document.getElementById('nome-cliente');
+            if (nomeSpan) nomeSpan.textContent = clienteLogado.nome;
 
-          // Se não for ADMIN, oculta os links do admin
-          if (clienteLogado.perfil !== 'ADMIN') {
-            linksAdmin.forEach(id => {
+            // Links que apenas ADMIN pode ver
+            const linksAdmin = [
+              'link-log',
+              'link-usuarios',
+              'link-lucros',
+              'link-livros',
+              'link-pedidosADMIN'
+            ];
+
+            // Se não for ADMIN, oculta os links do admin
+            if (clienteLogado.perfil !== 'ADMIN') {
+              linksAdmin.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+              });
+            } else {
+              // Se for ADMIN, oculta o link de status do cliente
+              const statusClienteLink = document.getElementById('link-status-cliente');
+              if (statusClienteLink) statusClienteLink.style.display = 'none';
+            }
+
+          } else {
+            // Usuário não logado: oculta links de ADMIN e CLIENTE
+            const linksParaOcultar = [
+              'link-log',
+              'link-usuarios',
+              'link-lucros',
+              'link-livros',
+              'link-pedidosADMIN',
+              'link-status-cliente'
+            ];
+            linksParaOcultar.forEach(id => {
               const el = document.getElementById(id);
               if (el) el.style.display = 'none';
             });
-          } else {
-            // Se for ADMIN, oculta o link de status do cliente
-            const statusClienteLink = document.getElementById('link-status-cliente');
-            if (statusClienteLink) statusClienteLink.style.display = 'none';
           }
+        }, 50);
+      });
+  </script>
 
-        } else {
-          // Usuário não logado: oculta links de ADMIN e CLIENTE
-          const linksParaOcultar = [
-            'link-log',
-            'link-usuarios',
-            'link-lucros',
-            'link-livros',
-            'link-pedidosADMIN',
-            'link-status-cliente'
-          ];
-          linksParaOcultar.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
-          });
-        }
-      }, 50);
-    });
-</script>
-
-
-<section id="tela-livros" style="padding:20px;">
   <div class="container">
-    <h1>Biblioteca de Livros</h1>
-    <button onclick="abrirFormulario()"><i class="fas fa-plus"></i> Novo Livro</button>
+    <!-- Header da Página -->
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-book"></i> Gestão de Livros
+      </h1>
+      <p class="page-description">
+        Gerencie todo o catálogo de livros da biblioteca. Cadastre novos títulos, edite informações e administre o estoque.
+      </p>
+    </div>
+
+    <!-- Botão Novo Livro -->
+    <button class="btn btn-success" onclick="abrirFormulario()">
+      <i class="fas fa-plus"></i> Novo Livro
+    </button>
 
     <!-- Formulário -->
     <div id="form-container">
       <h2><i class="fas fa-book"></i> Cadastro de Livro</h2>
-     <form id="form-livro">
-  <input type="hidden" id="livro-id" />
+      <form id="form-livro">
+        <input type="hidden" id="livro-id" />
 
-  <div>
-    <label for="titulo">Título</label>
-    <input type="text" id="titulo" required />
-  </div>
+        <div>
+          <label for="imagem">Imagem do Livro</label>
+          <input type="file" id="imagem" accept="image/*" />
+          <div id="preview-container" style="margin-top: 10px; display: none;">
+            <img id="preview-imagem" />
+          </div>
+        </div>
 
-  <div>
-    <label for="autor">Autor</label>
-    <input type="text" id="autor" required />
-  </div>
+        <div>
+          <label for="titulo">Título</label>
+          <input type="text" id="titulo" required />
+        </div>
 
-  <div>
-    <label for="editora">Editora</label>
-    <input type="text" id="editora" />
-  </div>
+        <div>
+          <label for="autor">Autor</label>
+          <input type="text" id="autor" required />
+        </div>
 
-  <div>
-    <label for="categoria">Categoria</label>
-    <input type="text" id="categoria" />
-  </div>
+        <div>
+          <label for="editora">Editora</label>
+          <input type="text" id="editora" />
+        </div>
 
-  <div>
-    <label for="edicao">Edição</label>
-    <input type="number" id="edicao" min="1" />
-  </div>
+        <div>
+          <label for="categoria">Categoria</label>
+          <input type="text" id="categoria" />
+        </div>
 
-  <div>
-    <label for="isbn">ISBN</label>
-    <input type="text" id="isbn" />
-  </div>
+        <div>
+          <label for="edicao">Edição</label>
+          <input type="number" id="edicao" min="1" />
+        </div>
 
-  <div>
-    <label for="paginas">Número de Páginas</label>
-    <input type="number" id="paginas" min="1" />
-  </div>
+        <div>
+          <label for="isbn">ISBN</label>
+          <input type="text" id="isbn" />
+        </div>
 
-  <div>
-    <label for="sinopse">Sinopse</label>
-    <textarea id="sinopse" rows="4"></textarea>
-  </div>
+        <div>
+          <label for="paginas">Número de Páginas</label>
+          <input type="number" id="paginas" min="1" />
+        </div>
 
-  <fieldset>
-    <legend>Dimensões (cm / g)</legend>
+        <div>
+          <label for="sinopse">Sinopse</label>
+          <textarea id="sinopse" rows="4"></textarea>
+        </div>
 
-    <div>
-      <label for="altura">Altura (cm)</label>
-      <input type="number" step="0.01" id="altura" />
+        <fieldset>
+          <legend>Dimensões (cm / g)</legend>
+          <div>
+            <label for="altura">Altura (cm)</label>
+            <input type="number" step="0.01" id="altura" />
+          </div>
+          <div>
+            <label for="largura">Largura (cm)</label>
+            <input type="number" step="0.01" id="largura" />
+          </div>
+          <div>
+            <label for="profundidade">Profundidade (cm)</label>
+            <input type="number" step="0.01" id="profundidade" />
+          </div>
+          <div>
+            <label for="peso">Peso (g)</label>
+            <input type="number" step="0.01" id="peso" />
+          </div>
+        </fieldset>
+
+        <div>
+          <label for="codigoBarras">Código de Barras</label>
+          <input type="text" id="codigoBarras" />
+        </div>
+
+        <div>
+          <label for="precoCusto">Preço de Custo</label>
+          <input type="number" step="0.01" id="precoCusto" required />
+        </div>
+
+        <div>
+          <label for="estoque">Estoque</label>
+          <input type="number" id="estoque" required />
+        </div>
+
+        <div>
+          <label for="dataEntrada">Data de Entrada</label>
+          <input type="date" id="dataEntrada" required />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="fecharFormulario()">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Salvar
+          </button>
+        </div>
+      </form>
     </div>
 
-    <div>
-      <label for="largura">Largura (cm)</label>
-      <input type="number" step="0.01" id="largura" />
+    <!-- Informações de Contagem -->
+    <div id="info-contagem">
+      <i class="fas fa-info-circle"></i> Carregando informações...
     </div>
 
-    <div>
-      <label for="profundidade">Profundidade (cm)</label>
-      <input type="number" step="0.01" id="profundidade" />
-    </div>
-
-    <div>
-      <label for="peso">Peso (g)</label>
-      <input type="number" step="0.01" id="peso" />
-    </div>
-  </fieldset>
-
-  <div>
-    <label for="codigoBarras">Código de Barras</label>
-    <input type="text" id="codigoBarras" />
-  </div>
-
-  <div>
-    <label for="precoCusto">Preço de Custo</label>
-    <input type="number" step="0.01" id="precoCusto" required />
-  </div>
-
-  <div>
-    <label for="estoque">Estoque</label>
-    <input type="number" id="estoque" required />
-  </div>
-
-  <div>
-    <label for="dataEntrada">Data de Entrada</label>
-    <input type="date" id="dataEntrada" required />
-  </div>
-
-  <div class="form-actions">
-    <button type="button" onclick="fecharFormulario()"><i class="fas fa-times"></i> Cancelar</button>
-    <button type="submit"><i class="fas fa-save"></i> Salvar</button>
-  </div>
-</form>
-</div>
-
-<!-- Painel de filtros -->
-<div class="filtros-container">
-    <div class="filtro-header">
+    <!-- Filtros -->
+    <div class="filtros-container">
+      <div class="filtro-header">
         <h3><i class="fas fa-filter"></i> Filtrar Livros</h3>
-        <button class="btn btn-outline btn-limpar"  onclick="limparFiltros()"><i class="fas fa-broom"></i> Limpar Filtros</button>
-    </div>
-    
-    <div class="filtros-grid">
+        <button type="button" class="btn btn-limpar" onclick="limparFiltros()">
+          <i class="fas fa-broom"></i> Limpar Filtros
+        </button>
+      </div>
+      
+      <div class="filtros-grid">
         <!-- Filtro por Título -->
         <div class="filtro-item">
-            <label for="filtro-titulo">Título</label>
-            <input type="text" id="filtro-titulo" placeholder="Digite o título">
+          <label for="filtro-titulo">Título</label>
+          <input type="text" id="filtro-titulo" placeholder="Digite o título">
         </div>
         
         <!-- Filtro por Autor -->
         <div class="filtro-item">
-            <label for="filtro-autor">Autor</label>
-            <input type="text" id="filtro-autor" placeholder="Digite o autor">
+          <label for="filtro-autor">Autor</label>
+          <input type="text" id="filtro-autor" placeholder="Digite o autor">
         </div>
         
         <!-- Filtro por Editora -->
         <div class="filtro-item">
-            <label for="filtro-editora">Editora</label>
-            <input type="text" id="filtro-editora" placeholder="Digite a editora">
+          <label for="filtro-editora">Editora</label>
+          <input type="text" id="filtro-editora" placeholder="Digite a editora">
         </div>
         
         <!-- Filtro por ISBN -->
         <div class="filtro-item">
-            <label for="filtro-isbn">ISBN</label>
-            <input type="text" id="filtro-isbn" placeholder="Digite o ISBN">
+          <label for="filtro-isbn">ISBN</label>
+          <input type="text" id="filtro-isbn" placeholder="Digite o ISBN">
         </div>
         
         <!-- Filtro por Categoria -->
         <div class="filtro-item">
-            <label for="filtro-categoria">Categoria</label>
-            <input type="text" id="filtro-categoria" placeholder="Digite a categoria">
+          <label for="filtro-categoria">Categoria</label>
+          <input type="text" id="filtro-categoria" placeholder="Digite a categoria">
         </div>
         
         <!-- Filtro por Preço -->
         <div class="filtro-item">
-            <label for="filtro-preco-min">Preço Mínimo</label>
-            <input type="number" id="filtro-preco-min" placeholder="R$ mínimo" min="0" step="0.01">
+          <label for="filtro-preco-min">Preço Mínimo</label>
+          <input type="number" id="filtro-preco-min" placeholder="R$ mínimo" min="0" step="0.01">
         </div>
         
         <div class="filtro-item">
-            <label for="filtro-preco-max">Preço Máximo</label>
-            <input type="number" id="filtro-preco-max" placeholder="R$ máximo" min="0" step="0.01">
+          <label for="filtro-preco-max">Preço Máximo</label>
+          <input type="number" id="filtro-preco-max" placeholder="R$ máximo" min="0" step="0.01">
         </div>
         
         <!-- Filtro por Estoque -->
         <div class="filtro-item">
-            <label for="filtro-estoque-min">Estoque Mínimo</label>
-            <input type="number" id="filtro-estoque-min" placeholder="Mínimo" min="0">
+          <label for="filtro-estoque-min">Estoque Mínimo</label>
+          <input type="number" id="filtro-estoque-min" placeholder="Mínimo" min="0">
         </div>
         
         <div class="filtro-item">
-            <label for="filtro-estoque-max">Estoque Máximo</label>
-            <input type="number" id="filtro-estoque-max" placeholder="Máximo" min="0">
+          <label for="filtro-estoque-max">Estoque Máximo</label>
+          <input type="number" id="filtro-estoque-max" placeholder="Máximo" min="0">
         </div>
         
         <!-- Filtro por Status -->
         <div class="filtro-item">
-            <label for="filtro-status">Status</label>
-            <select id="filtro-status">
-                <option value="">Todos</option>
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-            </select>
+          <label for="filtro-status">Status</label>
+          <select id="filtro-status">
+            <option value="">Todos</option>
+            <option value="ativo">Ativo</option>
+            <option value="inativo">Inativo</option>
+          </select>
         </div>
         
         <!-- Botão de Aplicar Filtros -->
         <div class="filtro-item full-width">
-            <button class="btn btn-filtrar" onclick="aplicarFiltros()"><i class="fas fa-check"></i> Aplicar Filtros</button>
+          <button type="button" class="btn btn-primary" onclick="aplicarFiltros()">
+            <i class="fas fa-check"></i> Aplicar Filtros
+          </button>
         </div>
-    </div>
-</div>
-
-    <div id="info-contagem"></div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Título</th>
-          <th>Autor</th>
-          <th>Edição</th>
-          <th>Editora</th>
-          <th>Categoria</th>
-          <th>Preço Venda</th>
-          <th>Estoque</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="livros-tbody"></tbody>
-    </table>
-  </div>
-</section>
-
-<!-- Modais -->
-<div id="modal-excluir" class="modal-overlay">
-  <div class="modal-content fade-in">
-    <div class="modal-header">
-      <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h3>
-      <button class="modal-close" onclick="fecharModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <p id="modal-msg"></p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="fecharModal()"><i class="fas fa-times"></i> Cancelar</button>
-      <button class="btn btn-danger" id="btn-confirmar-excluir"><i class="fas fa-trash"></i> Confirmar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Detalhes -->
-<div id="modal-detalhes" class="modal-overlay">
-  <div class="modal-content fade-in">
-    <div class="modal-header">
-      <h3><i class="fas fa-book-open"></i> Detalhes do Livro</h3>
-      <button class="modal-close" onclick="fecharModalDetalhes()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div id="detalhes-conteudo"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" onclick="fecharModalDetalhes()"><i class="fas fa-times"></i> Fechar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Confirmação de Ação (Ativar/Inativar) -->
-<div id="modal-confirmacao" class="modal-overlay">
-  <div class="modal-content fade-in">
-    <div class="modal-header">
-      <h3 id="modal-titulo"></h3>
-      <button class="modal-close" onclick="fecharModalConfirmacao()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <p id="modal-mensagem"></p>
-      <div class="filtro-item">
-        <label for="motivoInput">Motivo:</label>
-        <input type="text" id="motivoInput" class="form-control" />
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="fecharModalConfirmacao()"><i class="fas fa-times"></i> Cancelar</button>
-      <button class="btn btn-primary" id="btn-confirmar-acao"><i class="fas fa-check"></i> Confirmar</button>
+
+    <!-- Tabela de Livros -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Edição</th>
+            <th>Editora</th>
+            <th>Categoria</th>
+            <th>Preço Venda</th>
+            <th>Estoque</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="livros-tbody"></tbody>
+      </table>
     </div>
   </div>
-</div>
 
-<div id="modalErro" class="modal-overlay">
-  <div class="modal-content fade-in">
-    <div class="modal-header">
-      <h3><i class="fas fa-exclamation-circle"></i> Erro</h3>
-      <button class="modal-close" onclick="fecharModalErro()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <p id="mensagemErro"></p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" onclick="fecharModalErro()"><i class="fas fa-times"></i> Fechar</button>
+  <!-- Modal Excluir -->
+  <div id="modal-excluir" class="modal-overlay">
+    <div class="modal-content fade-in">
+      <div class="modal-header">
+        <h3><i class="fas fa-trash-alt"></i> Confirmar Exclusão</h3>
+        <button class="modal-close" onclick="fecharModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-msg">Tem certeza que deseja excluir este livro?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="fecharModal()">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+        <button class="btn btn-danger" id="btn-confirmar-excluir">
+          <i class="fas fa-trash"></i> Confirmar Exclusão
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-<script src="js/livros.js"></script>
+  <!-- Modal Detalhes -->
+  <div id="modal-detalhes" class="modal-overlay">
+    <div class="modal-content fade-in">
+      <div class="modal-header">
+        <h3><i class="fas fa-book-open"></i> Detalhes do Livro</h3>
+        <button class="modal-close" onclick="fecharModalDetalhes()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="detalhes-conteudo"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Status -->
+  <div id="modal-confirmacao" class="modal-overlay">
+    <div class="modal-content fade-in">
+      <div class="modal-header">
+        <h3 id="modal-titulo"><i class="fas fa-exchange-alt"></i> Alterar Status</h3>
+        <button class="modal-close" onclick="fecharModalConfirmacao()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-mensagem">Tem certeza que deseja alterar o status deste livro?</p>
+        <div class="filtro-item">
+          <label for="motivoInput">Motivo</label>
+          <input type="text" id="motivoInput" placeholder="Informe o motivo da alteração" required />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="fecharModalConfirmacao()">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+        <button class="btn btn-primary" id="btn-confirmar-acao">
+          <i class="fas fa-check"></i> Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Erro -->
+  <div id="modalErro" class="modal-overlay">
+    <div class="modal-content fade-in">
+      <div class="modal-header">
+        <h3><i class="fas fa-exclamation-circle"></i> Erro</h3>
+        <button class="modal-close" onclick="fecharModalErro()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="mensagemErro"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="fecharModalErro()">
+          <i class="fas fa-times"></i> Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/livros.js"></script>
 </body>
 </html>

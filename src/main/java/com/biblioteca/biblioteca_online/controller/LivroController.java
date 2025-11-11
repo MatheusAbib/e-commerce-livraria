@@ -3,32 +3,33 @@ package com.biblioteca.biblioteca_online.controller;
 import com.biblioteca.biblioteca_online.model.Livro;
 import com.biblioteca.biblioteca_online.repository.LivroRepository;
 import com.biblioteca.biblioteca_online.service.LivroService;
+import com.biblioteca.biblioteca_online.service.FileStorageService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import java.util.Map;
-import java.util.Optional;
-
-
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.Optional;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/livros")
-@CrossOrigin(origins = "*") // permite chamadas do frontend (evita erro CORS)
+@CrossOrigin(origins = "*")
 public class LivroController {
 
     private final LivroService livroService;
 
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @Autowired
+    private LivroRepository livroRepository;
+
     public LivroController(LivroService livroService) {
         this.livroService = livroService;
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Livro>> listarTodos() {
-        return ResponseEntity.ok(livroService.listarTodos());
     }
 
     @PostMapping
@@ -36,17 +37,133 @@ public class LivroController {
         return ResponseEntity.ok(livroService.salvar(livro));
     }
 
+    // NOVO ENDPOINT PARA SALVAR COM IMAGEM
+    @PostMapping("/com-imagem")
+    public ResponseEntity<?> salvarComImagem(
+            @RequestPart("livro") Livro livro,
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem) {
+
+        try {
+            if (imagem != null && !imagem.isEmpty()) {
+                String nomeArquivo = fileStorageService.storeFile(imagem);
+                livro.setImagemUrl(nomeArquivo);
+            }
+
+            Livro livroSalvo = livroService.salvar(livro);
+            return ResponseEntity.ok(livroSalvo);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao salvar livro: " + e.getMessage());
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Livro> atualizar(@PathVariable Long id, @RequestBody Livro livro) {
         return ResponseEntity.ok(livroService.atualizar(id, livro));
     }
 
+    // NOVO ENDPOINT PARA ATUALIZAR COM IMAGEM
+    @PutMapping("/{id}/com-imagem")
+    public ResponseEntity<?> atualizarComImagem(
+            @PathVariable Long id,
+            @RequestPart("livro") Livro livro,
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem) {
+
+        try {
+            Optional<Livro> livroExistente = livroService.buscarPorId(id);
+            if (livroExistente.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Livro livroAtual = livroExistente.get();
+
+            atualizarCamposLivro(livroAtual, livro);
+
+            if (imagem != null && !imagem.isEmpty()) {
+                if (livroAtual.getImagemUrl() != null) {
+                    try {
+                        fileStorageService.deleteFile(livroAtual.getImagemUrl());
+                    } catch (Exception e) {
+                        System.err.println("Erro ao deletar imagem antiga: " + e.getMessage());
+                    }
+                }
+                String nomeArquivo = fileStorageService.storeFile(imagem);
+                livroAtual.setImagemUrl(nomeArquivo);
+            }
+
+            Livro livroAtualizado = livroService.salvar(livroAtual);
+            return ResponseEntity.ok(livroAtualizado);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao atualizar livro: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/imagem")
+    public ResponseEntity<?> uploadImagem(
+            @PathVariable Long id,
+            @RequestParam("imagem") MultipartFile imagem) {
+
+        try {
+            Optional<Livro> livro = livroService.buscarPorId(id);
+            if (livro.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Livro livroAtual = livro.get();
+
+            if (livroAtual.getImagemUrl() != null) {
+                try {
+                    fileStorageService.deleteFile(livroAtual.getImagemUrl());
+                } catch (Exception e) {
+                    System.err.println("Erro ao deletar imagem antiga: " + e.getMessage());
+                }
+            }
+
+            // Salva nova imagem
+            String nomeArquivo = fileStorageService.storeFile(imagem);
+            livroAtual.setImagemUrl(nomeArquivo);
+
+            Livro livroAtualizado = livroService.salvar(livroAtual);
+            return ResponseEntity.ok(livroAtualizado);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao fazer upload da imagem: " + e.getMessage());
+        }
+    }
+
+    private void atualizarCamposLivro(Livro livroAtual, Livro livroNovo) {
+        livroAtual.setTitulo(livroNovo.getTitulo());
+        livroAtual.setAutor(livroNovo.getAutor());
+        livroAtual.setEditora(livroNovo.getEditora());
+        livroAtual.setCategoria(livroNovo.getCategoria());
+        livroAtual.setEdicao(livroNovo.getEdicao());
+        livroAtual.setIsbn(livroNovo.getIsbn());
+        livroAtual.setPaginas(livroNovo.getPaginas());
+        livroAtual.setSinopse(livroNovo.getSinopse());
+        livroAtual.setAltura(livroNovo.getAltura());
+        livroAtual.setLargura(livroNovo.getLargura());
+        livroAtual.setProfundidade(livroNovo.getProfundidade());
+        livroAtual.setPeso(livroNovo.getPeso());
+        livroAtual.setCodigoBarras(livroNovo.getCodigoBarras());
+        livroAtual.setPrecoCusto(livroNovo.getPrecoCusto());
+        livroAtual.setPrecoVenda(livroNovo.getPrecoVenda());
+        livroAtual.setEstoque(livroNovo.getEstoque());
+        livroAtual.setDataEntrada(livroNovo.getDataEntrada());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
-    livroService.excluir(id);
-    return ResponseEntity.noContent().build();
-}
+        // Antes de excluir o livro, remove a imagem se existir
+        Optional<Livro> livro = livroService.buscarPorId(id);
+        if (livro.isPresent() && livro.get().getImagemUrl() != null) {
+            try {
+                fileStorageService.deleteFile(livro.get().getImagemUrl());
+            } catch (Exception e) {
+                System.err.println("Erro ao deletar imagem do livro: " + e.getMessage());
+            }
+        }
 
+        livroService.excluir(id);
+        return ResponseEntity.noContent().build();
+    }
 
     @PutMapping("/{id}/inativar")
     public ResponseEntity<Void> inativar(@PathVariable Long id, @RequestParam String motivo) {
@@ -71,94 +188,128 @@ public class LivroController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-@GetMapping("/consulta")
-public ResponseEntity<Map<String, Object>> consultaComContagem(
-    @RequestParam(required = false) String titulo,
-    @RequestParam(required = false) String autor,
-    @RequestParam(required = false) String editora,
-    @RequestParam(required = false) String isbn,
-    @RequestParam(required = false) String categoria,
-    @RequestParam(required = false) BigDecimal precoMin,
-    @RequestParam(required = false) BigDecimal precoMax,
-    @RequestParam(required = false) Integer estoqueMin,
-    @RequestParam(required = false) Integer estoqueMax,
-    @RequestParam(required = false) String status,
-    @RequestParam(required = false) String ordenarPor,
-    @RequestParam(required = false) String direcao
-) {
-    Map<String, Object> resultado = livroService.consultarComFiltrosComContagem(
-        titulo, autor, editora, isbn, categoria, precoMin, precoMax, estoqueMin, estoqueMax, status, ordenarPor, direcao);
-    return ResponseEntity.ok(resultado);
-}
 
-
-
-    @Autowired
-    private LivroRepository livroRepository;
-
-@PostMapping("/change-status/{id}")
-public ResponseEntity<?> changeStatus(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
-    Optional<Livro> livroOpt = livroRepository.findById(id);
-    if (!livroOpt.isPresent()) {
-        return ResponseEntity.notFound().build();
+    @GetMapping("/consulta")
+    public ResponseEntity<Map<String, Object>> consultaComContagem(
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) String autor,
+            @RequestParam(required = false) String editora,
+            @RequestParam(required = false) String isbn,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) BigDecimal precoMin,
+            @RequestParam(required = false) BigDecimal precoMax,
+            @RequestParam(required = false) Integer estoqueMin,
+            @RequestParam(required = false) Integer estoqueMax,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String ordenarPor,
+            @RequestParam(required = false) String direcao) {
+        Map<String, Object> resultado = livroService.consultarComFiltrosComContagem(
+                titulo, autor, editora, isbn, categoria, precoMin, precoMax, estoqueMin, estoqueMax, status, ordenarPor,
+                direcao);
+        return ResponseEntity.ok(resultado);
     }
 
-    Livro livro = livroOpt.get();
+    @PostMapping("/change-status/{id}")
+    public ResponseEntity<?> changeStatus(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        Optional<Livro> livroOpt = livroRepository.findById(id);
+        if (!livroOpt.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
 
-    Boolean ativo = (Boolean) payload.get("ativo");
-    String motivo = (String) payload.get("motivo");
+        Livro livro = livroOpt.get();
 
-    if (ativo == null || motivo == null || motivo.trim().isEmpty()) {
-        return ResponseEntity.badRequest().body("Campos 'ativo' e 'motivo' são obrigatórios.");
-    }
+        Boolean ativo = (Boolean) payload.get("ativo");
+        String motivo = (String) payload.get("motivo");
 
-    livro.setAtivo(ativo);
+        if (ativo == null || motivo == null || motivo.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Campos 'ativo' e 'motivo' são obrigatórios.");
+        }
 
-    if (ativo) {
-        livro.setMotivoAtivacao(motivo);
-        livro.setMotivoInativacao(null);
-    } else {
-        livro.setMotivoInativacao(motivo);
-        livro.setMotivoAtivacao(null);
-    }
+        livro.setAtivo(ativo);
 
-    livroRepository.save(livro);
+        if (ativo) {
+            livro.setMotivoAtivacao(motivo);
+            livro.setMotivoInativacao(null);
+        } else {
+            livro.setMotivoInativacao(motivo);
+            livro.setMotivoAtivacao(null);
+        }
 
-    return ResponseEntity.ok().build();
-}
+        livroRepository.save(livro);
 
-@PostMapping("/processar-pedido")
-public ResponseEntity<?> processarPedido(@RequestBody Map<String, Object> payload) {
-    try {
-        List<Map<String, Object>> itens = (List<Map<String, Object>>) payload.get("itens");
-        livroService.processarCompra(itens);
         return ResponseEntity.ok().build();
-    } catch (RuntimeException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-}
-
-@PutMapping("/{id}/repor-estoque")
-public ResponseEntity<Livro> reporEstoque(@PathVariable Long id, @RequestParam Integer quantidade, @RequestParam String motivo) {
-    if (quantidade == null || quantidade <= 0) {
-        return ResponseEntity.badRequest().body(null);
     }
 
-    Optional<Livro> livroOpt = livroService.buscarPorId(id);
-    if (!livroOpt.isPresent()) {
-        return ResponseEntity.notFound().build();
+    @PostMapping("/processar-pedido")
+    public ResponseEntity<?> processarPedido(@RequestBody Map<String, Object> payload) {
+        try {
+            List<Map<String, Object>> itens = (List<Map<String, Object>>) payload.get("itens");
+            livroService.processarCompra(itens);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    Livro livro = livroOpt.get();
-    livro.setEstoque(livro.getEstoque() + quantidade);
-    livro.setMotivoAtivacao(motivo);
-    livro.setMotivoInativacao(null);
-    livro.setAtivo(true);
+    // ENDPOINT CORRIGIDO - Agora usando o método do service
+    @PutMapping("/{id}/repor-estoque")
+    public ResponseEntity<Livro> reporEstoque(@PathVariable Long id, @RequestParam Integer quantidade,
+            @RequestParam String motivo) {
+        if (quantidade == null || quantidade <= 0) {
+            return ResponseEntity.badRequest().body(null);
+        }
 
-    Livro salvo = livroService.salvar(livro);
-    return ResponseEntity.ok(salvo);
-}
+        try {
+            // AGORA USA O MÉTODO DO SERVICE QUE CONTÉM A LÓGICA AUTOMÁTICA
+            Livro livroAtualizado = livroService.reporEstoque(id, quantidade, motivo);
+            return ResponseEntity.ok(livroAtualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
+    // VERSÃO ALTERNATIVA COM JSON BODY (opcional)
+    @PutMapping("/{id}/repor-estoque-json")
+    public ResponseEntity<Livro> reporEstoqueJson(
+            @PathVariable Long id,
+            @RequestBody ReporEstoqueRequest request) {
 
+        if (request.getQuantidade() == null || request.getQuantidade() <= 0) {
+            return ResponseEntity.badRequest().body(null);
+        }
 
+        try {
+            Livro livroAtualizado = livroService.reporEstoque(id, request.getQuantidade(), request.getMotivo());
+            return ResponseEntity.ok(livroAtualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Livro>> listarTodos() {
+        return ResponseEntity.ok(livroService.listarTodos());
+    }
+
+    // Classe DTO para a versão JSON
+    public static class ReporEstoqueRequest {
+        private Integer quantidade;
+        private String motivo;
+
+        public Integer getQuantidade() {
+            return quantidade;
+        }
+
+        public void setQuantidade(Integer quantidade) {
+            this.quantidade = quantidade;
+        }
+
+        public String getMotivo() {
+            return motivo;
+        }
+
+        public void setMotivo(String motivo) {
+            this.motivo = motivo;
+        }
+    }
 }

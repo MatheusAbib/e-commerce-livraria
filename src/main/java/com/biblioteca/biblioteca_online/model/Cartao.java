@@ -14,10 +14,8 @@ public class Cartao {
     private String bandeira;
     private String cvv;
     private String dataValidade;
-
     private boolean preferencial = false; 
 
-    
     @ManyToOne
     @JoinColumn(name = "cliente_id")
     @JsonBackReference
