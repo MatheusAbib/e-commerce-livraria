@@ -2196,7 +2196,19 @@ window.addEventListener('DOMContentLoaded', () => {
 const apiKey = "AIzaSyAiHf5ACvaEZzwJAe7OeieT_EtxtnjUPUE"; 
 let clienteId = null;
 let historicoCompras = [];
-let conversa = []; // histórico do diálogo para contexto
+let conversa = [];
+let selectedModel = '';
+let availableModels = [];
+let aguardandoConfirmacao = false;
+
+const freeModelsPriority = [
+    'models/gemma-3-1b-it',
+    'models/gemma-3-4b-it',
+    'models/gemma-3-12b-it',
+    'models/gemini-2.0-flash-lite',
+    'models/gemini-2.0-flash-lite-001',
+    'models/gemini-flash-lite-latest'
+];
 
 function toggleChatbotPopup() {
   const popup = document.getElementById('chatbot-popup');
@@ -2242,6 +2254,8 @@ async function initializeChatbot() {
       await carregarHistorico(clienteId);
     }
 
+    await initializeModelSelector();
+
     setTimeout(() => {
       if (clienteId <= 0) {
         chatbotAdicionarMensagem("bot", "Modo demonstração ativado com dados de exemplo.");
@@ -2251,15 +2265,139 @@ async function initializeChatbot() {
       chatbotAdicionarMensagem("bot", mensagemHistorico);
 
       if (historicoCompras.length > 0) {
-        const ultimoPedido = historicoCompras[0];
-        if (ultimoPedido.status === "EM_TRANSITO") {
-          chatbotAdicionarMensagem("bot", `Seu pedido "${ultimoPedido.titulo}" está a caminho! 🚚`);
-        }
+        const resumoHistorico = historicoCompras.map(item => item.titulo).join(", ");
+        const promptAnalise = `
+          Baseado NO HISTÓRICO DE COMPRAS do cliente, faça:
+
+          1. PRIMEIRO: Um resumo breve do perfil de leitura
+          2. SEGUNDO: Apenas UMA pergunta confirmando se quer recomendações
+
+          HISTÓRICO DO CLIENTE:
+          ${resumoHistorico}
+
+          RESPONDA APENAS COM ESTE FORMATO:
+
+          📊 **SEU PERFIL DE LEITURA:**
+          [Resumo breve baseado nos livros reais do histórico]
+
+          ❓ Com base nisso, quer que eu recomende livros para você?
+          `;
+
+        setTimeout(async () => {
+          chatbotShowTypingIndicator();
+          const resposta = await chamarGemini(promptAnalise);
+          chatbotHideTypingIndicator();
+          chatbotAdicionarMensagem("bot", resposta);
+          conversa.push({ role: "bot", content: resposta });
+          aguardandoConfirmacao = true;
+        }, 1000);
       } else {
         chatbotAdicionarMensagem("bot", "Posso te ajudar a encontrar algum livro interessante?");
       }
     }, 500);
   }
+}
+
+async function initializeModelSelector() {
+  try {
+    await listAvailableModels();
+    
+    if (!document.getElementById('chatbot-model-selector')) {
+      createModelSelector();
+    }
+    
+  } catch (error) {
+    selectedModel = 'models/gemma-3-1b-it';
+  }
+}
+
+function populateModelSelector() {
+  const modelSelect = document.getElementById('chatbot-model-select');
+  if (!modelSelect || availableModels.length === 0) return;
+  
+  modelSelect.innerHTML = '';
+  
+  const freeModelsGroup = document.createElement('optgroup');
+  freeModelsGroup.label = 'Modelos Gratuitos (Recomendados)';
+  
+  freeModelsPriority.forEach(modelName => {
+    const model = availableModels.find(m => m.name === modelName);
+    if (model) {
+      const option = document.createElement('option');
+      option.value = modelName;
+      option.textContent = `${model.displayName || modelName} (Gratuito)`;
+      freeModelsGroup.appendChild(option);
+    }
+  });
+  
+  modelSelect.appendChild(freeModelsGroup);
+  
+  const otherModelsGroup = document.createElement('optgroup');
+  otherModelsGroup.label = 'Outros Modelos (Pode exigir quota)';
+  
+  availableModels.forEach(model => {
+    if (!freeModelsPriority.includes(model.name)) {
+      const option = document.createElement('option');
+      option.value = model.name;
+      option.textContent = model.displayName || model.name;
+      otherModelsGroup.appendChild(option);
+    }
+  });
+  
+  modelSelect.appendChild(otherModelsGroup);
+  
+  const firstFreeModel = freeModelsPriority.find(modelName => 
+    availableModels.find(m => m.name === modelName)
+  );
+  
+  if (firstFreeModel) {
+    modelSelect.value = firstFreeModel;
+    selectedModel = firstFreeModel;
+  }
+}
+
+async function listAvailableModels() {
+  try {
+    const LIST_MODELS_URL = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+    
+    const response = await fetch(LIST_MODELS_URL);
+    
+    if (!response.ok) {
+      throw new Error(`Erro ao listar modelos: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    availableModels = data.models || [];
+    
+    availableModels = availableModels.filter(model => 
+      model.supportedGenerationMethods && 
+      model.supportedGenerationMethods.includes('generateContent')
+    );
+    
+  } catch (error) {
+    await tryFallbackModels();
+  }
+}
+
+async function tryFallbackModels() {
+  const fallbackModels = [
+    'models/gemma-3-1b-it',
+    'models/gemma-3-4b-it',
+    'models/gemini-2.0-flash-lite',
+    'models/gemini-flash-lite-latest'
+  ];
+  
+  availableModels = fallbackModels.map(modelName => ({
+    name: modelName,
+    displayName: modelName.replace('models/', ''),
+    supportedGenerationMethods: ['generateContent']
+  }));
+  
+  selectedModel = fallbackModels[0];
+}
+
+function changeModel(newModel) {
+  selectedModel = newModel;
 }
 
 async function getClienteId() {
@@ -2269,7 +2407,6 @@ async function getClienteId() {
     const usuario = await response.json();
     return usuario.id;
   } catch (error) {
-    console.error("Erro ao obter ID do cliente:", error);
     return null;
   }
 }
@@ -2290,48 +2427,70 @@ async function chatbotEnviar() {
 
   chatbotShowTypingIndicator();
 
-  // Guarda no histórico da conversa
   conversa.push({ role: "user", content: mensagem });
 
-  const resumoHistorico = historicoCompras.length > 0
-    ? historicoCompras.map(item => item.titulo).join(", ")
-    : "sem histórico";
+  if (aguardandoConfirmacao && (mensagem.toLowerCase().includes('sim') || mensagem.toLowerCase().includes('quero'))) {
+    aguardandoConfirmacao = false;
+    
+    const resumoHistorico = historicoCompras.length > 0
+      ? historicoCompras.map(item => item.titulo).join(", ")
+      : "sem histórico";
 
-  // Pega últimas 4 mensagens para contexto
-  const ultimasMensagens = conversa.slice(-4);
+    const promptRecomendacoes = `
+Baseado NO HISTÓRICO DE COMPRAS do cliente, recomende LIVROS REAIS e EXISTENTES.
 
-  // Monta texto do diálogo para o prompt
-  let textoConversa = "";
-  ultimasMensagens.forEach(msg => {
-    const prefixo = msg.role === "user" ? "Usuário:" : "Assistente:";
-    textoConversa += `${prefixo} ${msg.content}\n`;
-  });
+HISTÓRICO DO CLIENTE:
+${resumoHistorico}
 
-  const promptComHistorico = `
-Você é um assistente de recomendações de livros, objetivo e direto.
+REGRA: NÃO INVENTE LIVROS. Use apenas livros reais.
 
-Resumo do histórico de compras do cliente: ${resumoHistorico}
+RECOMENDE DIRETAMENTE 3-5 LIVROS REAIS baseados no perfil do cliente.
+
+Formato da resposta:
+📚 RECOMENDAÇÕES BASEADAS NO SEU HISTÓRICO:
+
+1. **Título Real** - Autor Real
+   *Breve motivo baseado no seu histórico*
+
+2. **Título Real** - Autor Real  
+   *Breve motivo baseado no seu histórico*
+`;
+
+    const resposta = await chamarGemini(promptRecomendacoes);
+    chatbotHideTypingIndicator();
+    chatbotAdicionarMensagem("bot", resposta);
+    conversa.push({ role: "bot", content: resposta });
+    
+  } else {
+    const resumoHistorico = historicoCompras.length > 0
+      ? historicoCompras.map(item => item.titulo).join(", ")
+      : "sem histórico";
+
+    const ultimasMensagens = conversa.slice(-4);
+
+    let textoConversa = "";
+    ultimasMensagens.forEach(msg => {
+      const prefixo = msg.role === "user" ? "Usuário:" : "Assistente:";
+      textoConversa += `${prefixo} ${msg.content}\n`;
+    });
+
+    const promptComHistorico = `
+Você é um assistente de livraria. Seja objetivo.
+
+Histórico de compras: ${resumoHistorico}
 
 Conversa recente:
 ${textoConversa}
 
-Responda com:
-- No máximo 2 perguntas para entender preferências (se necessário).
-- Recomendações curtas e objetivas, sem repetir histórico.
-- Seja breve e direto.
-
-Responda agora:
+Responda de forma direta e útil.
 `;
 
-  console.log("Prompt enviado:", promptComHistorico);
-
-  const resposta = await chamarGemini(promptComHistorico);
-
-  chatbotHideTypingIndicator();
-  chatbotAdicionarMensagem("bot", resposta);
-
-  // Guarda resposta no histórico da conversa
-  conversa.push({ role: "bot", content: resposta });
+    const resposta = await chamarGemini(promptComHistorico);
+    chatbotHideTypingIndicator();
+    chatbotAdicionarMensagem("bot", resposta);
+    conversa.push({ role: "bot", content: resposta });
+    aguardandoConfirmacao = false;
+  }
 }
 
 function chatbotShowTypingIndicator() {
@@ -2359,9 +2518,27 @@ function chatbotAdicionarMensagem(origem, texto) {
   const mensagens = document.getElementById("chatbot-messages");
   const div = document.createElement("div");
   div.className = "chatbot-message chatbot-" + origem;
-  div.textContent = texto;
+  
+  const textoFormatado = formatarTextoMensagem(texto);
+  div.innerHTML = textoFormatado;
+  
   mensagens.appendChild(div);
   chatbotScrollToBottom();
+}
+
+function formatarTextoMensagem(texto) {
+  let textoFormatado = texto.replace(/\n/g, '<br>');
+  
+  textoFormatado = textoFormatado.replace(/📊\s*\*\*SEU PERFIL DE LEITURA:\*\*/g, '<div class="chatbot-titulo">📊 <strong>SEU PERFIL DE LEITURA:</strong></div>');
+  textoFormatado = textoFormatado.replace(/📚\s*RECOMENDAÇÕES BASEADAS NO SEU HISTÓRICO:/g, '<div class="chatbot-titulo">📚 <strong>RECOMENDAÇÕES BASEADAS NO SEU HISTÓRICO:</strong></div>');
+  
+  textoFormatado = textoFormatado.replace(/(\d+)\.\s+\*\*(.*?)\*\*\s*-\s*(.*?)(?=<br>|$)/g, '<div class="chatbot-livro-item"><span class="chatbot-numero">$1.</span> <strong>$2</strong> - <em>$3</em></div>');
+  
+  textoFormatado = textoFormatado.replace(/\*\s*(.*?)(?=<br>|$)/g, '<div class="chatbot-explicacao">💡 $1</div>');
+  
+  textoFormatado = textoFormatado.replace(/❓\s*(.*?)(?=<br>|$)/g, '<div class="chatbot-pergunta">❓ $1</div>');
+  
+  return textoFormatado;
 }
 
 function chatbotScrollToBottom() {
@@ -2370,47 +2547,72 @@ function chatbotScrollToBottom() {
 }
 
 async function chamarGemini(prompt) {
+  if (!selectedModel) {
+    selectedModel = 'models/gemma-3-1b-it';
+  }
+  
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/${selectedModel}:generateContent?key=${apiKey}`;
+  
   try {
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey, {
+    const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1000,
+        }
       })
     });
 
-    const data = await response.json();
-    console.log("Resposta da API completa:", data);
-
-    if (data.candidates && data.candidates.length > 0) {
-      const candidate = data.candidates[0];
-      if (candidate.content) {
-        if (candidate.content.parts && candidate.content.parts.length > 0) {
-          return candidate.content.parts.map(p => p.text).join(" ");
-        } else if (candidate.content.text) {
-          return candidate.content.text;
-        }
+    if (!response.ok) {
+      const errorData = await response.json();
+      
+      if (response.status === 429 || errorData.error?.message?.includes('quota')) {
+        throw new Error(`QUOTA_EXCEDIDA: ${errorData.error.message}. Tente trocar para um modelo gratuito.`);
       }
+      
+      throw new Error(`API_ERROR: ${response.status} - ${errorData.error?.message || 'Erro desconhecido'}`);
     }
+
+    const data = await response.json();
+
+    if (data.candidates?.[0]?.content?.parts) {
+      return data.candidates[0].content.parts
+        .map(p => p.text)
+        .join(" ");
+    }
+
+    if (Array.isArray(data.candidates?.[0]?.content)) {
+      return data.candidates[0].content
+        .map(p => p.text || "")
+        .join(" ");
+    }
+
+    if (data.candidates?.[0]?.outputText) {
+      return data.candidates[0].outputText;
+    }
+
     return "Nenhuma resposta encontrada.";
   } catch (e) {
-    console.error("Erro:", e);
+    if (e.message.includes('QUOTA_EXCEDIDA')) {
+      return `❌ Quota excedida para este modelo!\n\n💡 Troque para um modelo gratuito no seletor acima.`;
+    }
+    
     return "Erro ao conectar com a IA. Por favor, tente novamente.";
   }
 }
 
 async function carregarHistorico(clienteId) {
   try {
-    console.log("Buscando histórico para cliente:", clienteId);
-    
-    const response = await fetch(`window.location.origin/api/pedidos/historico/${clienteId}`);
+    const response = await fetch(`${window.location.origin}/api/pedidos/historico/${clienteId}`);
     
     if (!response.ok) {
       throw new Error(`Erro HTTP: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log("Histórico recebido:", data);
 
     if (!Array.isArray(data)) {
       throw new Error("Resposta inválida - não é um array");
@@ -2420,7 +2622,6 @@ async function carregarHistorico(clienteId) {
     return data;
     
   } catch (error) {
-    console.error("Erro ao buscar histórico:", error);
     historicoCompras = [];
     return [];
   }
@@ -2431,27 +2632,35 @@ function formatarMensagemHistorico(historico) {
     return "📭 Nenhuma compra encontrada no seu histórico.";
   }
 
-  let mensagem = "✨ Histórico de Compras ✨\n";
-  mensagem += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+  let mensagem = `<div class="chatbot-historico-titulo">✨ Histórico de Compras ✨</div>`;
+  mensagem += `<div class="chatbot-divider">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>`;
 
   historico.forEach((item, index) => {
     const dataFormatada = new Date(item.dataCompra).toLocaleDateString();
     const statusTexto = item.status === "EM_TRANSITO"
-      ? `🚛 *Em transporte (chega em breve!)`
-      : `📬 *Entregue em ${dataFormatada}`;
+      ? `🚛 <span class="chatbot-status-transito">Em transporte (chega em breve!)</span>`
+      : `📬 <span class="chatbot-status-entregue">Entregue em ${dataFormatada}</span>`;
 
-    mensagem += `📌 **${index + 1}. ${item.titulo}\n`;
-    mensagem += `   ✍️  Autor: ${item.autor}\n`;
-    mensagem += `   🔢  Quantidade: ${item.quantidade}\n`;
-    mensagem += `   ${statusTexto}\n`;
+    mensagem += `
+      <div class="chatbot-livro-historico">
+        <div class="chatbot-livro-titulo">📌 ${index + 1}. ${item.titulo}</div>
+        <div class="chatbot-livro-detalhes">
+          ✍️ Autor: <strong>${item.autor}</strong><br>
+          🔢 Quantidade: <strong>${item.quantidade}</strong><br>
+          ${statusTexto}
+        </div>
+      </div>
+    `;
     
     if (index < historico.length - 1) {
-      mensagem += `\n\n`; // duas linhas em branco entre pedidos
+      mensagem += `<div class="chatbot-livro-separador"></div>`;
     }
   });
 
-  mensagem += "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-  mensagem += "💡 Posso te ajudar com recomendações baseadas nesse histórico!";
+  mensagem += `
+    <div class="chatbot-divider">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+    <div class="chatbot-ajuda">💡 Analisando seu perfil de leitura...</div>
+  `;
 
   return mensagem;
 }

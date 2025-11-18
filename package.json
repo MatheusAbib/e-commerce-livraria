@@ -1,0 +1,23 @@
+{
+  "name": "e-commerce-livraria-main",
+  "version": "1.0.0",
+  "description": "Este sistema tem como objetivo gerenciar de forma eficiente o cadastro de livros, clientes e o processo de vendas eletrônicas, incluindo controle de estoque, histórico de vendas e recomendações personalizadas com IA generativa. A solução foi desenvolvida para garantir alta performance, segurança, integridade dos dados e atender a todas as regras e requisitos definidos para o negócio.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MatheusAbib/e-commerce-livraria.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MatheusAbib/e-commerce-livraria/issues"
+  },
+  "homepage": "https://github.com/MatheusAbib/e-commerce-livraria#readme",
+  "devDependencies": {
+    "cypress": "^15.5.0"
+  }
+}
