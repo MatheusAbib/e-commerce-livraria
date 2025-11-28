@@ -2429,7 +2429,21 @@ async function chatbotEnviar() {
 
   conversa.push({ role: "user", content: mensagem });
 
-  if (aguardandoConfirmacao && (mensagem.toLowerCase().includes('sim') || mensagem.toLowerCase().includes('quero'))) {
+if (
+  aguardandoConfirmacao &&
+  (
+    mensagem.toLowerCase().includes('sim') ||
+    mensagem.toLowerCase().includes('quero') ||
+    mensagem.toLowerCase().includes('recomenda') ||
+    mensagem.toLowerCase().includes('indica') ||
+    mensagem.toLowerCase().includes('sugere') ||
+    mensagem.toLowerCase().includes('livro') ||
+    mensagem.toLowerCase().includes('fale mais') ||
+    mensagem.toLowerCase().includes('resumo') ||
+    mensagem.toLowerCase().includes('explique')
+  )
+) {
+
     aguardandoConfirmacao = false;
     
     const resumoHistorico = historicoCompras.length > 0
@@ -2443,8 +2457,11 @@ HISTÓRICO DO CLIENTE:
 ${resumoHistorico}
 
 REGRA: NÃO INVENTE LIVROS. Use apenas livros reais.
+SEMPRE Q A PERGUNTA NÃO FOR SOBRE RECOMENDAÇÕES DE LIVROS, RESPONDER COM "Não possuo essa informação"
 
 RECOMENDE DIRETAMENTE 3-5 LIVROS REAIS baseados no perfil do cliente.
+
+
 
 Formato da resposta:
 📚 RECOMENDAÇÕES BASEADAS NO SEU HISTÓRICO:
@@ -2474,16 +2491,77 @@ Formato da resposta:
       textoConversa += `${prefixo} ${msg.content}\n`;
     });
 
-    const promptComHistorico = `
-Você é um assistente de livraria. Seja objetivo.
+const promptComHistorico = `
+Você é um assistente especializado APENAS em livros.  
+Seu comportamento deve seguir estritamente as regras abaixo:
+
+
+REGRAS DE CONTEXTO:
+
+- Se o usuário fizer uma pergunta curta ou incompleta, como:
+  "em que ano foi lançado?"
+  "quem escreveu?"
+  "qual é o gênero?"
+  "é bom?"
+  
+  E essa pergunta vier LOGO APÓS mencionar um livro,
+  você deve assumir automaticamente que a pergunta está se referindo ao ÚLTIMO LIVRO citado pelo usuário.
+
+- Portanto, perguntas curtas que claramente se referem ao livro anterior DEVEM ser respondidas normalmente.
+
+
+REGRAS IMPORTANTES:
+
+- Se o usuário pedir para FALAR SOBRE UM LIVRO, RESUMIR UM LIVRO, ANALISAR UM LIVRO ou PEDIR INFORMAÇÕES SOBRE UMA OBRA ESPECÍFICA, você deve responder DIRETAMENTE sobre essa obra.
+  NUNCA ofereça recomendações adicionais, a menos que o usuário peça isso explicitamente.
+
+Exemplos:
+Usuário: "me fale mais sobre o livro 1984"
+→ Responda apenas falando sobre 1984. Não ofereça recomendações.
+
+Usuário: "resuma o livro tal"
+→ Responda apenas com o resumo.
+
+
+REGRA PRINCIPAL (sempre obedecer):
+
+1. Você DEVE responder normalmente quando a mensagem do usuário estiver relacionada a LIVROS.
+   Isso inclui, obrigatoriamente:
+   - resumos de livros
+   - explicações de livros
+   - análises de livros
+   - curiosidades sobre livros
+   - pedidos para "falar mais sobre" um livro
+   - perguntas sobre autores
+   - perguntas sobre personagens
+   - perguntas sobre enredos
+   - pedidos de interpretação
+   - recomendações de livros
+   - conversas relacionadas a obras citadas anteriormente
+
+2. PARA QUALQUER mensagem que NÃO esteja relacionada a livros,
+você deve responder EXATAMENTE assim:
+"Não possuo essa informação"
+
+3. Exemplos de perguntas PERMITIDAS (responda normalmente):
+   - "me recomende livros"
+   - "resuma O Senhor dos Anéis"
+   - "me fale mais sobre o livro O Conto do Ícaro"
+   - "quem é o autor de tal obra?"
+   - "explique o final de tal livro"
+
+4. Exemplos de perguntas PROIBIDAS (responda apenas com “Não possuo essa informação”):
+   - perguntas sobre café, comida, clima, esportes, tecnologia, finanças, saúde etc.
 
 Histórico de compras: ${resumoHistorico}
 
 Conversa recente:
 ${textoConversa}
 
-Responda de forma direta e útil.
+Sempre siga as regras acima.
+
 `;
+
 
     const resposta = await chamarGemini(promptComHistorico);
     chatbotHideTypingIndicator();

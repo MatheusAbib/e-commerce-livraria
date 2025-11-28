@@ -80,7 +80,6 @@ public class PedidoService {
         pedido.setEnderecoEntrega(endereco);
         pedido.setCartao(cartaoPrincipal);
 
-        // Salvar cartões adicionais (exceto o principal)
         if (cartoesAdicionaisIds != null && !cartoesAdicionaisIds.isEmpty()) {
             List<Cartao> cartoesExtras = cliente.getCartoes().stream()
                 .filter(c -> cartoesAdicionaisIds.contains(c.getId()))
@@ -141,12 +140,10 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
             .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
 
-        // Validação para devolução
         if (novoStatus == StatusPedido.DEVOLUCAO && (motivoDevolucao == null || motivoDevolucao.trim().isEmpty())) {
             throw new IllegalArgumentException("Motivo da devolução é obrigatório");
         }
 
-        // Se for trocado ou cancelado, reentrar produtos no estoque
         if (novoStatus == StatusPedido.TROCADO || novoStatus == StatusPedido.CANCELADO) {
             for (ItemPedido item : pedido.getItens()) {
                 Livro livro = item.getLivro();

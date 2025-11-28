@@ -1,4 +1,4 @@
-             let salesChart;
+    let salesChart;
         let allPedidosGlobal = [];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -46,46 +46,52 @@
         }
 
 async function loadData() {
-    try {
-        const statusSelecionado = document.getElementById('status-filter').value;
-        const livroSelecionado = document.getElementById('livros-filter').value;
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
+    const comparisonType = document.getElementById('comparison-type').value;
+    
+    if (comparisonType === 'categoria') {
+        await loadDataByCategory();
+    } else {
+        try {
+            const statusSelecionado = document.getElementById('status-filter').value;
+            const livroSelecionado = document.getElementById('livros-filter').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
 
-        const response = await fetch('/api/pedidos/todos');
-        if (!response.ok) throw new Error('Erro ao carregar dados');
-        
-        allPedidosGlobal = await response.json();
+            const response = await fetch('/api/pedidos/todos');
+            if (!response.ok) throw new Error('Erro ao carregar dados');
+            
+            allPedidosGlobal = await response.json();
 
-        // Filtra por status
-        let filteredPedidos = statusSelecionado === 'todos' 
-            ? allPedidosGlobal 
-            : allPedidosGlobal.filter(p => p.status === statusSelecionado);
+            // Filtra por status
+            let filteredPedidos = statusSelecionado === 'todos' 
+                ? allPedidosGlobal 
+                : allPedidosGlobal.filter(p => p.status === statusSelecionado);
 
-        // Filtra por livro
-        if (livroSelecionado) {
-            filteredPedidos = filteredPedidos.filter(pedido => {
-                return pedido.itens && pedido.itens.some(item => {
-                    return item.livroId == livroSelecionado || 
-                           (item.livro && item.livro.id == livroSelecionado);
+            // Filtra por livro
+            if (livroSelecionado) {
+                filteredPedidos = filteredPedidos.filter(pedido => {
+                    return pedido.itens && pedido.itens.some(item => {
+                        return item.livroId == livroSelecionado || 
+                               (item.livro && item.livro.id == livroSelecionado);
+                    });
                 });
-            });
-        }
+            }
 
-        if (startDate) {
-            const start = new Date(startDate);
-            filteredPedidos = filteredPedidos.filter(p => new Date(p.dataPedido) >= start);
-        }
-        if (endDate) {
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999); // inclui o dia todo
-            filteredPedidos = filteredPedidos.filter(p => new Date(p.dataPedido) <= end);
-        }
+            if (startDate) {
+                const start = new Date(startDate);
+                filteredPedidos = filteredPedidos.filter(p => new Date(p.dataPedido) >= start);
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999); // inclui o dia todo
+                filteredPedidos = filteredPedidos.filter(p => new Date(p.dataPedido) <= end);
+            }
 
-        processAndDisplayData(filteredPedidos, livroSelecionado);
-    } catch (error) {
-        console.error('Erro:', error);
-        alert('Não foi possível carregar os dados de vendas');
+            processAndDisplayData(filteredPedidos, livroSelecionado);
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Não foi possível carregar os dados de vendas');
+        }
     }
 }
 
@@ -129,7 +135,6 @@ function processAndDisplayData(pedidos, livroSelecionado = null) {
             'Nenhum dado encontrado com os filtros selecionados', 
             'warning'
         );
-        // Não destrói o gráfico, apenas retorna
         return;
     }
     
@@ -325,6 +330,7 @@ function processAndDisplayData(pedidos, livroSelecionado = null) {
         document.getElementById('time-period').addEventListener('change', loadData);
         document.getElementById('chart-type').addEventListener('change', loadData);
         document.getElementById('livros-filter').addEventListener('change', loadData);
+        document.getElementById('comparison-type').addEventListener('change', loadData);
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -373,5 +379,201 @@ function processAndDisplayData(pedidos, livroSelecionado = null) {
     toast.addEventListener('click', () => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
+    });
+}
+
+async function loadDataByCategory() {
+    try {
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+
+        // Validação das datas
+        if (!startDate || !endDate) {
+            mostrarNotificacao('Datas obrigatórias', 'Selecione data inicial e final para comparar categorias', 'warning');
+            return;
+        }
+
+        const response = await fetch(`/api/vendas/categorias?dataInicio=${startDate}&dataFim=${endDate}`);
+        if (!response.ok) throw new Error('Erro ao carregar dados por categoria');
+        
+        const data = await response.json();
+        processCategoryData(data);
+    } catch (error) {
+        console.error('Erro ao carregar dados por categoria:', error);
+        mostrarNotificacao('Erro', 'Não foi possível carregar os dados por categoria', 'error');
+    }
+}
+
+function processCategoryData(categoryData) {
+    const categoriesMap = new Map();
+    const allDates = new Set();
+
+    categoryData.forEach(item => {
+        const categoria = item[0];
+        const data = item[1]; 
+        const valorTotal = Number(item[3]);
+
+        if (!categoriesMap.has(categoria)) {
+            categoriesMap.set(categoria, new Map());
+        }
+
+        categoriesMap.get(categoria).set(data, valorTotal);
+        allDates.add(data);
+    });
+
+    // Ordena as datas
+    const sortedDates = Array.from(allDates).sort();
+
+    // Prepara datasets para o Chart.js
+    const datasets = [];
+    const colors = [
+        'rgba(67, 97, 238, 0.8)',   // Azul
+        'rgba(255, 99, 132, 0.8)',  // Rosa
+        'rgba(75, 192, 192, 0.8)',  // Verde-água
+        'rgba(255, 159, 64, 0.8)',  // Laranja
+        'rgba(153, 102, 255, 0.8)', // Roxo
+        'rgba(54, 162, 235, 0.8)',  // Azul claro
+        'rgba(255, 205, 86, 0.8)'   // Amarelo
+    ];
+
+    let colorIndex = 0;
+    categoriesMap.forEach((datesMap, categoria) => {
+        const data = sortedDates.map(date => datesMap.get(date) || 0);
+        
+        datasets.push({
+            label: categoria,
+            data: data,
+            borderColor: colors[colorIndex % colors.length],
+            backgroundColor: colors[colorIndex % colors.length].replace('0.8', '0.2'),
+            borderWidth: 3,
+            tension: 0.4,
+            fill: false,
+            pointBackgroundColor: 'white',
+            pointBorderColor: colors[colorIndex % colors.length],
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+        });
+        
+        colorIndex++;
+    });
+
+    updateCategoryChart(sortedDates, datasets);
+}
+
+// Atualizar gráfico com dados de categoria
+function updateCategoryChart(labels, datasets) {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    
+    if (salesChart) {
+        salesChart.destroy();
+    }
+    
+    salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            family: 'Poppins',
+                            size: 14,
+                            weight: '500'
+                        },
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(43, 45, 66, 0.9)',
+                    titleFont: {
+                        family: 'Poppins',
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        family: 'Poppins',
+                        size: 12
+                    },
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': R$ ' + context.raw.toLocaleString('pt-BR', {
+                                minimumFractionDigits: 2, 
+                                maximumFractionDigits: 2
+                            });
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            family: 'Poppins',
+                            size: 12
+                        },
+                        callback: function(value) {
+                            return 'R$ ' + value.toLocaleString('pt-BR');
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Valor Total (R$)',
+                        font: {
+                            family: 'Poppins',
+                            size: 14,
+                            weight: '600'
+                        },
+                        padding: {top: 20, bottom: 10}
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            family: 'Poppins',
+                            size: 12
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Data',
+                        font: {
+                            family: 'Poppins',
+                            size: 14,
+                            weight: '600'
+                        },
+                        padding: {top: 10, bottom: 20}
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        }
     });
 }

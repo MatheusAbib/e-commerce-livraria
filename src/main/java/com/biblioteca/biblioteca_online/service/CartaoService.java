@@ -19,8 +19,6 @@ public class CartaoService {
     private CartaoRepository cartaoRepository;
 
     public List<Cartao> listarCartoesPorCliente(Long clienteId) {
-        // Se você quiser implementar um método no repository para isso, ótimo.
-        // Senão, filtra manualmente.
         return cartaoRepository.findAll().stream()
                 .filter(c -> c.getCliente() != null && c.getCliente().getId().equals(clienteId))
                 .toList();
@@ -46,8 +44,8 @@ public boolean excluirPorId(Long clienteId, Long cartaoId) {
     }
 
     Cliente cliente = cartao.getCliente();
-    cliente.getCartoes().remove(cartao);  // Remove da lista
-    cartao.setCliente(null);              // Remove a referência para evitar problema de FK
+    cliente.getCartoes().remove(cartao);  
+    cartao.setCliente(null);         
 
     cartaoRepository.delete(cartao);
     return true;
