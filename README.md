@@ -1,6 +1,6 @@
 # Sistema de Gestão de Livros e Vendas - E-Commerce 
 
-# Desenvolvido para a matéria de Laboratório de Engenharia de Software por Matheus Abib e Andressa Barbosa
+# Desenvolvido para a matéria de Laboratório de Engenharia de Software por Matheus Abib
 
 
 ## Descrição do Projeto
