@@ -599,7 +599,6 @@
     transform: translateX(5px);
   }
   
-  /* No mobile, fecha a sidebar ao clicar em um link */
   .sidebar.show a {
     cursor: pointer;
   }

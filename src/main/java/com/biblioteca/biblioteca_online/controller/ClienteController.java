@@ -143,7 +143,7 @@ public ResponseEntity<List<Cliente>> consultarClientes(
                 return ResponseEntity.status(401).body(Map.of("message", "Email ou senha inválidos"));
             }
 
-            cliente.setSenha(null); // remove a senha da resposta
+            cliente.setSenha(null); 
             return ResponseEntity.ok(cliente);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Erro no servidor"));

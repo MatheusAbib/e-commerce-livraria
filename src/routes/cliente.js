@@ -3,7 +3,6 @@ const router = express.Router();
 const ClienteController = require('../controllers/clienteController');
 const bcrypt = require('bcrypt');
 
-// Rota de login (adicione esta nova rota)
 router.post('/login', async (req, res) => {
 
   try {
@@ -12,7 +11,7 @@ router.post('/login', async (req, res) => {
     // 1. Busca o cliente no banco
     const cliente = await Cliente.findOne({
       where: { id: clienteId, email },
-      include: [Endereco, Cartao] // Inclui relacionamentos
+      include: [Endereco, Cartao] 
     });
 
     if (!cliente) {
@@ -37,9 +36,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Mantenha as outras rotas existentes
 router.get('/clientes', ClienteController.listar);
 router.post('/clientes', ClienteController.criar);
-// ... outras rotas ...
 
 module.exports = router;

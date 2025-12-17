@@ -73,7 +73,6 @@ public class LivroService {
         existente.setEstoque(novoLivro.getEstoque());
         existente.setDataEntrada(novoLivro.getDataEntrada());
 
-        // Recalcular preço de venda com base no novo preço de custo
         if (novoLivro.getPrecoCusto() != null && novoLivro.getPrecoCusto().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal margemLucro = new BigDecimal("0.25");
             BigDecimal precoVenda = novoLivro.getPrecoCusto().multiply(BigDecimal.ONE.add(margemLucro));
@@ -194,7 +193,6 @@ public class LivroService {
             livro.setMotivoAtivacao(null);
             System.out.println("✅ Livro INATIVADO - estoque zerado");
         } else {
-            // REATIVA APENAS SE FOI INATIVADO POR ESTOQUE
             boolean foiInativadoPorEstoque = "Estoque zerado.".equals(livro.getMotivoInativacao());
             boolean estaInativo = !livro.isAtivo();
 
@@ -227,10 +225,8 @@ public class LivroService {
             throw new RuntimeException("Estoque insuficiente para o livro: " + livro.getTitulo());
         }
 
-        // Atualiza o estoque
         livro.setEstoque(livro.getEstoque() - quantidade);
 
-        // Atualiza o status se necessário
         atualizarStatusPorEstoque(livro);
 
         livroRepository.save(livro);
@@ -250,12 +246,10 @@ public class LivroService {
         System.out.println("Estoque anterior: " + livro.getEstoque());
         System.out.println("Status anterior - Ativo: " + livro.isAtivo());
 
-        // Repõe o estoque (AUMENTA o estoque)
         livro.setEstoque(livro.getEstoque() + quantidade);
         System.out.println("Estoque após reposição: " + livro.getEstoque());
 
-        // Atualiza o status automaticamente (irá reativar se estava inativo por
-        // estoque)
+
         atualizarStatusPorEstoque(livro);
 
         Livro livroSalvo = livroRepository.save(livro);

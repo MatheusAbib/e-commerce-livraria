@@ -14,14 +14,13 @@ public class Log {
     private Long id;
 
     private Long userId;       // id do cliente que fez a ação
-    private String userName;   // nome do cliente
+    private String userName;   
     private String action;     // ação realizada (ex: "cadastro", "login", "atualizacao", "exclusao")
-    private String details;    // detalhes da ação
+    private String details;    
     private String level;      // nível do log (ex: "info", "success", "error")
 
     private LocalDateTime timestamp;
 
-    // Formato padrão para datas recebidas do frontend
     private static final DateTimeFormatter ISO_FORMATTER = 
         DateTimeFormatter.ISO_DATE_TIME;
 
@@ -64,12 +63,10 @@ public class Log {
         this.timestamp = timestamp;
     }
 
-    // Setter adicional para receber timestamp como String
     public void setTimestamp(String timestampString) {
         try {
             this.timestamp = LocalDateTime.parse(timestampString, ISO_FORMATTER);
         } catch (DateTimeParseException e) {
-            // Se não conseguir parsear, usa a data atual
             this.timestamp = LocalDateTime.now();
         }
     }

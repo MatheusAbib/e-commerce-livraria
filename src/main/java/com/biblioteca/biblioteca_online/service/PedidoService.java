@@ -260,7 +260,6 @@ public class PedidoService {
             throw new RuntimeException("Pedido já está cancelado.");
         }
 
-        // Repor estoque e salvar os livros
         for (ItemPedido item : pedido.getItens()) {
             Livro livro = livroRepository.findById(item.getLivro().getId())
                 .orElseThrow(() -> new RuntimeException("Livro não encontrado ao cancelar pedido"));
@@ -268,7 +267,7 @@ public class PedidoService {
             livro.setEstoque(livro.getEstoque() + item.getQuantidade());
             livroRepository.save(livro);
         }
-
+        
         pedido.setStatus(StatusPedido.CANCELADO);
         pedidoRepository.save(pedido);
     }

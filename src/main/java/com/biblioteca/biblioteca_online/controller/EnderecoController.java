@@ -35,7 +35,6 @@ public class EnderecoController {
     @PostMapping
     public ResponseEntity<Endereco> criarEndereco(@RequestBody Endereco endereco) {
         try {
-            // Validação básica
             if (endereco.getCliente() == null || endereco.getCliente().getId() == null) {
                 return ResponseEntity.badRequest().body(null);
             }
@@ -57,7 +56,6 @@ public ResponseEntity<Endereco> atualizarEndereco(
         return ResponseEntity.notFound().build();
     }
 
-    // Atualiza os campos
     enderecoExistente.setCep(enderecoAtualizado.getCep());
     enderecoExistente.setRua(enderecoAtualizado.getRua());
         enderecoExistente.setNumero(enderecoAtualizado.getNumero());

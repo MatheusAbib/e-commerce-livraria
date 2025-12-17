@@ -1,6 +1,4 @@
 let todosClientes = [];
-
-// Variáveis para controle do status
 let clienteStatusId = null;
 let novoStatus = null;
 
@@ -23,7 +21,6 @@ function fecharModalStatus() {
   document.getElementById('modal-status').style.display = 'none';
 }
 
-// Configura o evento de confirmação quando o DOM carregar
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-confirmar-status').addEventListener('click', confirmarAlterarStatus);
 });
@@ -67,7 +64,6 @@ async function carregarClientes(filtros = {}) {
     try {
         const params = new URLSearchParams();
         
-        // Adiciona os parâmetros de filtro
         if (filtros.nome) params.append('nome', filtros.nome);
         if (filtros.email) params.append('email', filtros.email);
         if (filtros.cpf) params.append('cpf', filtros.cpf);
@@ -85,7 +81,6 @@ async function carregarClientes(filtros = {}) {
         
         const resultado = await response.json();
         
-        // Verifica se a resposta tem a estrutura esperada
         const clientes = Array.isArray(resultado) ? resultado : 
                         (resultado.clientes || resultado.data || []);
         
@@ -218,7 +213,6 @@ function limparFiltros() {
     carregarClientes();
 }
 
-// Adiciona event listeners para aplicar filtros ao pressionar Enter
 document.querySelectorAll('.filtros-container input').forEach(input => {
     input.addEventListener('keyup', function(e) {
         if (e.key === 'Enter') {
@@ -644,7 +638,6 @@ function toggleSidebar() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Máscara para CPF
   const cpfInput = document.getElementById('filtro-cpf');
   if (cpfInput) {
       cpfInput.addEventListener('input', function(e) {

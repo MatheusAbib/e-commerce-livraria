@@ -6,11 +6,9 @@ public class DevolucaoRequest {
     private String motivo;
     private List<ItemDevolucao> itens;
 
-    // Construtor padrão
     public DevolucaoRequest() {
     }
 
-    // Construtor com todos os campos
     public DevolucaoRequest(String motivo, List<ItemDevolucao> itens) {
         this.motivo = motivo;
         this.itens = itens;

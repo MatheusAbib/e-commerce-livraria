@@ -1,5 +1,8 @@
 # Sistema de Gestão de Livros e Vendas - E-Commerce 
 
+# Desenvolvido para a matéria de Laboratório de Engenharia de Software por Matheus Abib e Andressa Barbosa
+
+
 ## Descrição do Projeto
 
 Este sistema tem como objetivo gerenciar de forma eficiente o cadastro de livros, clientes e o processo de vendas eletrônicas, incluindo controle de estoque, histórico de vendas e recomendações personalizadas com IA generativa. A solução foi desenvolvida para garantir alta performance, segurança, integridade dos dados e atender a todas as regras e requisitos definidos para o negócio.

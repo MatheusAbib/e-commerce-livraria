@@ -2,10 +2,9 @@
         let allPedidosGlobal = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            carregarLivros();  // Carregar livros para o filtro
+            carregarLivros();  
             loadData();
             
-            // Efeito de onda no botão
             const refreshBtn = document.getElementById('refresh-btn');
             refreshBtn.addEventListener('click', function(e) {
                 const rect = this.getBoundingClientRect();
@@ -83,7 +82,7 @@ async function loadData() {
             }
             if (endDate) {
                 const end = new Date(endDate);
-                end.setHours(23, 59, 59, 999); // inclui o dia todo
+                end.setHours(23, 59, 59, 999);
                 filteredPedidos = filteredPedidos.filter(p => new Date(p.dataPedido) <= end);
             }
 
@@ -128,7 +127,6 @@ function processAndDisplayData(pedidos, livroSelecionado = null) {
         }, 0);
     });
     
-    // Verifica se há dados para mostrar
     if (data.length === 0 || data.every(val => val === 0)) {
         mostrarNotificacao(
             'Filtro sem resultados', 
@@ -325,7 +323,6 @@ function processAndDisplayData(pedidos, livroSelecionado = null) {
             });
         }
 
-        // Atualiza os dados ao mudar filtros
         document.getElementById('status-filter').addEventListener('change', loadData);
         document.getElementById('time-period').addEventListener('change', loadData);
         document.getElementById('chart-type').addEventListener('change', loadData);
@@ -338,7 +335,6 @@ function processAndDisplayData(pedidos, livroSelecionado = null) {
         }
 
         function mostrarNotificacao(titulo, mensagem, tipo = 'info') {
-    // Cria o elemento da notificação
     const toast = document.createElement('div');
     toast.className = `notificacao-toast ${tipo}`;
     
@@ -375,7 +371,6 @@ function processAndDisplayData(pedidos, livroSelecionado = null) {
         setTimeout(() => toast.remove(), 300);
     }, 5000);
     
-    // Fecha ao clicar
     toast.addEventListener('click', () => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
@@ -427,13 +422,13 @@ function processCategoryData(categoryData) {
     // Prepara datasets para o Chart.js
     const datasets = [];
     const colors = [
-        'rgba(67, 97, 238, 0.8)',   // Azul
-        'rgba(255, 99, 132, 0.8)',  // Rosa
-        'rgba(75, 192, 192, 0.8)',  // Verde-água
-        'rgba(255, 159, 64, 0.8)',  // Laranja
-        'rgba(153, 102, 255, 0.8)', // Roxo
-        'rgba(54, 162, 235, 0.8)',  // Azul claro
-        'rgba(255, 205, 86, 0.8)'   // Amarelo
+        'rgba(67, 97, 238, 0.8)',   
+        'rgba(255, 99, 132, 0.8)', 
+        'rgba(75, 192, 192, 0.8)',  
+        'rgba(255, 159, 64, 0.8)', 
+        'rgba(153, 102, 255, 0.8)',
+        'rgba(54, 162, 235, 0.8)',  
+        'rgba(255, 205, 86, 0.8)' 
     ];
 
     let colorIndex = 0;

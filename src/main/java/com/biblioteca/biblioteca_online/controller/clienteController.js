@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const Cliente = require('../models/Cliente'); // Ajuste para seu modelo
+const Cliente = require('../models/Cliente'); 
 
 exports.login = async (req, res) => {
   try {

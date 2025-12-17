@@ -39,7 +39,7 @@ public class Cliente {
     private List<Cartao> cartoes;
 
 @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-@JsonIgnoreProperties("cliente") // evita loops
+@JsonIgnoreProperties("cliente") 
 private List<Pedido> pedidos;
 
 

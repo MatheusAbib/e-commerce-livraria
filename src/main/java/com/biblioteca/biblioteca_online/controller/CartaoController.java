@@ -24,7 +24,6 @@ public class CartaoController {
     @Autowired
     private CartaoService cartaoService;
 
-    // Listar cartões de um cliente
     @GetMapping("/{clienteId}/cartoes")
     public ResponseEntity<?> listarCartoes(@PathVariable Long clienteId) {
         Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
@@ -35,7 +34,6 @@ public class CartaoController {
         return ResponseEntity.ok(cartoes);
     }
 
-    // Adicionar cartão a um cliente
     @PostMapping("/{clienteId}/cartoes")
     public ResponseEntity<?> adicionarCartao(@PathVariable Long clienteId, @RequestBody Cartao cartao) {
         Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
@@ -48,7 +46,6 @@ public class CartaoController {
         return new ResponseEntity<>(cartaoSalvo, HttpStatus.CREATED);
     }
 
-    // Excluir cartão de um cliente
     @DeleteMapping("/{clienteId}/cartoes/{cartaoId}")
     public ResponseEntity<?> excluirCartao(@PathVariable Long clienteId, @PathVariable Long cartaoId) {
         try {

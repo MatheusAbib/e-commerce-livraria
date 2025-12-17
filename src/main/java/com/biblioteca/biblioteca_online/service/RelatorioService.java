@@ -41,11 +41,11 @@ public List<Object[]> getVendasPorCategoria(LocalDate dataInicio, LocalDate data
                  "GROUP BY l.categoria, DATE(p.data_pedido) " +
                  "ORDER BY DATE(p.data_pedido), l.categoria";
 
-    Query query = entityManager.createNativeQuery(sql); //execulta no banco tudo q foi feito
+    Query query = entityManager.createNativeQuery(sql); 
     
-    query.setParameter("dataInicio", dataInicio.atStartOfDay()); //formata a data para 00:00:00
+    query.setParameter("dataInicio", dataInicio.atStartOfDay()); 
     
-    query.setParameter("dataFim", dataFim.atTime(23, 59, 59)); //prepara a data final para 23:59:59
+    query.setParameter("dataFim", dataFim.atTime(23, 59, 59)); 
 
     return query.getResultList();
     }

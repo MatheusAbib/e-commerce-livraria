@@ -34,7 +34,6 @@
         `;
       }
 
-      // Configura eventos das abas
       document.getElementById('tab-pedidos').addEventListener('click', () => {
         setActiveTab('pedidos');
         exibirPedidosFiltrados(pedidosCache, false); 
@@ -136,7 +135,6 @@ container.innerHTML = pedidos.map(pedido => {
     const total = pedido.valorTotal || 0; 
     const codigoCupom = pedido.codigoCupom || '';
 
-    // Função para formatar valores monetários
     const formatarMoeda = (valor) => {
         return 'R$ ' + Number(valor).toFixed(2).replace('.', ',');
     };
@@ -266,7 +264,6 @@ container.innerHTML = pedidos.map(pedido => {
 function solicitarDevolucao(pedidoId) {
   console.log("ID do pedido recebido:", pedidoId, "Tipo:", typeof pedidoId);
   
-  // Converta para número se necessário
   pedidoId = typeof pedidoId === 'string' ? parseInt(pedidoId) : pedidoId;
   
   const modal = document.getElementById('modal-devolucao');
@@ -554,7 +551,6 @@ async function excluirPedidoCancelado(pedidoId) {
     alert('Pedido cancelado excluído com sucesso.');
     pedidosCache = pedidosCache.filter(p => p.id !== pedidoId);
     
-    // Recarrega os pedidos da aba de cancelados (já que estamos excluindo um pedido cancelado)
     const pedidosCancelados = pedidosCache.filter(p => p.status === 'CANCELADO');
     exibirPedidos(pedidosCancelados);
   } catch (error) {
@@ -570,7 +566,6 @@ async function excluirPedidoCancelado(pedidoId) {
     return;
   }
 
-  // Converte pedidoId para número (caso seja string)
   pedidoId = parseInt(pedidoId);
   
   // Encontra o pedido no cache
@@ -939,7 +934,6 @@ function verificarCuponsTroca() {
   function esconderLinksRestritos() {
     const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
 
-    // IDs ou seletores dos links restritos na sidebar do pedidos.html
     const linksRestritos = [
       'usuarios.html',
       'log.html',

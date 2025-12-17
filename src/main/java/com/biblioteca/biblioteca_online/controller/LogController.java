@@ -25,13 +25,11 @@ public class LogController {
 
 @PostMapping("/registrar")
 public ResponseEntity<?> registrarLog(@RequestBody Log log) {
-    // Define o fuso horário correto (Brasil/UTC-3)
     ZoneId zone = ZoneId.of("America/Sao_Paulo");
     
     if (log.getTimestamp() == null) {
         log.setTimestamp(LocalDateTime.now(zone));
     } else {
-        // Garante que o timestamp está no fuso horário correto
         ZonedDateTime zonedDt = log.getTimestamp().atZone(zone);
         log.setTimestamp(zonedDt.toLocalDateTime());
     }

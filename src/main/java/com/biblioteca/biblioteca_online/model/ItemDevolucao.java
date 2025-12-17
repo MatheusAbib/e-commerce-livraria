@@ -4,11 +4,9 @@ public class ItemDevolucao {
     private Long itemPedidoId;
     private Integer quantidade;
 
-    // Construtor padrão
     public ItemDevolucao() {
     }
 
-    // Construtor com todos os campos
     public ItemDevolucao(Long itemPedidoId, Integer quantidade) {
         this.itemPedidoId = itemPedidoId;
         this.quantidade = quantidade;

@@ -19,7 +19,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     @Transactional
     void deleteByCliente(Cliente cliente);
 
-    // método para calcular lucros por livro - Lucro Total = (Preço de Venda - Preço de Custo) × Quantidade Vendida
+    // livro - Lucro Total = (Preço de Venda - Preço de Custo) × Quantidade Vendida
     @Query("SELECT i.livro.titulo, " +
            "SUM(i.quantidade) as quantidadeVendida, " +
            "SUM(i.quantidade * (i.precoUnitario - i.livro.precoCusto)) as lucroTotal " +

@@ -18,7 +18,6 @@ public ClienteRankingDTO(Long id, String nome, String email, Long quantidadePedi
 }
 
     // getters e setters
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

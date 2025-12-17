@@ -1,4 +1,3 @@
-// NOTE: automatic patch: replaced hardcoded localhost:8080 with window.location.origin
  $(document).ready(function(){
       $('.hero-carousel').slick({
         dots: true,
@@ -12,7 +11,6 @@
       });
     });
 
-    // Scroll header effect
     window.addEventListener('scroll', function() {
       const header = document.getElementById('main-header');
       if (window.scrollY > 50) {
@@ -30,7 +28,6 @@
     );
   }
 
-    // Modal animations
     function showModal(modalId) {
       const modal = document.getElementById(modalId);
       modal.classList.add('active');
@@ -43,13 +40,11 @@
       document.body.style.overflow = 'auto';
     }
 
-    // Toggle sidebar
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       sidebar.classList.toggle('show');
     }
 
-    // Close modals when clicking outside
     window.addEventListener('click', function(event) {
       const modals = document.querySelectorAll('.modal, .profile-modal, .modal-produto');
       modals.forEach(modal => {
@@ -59,10 +54,8 @@
       });
     });
 
-    // Rest of your JavaScript functions...
     let clienteLogado = null;
 
-    // Função para carregar os dados completos do cliente
     async function carregarDadosCliente() {
       try {
         const response = await fetch(`/api/clientes/${clienteLogado.id}`);
@@ -73,7 +66,7 @@
         
         // Garante que tipoTelefone existe no objeto
         if (!clienteLogado.hasOwnProperty('tipotelefone')) {
-          clienteLogado.tipotelefone = ''; // Valor padrão se não existir
+          clienteLogado.tipotelefone = ''; 
         }
         
         exibirDadosCliente();
@@ -130,20 +123,16 @@
         return false;
       }
       
-      // Converte para objeto Date
       const dataNasc = new Date(dataString);
       const hoje = new Date();
       
-      // Remove a parte de hora para comparar apenas datas
       hoje.setHours(0, 0, 0, 0);
       
-      // Verifica se é uma data válida
       if (isNaN(dataNasc.getTime())) {
         console.log('Data inválida');
         return false;
       }
       
-      // Verifica se a data não é futura
       if (dataNasc > hoje) {
         console.log('Data futura');
         return false;
@@ -512,7 +501,6 @@
         estado: formData.get('estado'),
         pais: formData.get('pais'),
         tipo: tipo,
-        // Campos adicionados
         tipoResidencia: formData.get('tipoResidencia'),
         tipoLogradouro: formData.get('tipoLogradouro'),
         logradouro: formData.get('logradouro')
@@ -679,7 +667,6 @@ async function debugExclusaoEndereco(enderecoId) {
   }
 }
 
-// Use esta versão para testar
 async function confirmarExclusaoEnderecoDebug(enderecoId) {
   if (confirm('Tem certeza que deseja excluir este endereço?')) {
     try {
@@ -692,7 +679,6 @@ async function confirmarExclusaoEnderecoDebug(enderecoId) {
     }
   }
 }
-
     // Funções para cartões
     async function editarCartao(indexCartao) {
       const cartao = clienteLogado.cartoes[indexCartao];
@@ -783,7 +769,7 @@ async function confirmarExclusaoEnderecoDebug(enderecoId) {
 
         try {
           const cartao = clienteLogado.cartoes[indexCartao];
-          const cartaoId = cartao.id;  // use o ID real aqui
+          const cartaoId = cartao.id;  
 
           const response = await fetch(`/api/clientes/${clienteLogado.id}/cartoes/${cartaoId}`, {
               method: 'PUT',
@@ -1034,7 +1020,6 @@ const formData = {
   } catch (error) {
     console.error('Erro completo:', error);
     
-    // Mensagem mais amigável
     let errorMessage = 'Erro ao cadastrar endereço';
     if (error.message.includes('400')) {
       errorMessage = 'Dados inválidos: ' + error.message.replace('400: ', '');
@@ -1055,7 +1040,6 @@ function fecharModalEndereco() {
 
     async function confirmarExclusaoCartao(idCartaoReal) {
       try {
-        // Primeiro verifica se há pedidos associados
         const responseCheck = await fetch(`/api/cartoes/${idCartaoReal}/pedidos`);
         const hasPedidos = await responseCheck.json();
         
@@ -1127,13 +1111,11 @@ function fecharModalEndereco() {
         });
       }
       
-      // Máscara para telefone (agora considerando o tipo)
       const telefoneInput = document.getElementById('editar-telefone');
       const tipotelefoneSelect = document.getElementById('editar-tipotelefone');
       
       if (telefoneInput && tipotelefoneSelect) {
         tipotelefoneSelect.addEventListener('change', function() {
-          // Quando muda o tipo, limpa o telefone e ajusta o placeholder
           telefoneInput.value = '';
           telefoneInput.placeholder = this.value === 'celular' ? '(00) 00000-0000' : '(00) 0000-0000';
         });
@@ -1142,7 +1124,6 @@ function fecharModalEndereco() {
           const tipo = tipotelefoneSelect.value;
           let valor = e.target.value.replace(/\D/g, '');
 
-          // Aplica máscara diferente conforme o tipo
           if (tipo === 'celular') {
             // Celular (11 dígitos)
             if (valor.length > 11) valor = valor.substring(0, 11);
@@ -1184,24 +1165,22 @@ function fecharModalEndereco() {
           }
         });
       }
-      // Máscara para número do cartão
 const numeroCartaoInput = document.getElementById('novo-cartao-numero');
 if (numeroCartaoInput) {
   numeroCartaoInput.addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-    e.target.value = value.substring(0, 19); // Limita a 16 dígitos + 3 espaços
+    e.target.value = value.substring(0, 19);
   });
 }
 
-// Máscara para CVV e validação de acordo com a bandeira
 const cvvInput = document.getElementById('novo-cartao-cvv');
 if (cvvInput) {
   cvvInput.addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     const bandeira = document.getElementById('novo-cartao-bandeira').value;
     
-    // American Express geralmente tem 4 dígitos, outras 3
+    // American Express tem 4 dígitos
     const maxLength = bandeira === 'American Express' ? 4 : 3;
     e.target.value = value.substring(0, maxLength);
   });
@@ -1287,7 +1266,7 @@ async function fazerLogin() {
             
             // Fecha o modal e RECARREGA A PÁGINA
             closeModalLogin();
-            location.reload(); // ← ADICIONE ESTA LINHA
+            location.reload(); 
             
         } else {
             const error = await response.text();
@@ -1325,13 +1304,13 @@ function atualizarUI(usuario) {
         
         // Altera para ícone de logout com tooltip
         btnAuth.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
-        btnAuth.title = 'Sair'; // Tooltip para acessibilidade
+        btnAuth.title = 'Sair'; 
         
         profileIcon.style.display = 'inline-block';
-        cartIcon.style.display = 'inline-block'; // Mostra o carrinho
+        cartIcon.style.display = 'inline-block'; 
         clienteLogado = usuario;
         carregarDadosCliente();
-        atualizarContadorCarrinho(); // Atualiza o contador
+        atualizarContadorCarrinho(); 
     } else {
         nomeCliente.textContent = 'Visitante';
         
@@ -1340,7 +1319,7 @@ function atualizarUI(usuario) {
         btnAuth.removeAttribute('title');
         
         profileIcon.style.display = 'none';
-        cartIcon.style.display = 'none'; // Esconde o carrinho
+        cartIcon.style.display = 'none'; 
         clienteLogado = null;
         fecharPerfil();
     }
@@ -1353,7 +1332,7 @@ function atualizarUI(usuario) {
     function carregarCarrinhoUsuario(usuarioId) {
       const carrinhos = JSON.parse(localStorage.getItem('carrinhosPorUsuario')) || {};
       const carrinho = carrinhos[usuarioId] || [];
-      salvarCarrinho(carrinho); // Atualiza o carrinho ativo
+      salvarCarrinho(carrinho);
       atualizarContadorCarrinho();
     }
 
@@ -1503,15 +1482,12 @@ document.getElementById('form-login').addEventListener('submit', async function(
     function preencherFiltroCategorias() {
         const selectCategoria = document.getElementById('filtro-categoria');
         
-        // Limpa opções existentes (mantendo a primeira)
         while (selectCategoria.options.length > 1) {
             selectCategoria.remove(1);
         }
         
-        // Ordena categorias alfabeticamente
         categoriasUnicas.sort();
         
-        // Adiciona novas opções
         categoriasUnicas.forEach(categoria => {
             const option = document.createElement('option');
             option.value = categoria;
@@ -1712,8 +1688,6 @@ function exibirModalProduto(produto) {
       }
     }
 
-    // Função para adicionar produto ao carrinho
-  // Função para adicionar produto ao carrinho - VERSÃO CORRIGIDA
 function adicionarAoCarrinho(idProduto, fromModal = false) {
   const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
   
@@ -1790,7 +1764,6 @@ function exibirModalSucessoCarrinho() {
     }
 
     /* Seção de Cupons */
-
     // Função para gerar um cupom
     function gerarCupom(cupomId, desconto, valorMinimo, tipo = 'percent') {
         // Verifica se o usuário está logado
@@ -1812,13 +1785,12 @@ function exibirModalSucessoCarrinho() {
             valorMinimo: valorMinimo,
             tipo: tipo,
             dataGeracao: new Date().toISOString(),
-            dataExpiracao: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expira em 30 dias
+            dataExpiracao: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), 
             usado: false
         };
 
-        console.log('Novo cupom gerado:', cupom); // Debug
+        console.log('Novo cupom gerado:', cupom); 
         
-        // Armazena o cupom no localStorage
         armazenarCupom(clienteLogado.id, cupom);
 
         // Atualiza a UI para mostrar o código do cupom
@@ -1832,7 +1804,6 @@ function exibirModalSucessoCarrinho() {
         alert(`Cupom gerado com sucesso! Código: ${codigoCupom}`);
     }
 
-    // Função para armazenar o cupom no localStorage
     function armazenarCupom(userId, cupom) {
         let cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario')) || {};
         
@@ -2183,16 +2154,7 @@ window.addEventListener('DOMContentLoaded', () => {
   esconderLinksRestritos();
 });
 
-
-
-  // Função para alternar a sidebar, você já deve ter
-  function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('show');
-  }
-
   //SESSÃO CHATBOT
-
 const apiKey = "AIzaSyAiHf5ACvaEZzwJAe7OeieT_EtxtnjUPUE"; 
 let clienteId = null;
 let historicoCompras = [];

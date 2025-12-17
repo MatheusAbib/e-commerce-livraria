@@ -32,6 +32,6 @@ public class VendasController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
         
         List<Object[]> vendasPorCategoria = relatorioService.getVendasPorCategoria(dataInicio, dataFim);
-        return ResponseEntity.ok(vendasPorCategoria); //apos receber do return query.getResultList(); do relatorio service, ele envia para o LoaddataByCategory no front e depois para o processCategoryData
+        return ResponseEntity.ok(vendasPorCategoria); 
     }
 }

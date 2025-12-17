@@ -38,7 +38,6 @@ public class ClienteService {
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // Método para salvar cliente com endereços
 public Cliente salvarClienteComEnderecos(Cliente cliente) {
     Cliente clienteSalvo = salvarCliente(cliente);
 
@@ -56,7 +55,6 @@ public Cliente salvarClienteComEnderecos(Cliente cliente) {
         }
     }
 
-    // Log de cadastro
     Log log = new Log(clienteSalvo.getId(), clienteSalvo.getNome(), "cadastro", "Cliente cadastrado", "success");
     logService.salvarLog(log);
 
@@ -67,7 +65,6 @@ public Cliente salvarClienteComEnderecos(Cliente cliente) {
 @Transactional
 public Cliente atualizarClienteComEnderecos(Long id, Cliente clienteAtualizado) {
     return clienteRepository.findById(id).map(cliente -> {
-        // Atualiza os dados do cliente
         cliente.setNome(clienteAtualizado.getNome());
         cliente.setEmail(clienteAtualizado.getEmail());
         cliente.setTelefone(clienteAtualizado.getTelefone());
@@ -77,14 +74,12 @@ public Cliente atualizarClienteComEnderecos(Long id, Cliente clienteAtualizado) 
         cliente.setGenero(clienteAtualizado.getGenero());
         
 
-        // Desvincula os endereços antigos
         cliente.getEnderecos().clear();
-        clienteRepository.save(cliente); // Persistir a limpeza
+        clienteRepository.save(cliente); 
 
    cliente.getCartoes().clear();
         cartaoRepository.deleteByClienteId(id);
         
-        // Cria e salva os novos cartões
         if (clienteAtualizado.getCartoes() != null) {
             for (Cartao c : clienteAtualizado.getCartoes()) {
                 Cartao novo = new Cartao();
@@ -99,10 +94,8 @@ public Cliente atualizarClienteComEnderecos(Long id, Cliente clienteAtualizado) 
             }
         }
 
-        // Remove os registros do banco
         enderecoRepository.deleteByClienteId(id);
 
-        // Cria e salva os novos endereços com TODOS os campos
         for (Endereco e : clienteAtualizado.getEnderecos()) {
             Endereco novo = new Endereco();
             novo.setCep(e.getCep());
@@ -112,11 +105,11 @@ public Cliente atualizarClienteComEnderecos(Long id, Cliente clienteAtualizado) 
             novo.setBairro(e.getBairro());
             novo.setCidade(e.getCidade());
             novo.setEstado(e.getEstado());
-            novo.setPais(e.getPais()); // Adicione esta linha
-            novo.setTipoResidencia(e.getTipoResidencia()); // Adicione esta linha
-            novo.setTipoLogradouro(e.getTipoLogradouro()); // Adicione esta linha
-            novo.setLogradouro(e.getLogradouro()); // Adicione esta linha
-            novo.setNomeEndereco(e.getNomeEndereco()); // Adicione esta linha se existir
+            novo.setPais(e.getPais()); 
+            novo.setTipoResidencia(e.getTipoResidencia()); 
+            novo.setTipoLogradouro(e.getTipoLogradouro()); 
+            novo.setLogradouro(e.getLogradouro());
+            novo.setNomeEndereco(e.getNomeEndereco()); 
             novo.setTipo(e.getTipo());
             novo.setCliente(cliente);
 
@@ -127,7 +120,6 @@ public Cliente atualizarClienteComEnderecos(Long id, Cliente clienteAtualizado) 
     }).orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
 }
 
-    // Método para mudar status do cliente
     public void mudarStatusCliente(Long id, Boolean ativo, String motivo) {
         Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
@@ -144,7 +136,6 @@ public Cliente atualizarClienteComEnderecos(Long id, Cliente clienteAtualizado) 
         clienteRepository.save(cliente);
     }
 
-    // Métodos existentes (mantidos conforme seu código original)
     public Cliente salvarCliente(Cliente cliente) {
         if (cliente.getSenha() != null && !cliente.getSenha().isEmpty()) {
             validarSenhaForte(cliente.getSenha());
@@ -206,7 +197,6 @@ public Cliente atualizarClienteComEnderecos(Long id, Cliente clienteAtualizado) 
         }
     }
 
-// Adicione este método no seu ClienteService
 public List<Cliente> filtrarClientes(String nome, String email, String cpf, String telefone, 
                                    String tipoTelefone, String genero, Boolean ativo) {
     return clienteRepository.findAll((root, query, cb) -> {
@@ -295,11 +285,10 @@ public void deletarCliente(Long id) {
     if (clienteOpt.isPresent()) {
         Cliente cliente = clienteOpt.get();
         
-        // Limpa as associações
         cliente.getEnderecos().clear();
         cliente.getCartoes().clear();
 
-        clienteRepository.delete(cliente); // o cascade agora vai funcionar
+        clienteRepository.delete(cliente); 
     }
 }
 public List<ClienteRankingDTO> obterRankingClientes() {

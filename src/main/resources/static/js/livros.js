@@ -139,7 +139,6 @@ async function carregarLivros(filtros = {}) {
             infoDiv.textContent = `Mostrando ${countFiltered} livros de um total de ${countTotal}`;
         }
         
-        // Preenche a tabela
         preencherTabelaLivros(todosLivros);
         
     } catch (error) {
@@ -169,7 +168,6 @@ function preencherTabelaLivros(livros) {
         const statusIcon = livro.ativo ? 'fa-check-circle' : 'fa-times-circle';
         const statusText = livro.ativo ? 'Ativo' : 'Inativo';
 
-        // Verifica se o livro está inativo E com estoque zerado
         const estoqueZerado = livro.estoque === 0;
         const desabilitarAtivar = !livro.ativo && estoqueZerado;
 
@@ -268,7 +266,6 @@ function aplicarFiltros() {
 }
 
 function limparFiltros() {
-    // Limpa todos os campos de filtro
     document.querySelectorAll('.filtros-container input').forEach(input => {
         input.value = '';
     });
@@ -393,7 +390,6 @@ async function abrirModalDetalhes(id) {
   document.getElementById('detalhes-conteudo').innerHTML = conteudo;
   document.getElementById('modal-detalhes').style.display = 'flex';
   
-  // Adiciona a classe active para animação
   setTimeout(() => {
     document.getElementById('modal-detalhes').classList.add('active');
   }, 10);
@@ -435,9 +431,9 @@ document.getElementById('btn-confirmar-excluir').addEventListener('click', async
   }
 });
 
-// Funções para ativar/inativar livro
+//ativar/inativar livro
 let acaoId = null;
-let acaoTipo = null; // 'ativar' ou 'inativar'
+let acaoTipo = null; 
 
 function abrirModalConfirmacao(id, tipo) {
   acaoId = id;
@@ -500,7 +496,6 @@ async function enviarStatus(id, ativo, motivo) {
   }
 }
 
-// Função para iniciar edição
 async function editarLivro(id) {
   await carregarLivro(id);
 }

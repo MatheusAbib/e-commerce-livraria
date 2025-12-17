@@ -48,7 +48,7 @@ public class EnderecoService {
     public void excluir(Long id) {
         Endereco endereco = enderecoRepository.findById(id).orElse(null);
         if (endereco != null && endereco.getCliente() != null) {
-            endereco.getCliente().getEnderecos().remove(endereco); // remove da lista no cliente
+            endereco.getCliente().getEnderecos().remove(endereco); 
             enderecoRepository.delete(endereco);
         }
     }

@@ -55,7 +55,6 @@ public class Livro {
 
     private LocalDate dataEntrada;
 
-    // NOVO CAMPO PARA A IMAGEM
     private String imagemUrl;
 
     public Livro() {}

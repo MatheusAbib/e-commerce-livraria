@@ -623,7 +623,6 @@ main {
       display: block;
     }
 
-    /* Adicione isso ao seu CSS */
 #senha + .error-message {
   background-color: #fff3f5;
   padding: 10px;

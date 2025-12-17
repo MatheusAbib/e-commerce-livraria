@@ -291,16 +291,14 @@
   const senha = document.getElementById('senha').value;
   const confirmarSenha = document.getElementById('confirmar-senha-cadastro').value;
 
-  // Validação da senha (apenas para novos cadastros)
   if (!id) {
-    // Verifica se as senhas coincidem
     if (senha !== confirmarSenha) {
       mostrarErro('As senhas não coincidem. Por favor, digite a mesma senha nos dois campos.');
       document.getElementById('confirmar-senha-cadastro').focus();
       return;
     }
 
-    // Verifica os requisitos da senha
+    // requisitos da senha
     const hasMinLength = senha.length >= 6;
     const hasNumber = /\d/.test(senha);
     const hasUpper = /[A-Z]/.test(senha);
@@ -498,9 +496,7 @@
       sidebar.classList.toggle('show');
     }
 
-    // Funções de autenticação (placeholders)
     function handleAuthClick() {
-      // Implementar lógica de autenticação
       console.log('Botão de autenticação clicado');
     }
 
@@ -552,7 +548,6 @@ function mostrarNotificacaoSucesso() {
   const modal = document.getElementById('modal-sucesso');
   modal.style.display = 'flex';
   
-  // Fecha automaticamente após 3 segundos
   setTimeout(() => {
     modal.style.display = 'none';
   }, 3000);
@@ -570,7 +565,6 @@ function mostrarErro(mensagem) {
   mensagemElement.textContent = mensagem;
   modal.style.display = 'flex';
   
-  // Fecha automaticamente após 5 segundos
   setTimeout(() => {
     fecharModalErro();
   }, 5000);
@@ -584,7 +578,6 @@ function fecharModalErro() {
  function esconderLinksRestritos() {
   const clienteLogado = JSON.parse(localStorage.getItem('clienteLogado'));
 
-  // Links exclusivos de ADMIN que devem ser escondidos para quem não for admin
   const linksRestritos = [
     'usuarios.html',
     'log.html',
@@ -593,7 +586,6 @@ function fecharModalErro() {
     'pedidosADMIN.html'
   ];
 
-  // Esconde links restritos se não for admin
   if (!clienteLogado || clienteLogado.perfil !== 'ADMIN') {
     linksRestritos.forEach(href => {
       const link = document.querySelector(`.sidebar a[href="${href}"]`);
@@ -612,7 +604,6 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 
-  // Função para alternar a sidebar, você já deve ter
   function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('show');

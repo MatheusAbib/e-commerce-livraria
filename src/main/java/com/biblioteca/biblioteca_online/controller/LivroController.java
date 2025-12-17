@@ -151,7 +151,6 @@ public class LivroController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
-        // Antes de excluir o livro, remove a imagem se existir
         Optional<Livro> livro = livroService.buscarPorId(id);
         if (livro.isPresent() && livro.get().getImagemUrl() != null) {
             try {
@@ -251,7 +250,6 @@ public class LivroController {
         }
     }
 
-    // ENDPOINT CORRIGIDO - Agora usando o método do service
     @PutMapping("/{id}/repor-estoque")
     public ResponseEntity<Livro> reporEstoque(@PathVariable Long id, @RequestParam Integer quantidade,
             @RequestParam String motivo) {
@@ -260,7 +258,6 @@ public class LivroController {
         }
 
         try {
-            // AGORA USA O MÉTODO DO SERVICE QUE CONTÉM A LÓGICA AUTOMÁTICA
             Livro livroAtualizado = livroService.reporEstoque(id, quantidade, motivo);
             return ResponseEntity.ok(livroAtualizado);
         } catch (RuntimeException e) {
@@ -268,7 +265,6 @@ public class LivroController {
         }
     }
 
-    // VERSÃO ALTERNATIVA COM JSON BODY (opcional)
     @PutMapping("/{id}/repor-estoque-json")
     public ResponseEntity<Livro> reporEstoqueJson(
             @PathVariable Long id,
@@ -291,7 +287,6 @@ public class LivroController {
         return ResponseEntity.ok(livroService.listarTodos());
     }
 
-    // Classe DTO para a versão JSON
     public static class ReporEstoqueRequest {
         private Integer quantidade;
         private String motivo;

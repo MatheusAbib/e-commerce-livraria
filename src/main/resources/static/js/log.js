@@ -1,11 +1,10 @@
- let allLogs = [];
+let allLogs = [];
 let currentPage = 1;
 const logsPerPage = 10;
 let filteredLogs = [];
 
 let usersMap = {};
 
-// Carrega o mapa de usuários (id -> nome)
 async function loadUsersMap() {
   const response = await fetch('/api/clientes');
   if (response.ok) {
@@ -32,7 +31,6 @@ function showLoadingState() {
   `;
 }
 
-// Carrega os logs da API ou localStorage
 async function loadLogs() {
   try {
     showLoadingState();
@@ -67,7 +65,6 @@ function populateUserFilter() {
   const userFilter = document.getElementById('filter-user');
   const uniqueUsers = [...new Set(allLogs.map(log => log.userId))];
 
-  // Remove opções existentes, mantendo a primeira (default)
   while (userFilter.options.length > 1) {
     userFilter.remove(1);
   }
@@ -82,7 +79,6 @@ function populateUserFilter() {
     }
   });
 }
-
 
 // Aplica filtros dos selects e inputs
 function applyFilters() {
@@ -108,7 +104,7 @@ function applyFilters() {
     currentPage = 1;
     renderLogs();
     renderPagination();
-  }, 1000); // 1 segundo de atraso
+  }, 1000); 
 }
 
 // Limpa os filtros e reseta a listagem
@@ -160,7 +156,6 @@ function renderLogs() {
   });
 }
 
-// Tradução das ações do log
 function translateAction(action) {
   const actions = {
     'login': 'Login',
@@ -195,7 +190,6 @@ function renderPagination() {
   const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
   if (totalPages <= 1) return;
 
-  // Botão Anterior
   const prevButton = document.createElement('button');
   prevButton.innerHTML = '&laquo;';
   prevButton.disabled = currentPage === 1;
@@ -277,7 +271,6 @@ function renderPagination() {
     pagination.appendChild(nextButton);
   }
 
-  // Inicialização ao carregar a página
   document.addEventListener('DOMContentLoaded', () => {
     loadLogs();
     window.logAction = logAction;
@@ -296,7 +289,6 @@ function renderPagination() {
     .then(data => {
       logAction('COMPRA_FINALIZADA', `Compra finalizada com sucesso. Valor: R$ ${data.valorTotal}`, data.usuarioId);
       alert('Compra finalizada com sucesso!');
-      // redirecionar ou atualizar interface
     })
     .catch(err => {
       alert('Erro ao finalizar compra');

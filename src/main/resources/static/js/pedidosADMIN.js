@@ -45,7 +45,6 @@
     filtrarPedidos();
   });
 
-  // Configurar filtro
   document.getElementById('btn-filtrar').addEventListener('click', filtrarPedidos);
 
   // Carrega clientes e pedidos, e exibe a tabela
@@ -234,7 +233,6 @@ async function atualizarStatusPedido(pedidoId, novoStatus) {
     // Atualiza o cache
     pedidosAdminCache = pedidosAdminCache.map(p => p.id === pedidoId ? pedidoAtualizado : p);
 
-    // Atualiza a linha da tabela no DOM
     atualizarLinhaPedido(pedidoAtualizado);
 
     alert(`Status atualizado para: ${formatStatus(novoStatus)}`);
@@ -248,7 +246,6 @@ async function atualizarStatusPedido(pedidoId, novoStatus) {
 function atualizarLinhaPedido(pedido) {
   const row = document.querySelector(`tr[data-pedido-id="${pedido.id}"]`);
   if (!row) {
-    // Caso a linha não exista (ex: filtro ativo que exclui o pedido), pode refazer a tabela
     filtrarPedidos();
     return;
   }
@@ -259,7 +256,6 @@ function atualizarLinhaPedido(pedido) {
   const dataPedido = pedido.dataPedido || pedido.data || '';
   const valor = Number(pedido.valorTotal || pedido.valor_total || 0).toFixed(2);
 
-  // Atualizar células individualmente
   row.querySelector('.cliente').textContent = nomeCliente;
   row.querySelector('.status').innerHTML = `<span class="pedido-status ${getStatusClass(status)}">${formatStatus(status)}</span>`;
   row.querySelector('.data').textContent = formatarData(dataPedido);

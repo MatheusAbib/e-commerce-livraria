@@ -25,7 +25,6 @@ public class CartaoService {
     }
 
     public Cartao salvarCartao(Long clienteId, Cartao cartao) {
-        // Aqui o cliente deve estar setado antes (geralmente no controller)
         return cartaoRepository.save(cartao);
     }
 
@@ -56,17 +55,15 @@ public Cartao atualizarCartao(Long clienteId, Long cartaoId, Cartao cartaoAtuali
     Optional<Cartao> cartaoOpt = cartaoRepository.findById(cartaoId);
 
     if (cartaoOpt.isEmpty()) {
-        return null; // cartão não encontrado
+        return null;
     }
 
     Cartao cartao = cartaoOpt.get();
 
-    // Verifica se o cartão pertence ao cliente
     if (cartao.getCliente() == null || !cartao.getCliente().getId().equals(clienteId)) {
         throw new IllegalArgumentException("Cartão não pertence ao cliente.");
     }
 
-    // Atualiza os campos permitidos
     cartao.setNumero(cartaoAtualizado.getNumero());
     cartao.setNomeTitular(cartaoAtualizado.getNomeTitular());
     cartao.setBandeira(cartaoAtualizado.getBandeira());
@@ -74,7 +71,6 @@ public Cartao atualizarCartao(Long clienteId, Long cartaoId, Cartao cartaoAtuali
     cartao.setDataValidade(cartaoAtualizado.getDataValidade());
     cartao.setPreferencial(cartaoAtualizado.isPreferencial());
 
-    // Salva e retorna o cartão atualizado
     return cartaoRepository.save(cartao);
 }
 

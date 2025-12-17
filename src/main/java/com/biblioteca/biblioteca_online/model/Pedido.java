@@ -63,8 +63,6 @@ private Cliente cliente;
     @Column(name = "motivo_devolucao", columnDefinition = "TEXT")
     private String motivoDevolucao;
     
-
-    // Métodos auxiliares
     public void adicionarItem(Livro livro, Integer quantidade) {
         ItemPedido item = new ItemPedido();
         item.setLivro(livro);

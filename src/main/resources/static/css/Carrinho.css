@@ -1012,7 +1012,6 @@
   border-radius: 0 0 12px 12px;
 }
 
-/* Modal Novo Cartão igual ao Novo Endereço */
 #modalNovoCartao .modal-content {
   border-radius: 12px;
   box-shadow: var(--card-shadow);
@@ -1072,7 +1071,7 @@
 }
 
 
-/* Botões padronizados */
+/* Botões */
 .btn-novo-endereco,
 .btn-novo-cartao {
   background-color: transparent;
@@ -1115,7 +1114,6 @@
   color: white;
 }
 
-/* Sobrescrever estilos específicos dos botões */
 .btn-outline-primary {
   border-color: var(--primary-color);
   color: var(--primary-color);

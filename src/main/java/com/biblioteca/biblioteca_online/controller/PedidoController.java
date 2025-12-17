@@ -116,7 +116,6 @@ public class PedidoController {
         List<Pedido> pedidos = pedidoService.listarPedidosPorCliente(clienteId);
         System.out.println("📦 Total de pedidos encontrados: " + pedidos.size());
 
-        // Status válidos para histórico
         List<StatusPedido> statusValidos = Arrays.asList(
             StatusPedido.ENTREGUE,
             StatusPedido.EM_TRANSITO

@@ -25,10 +25,10 @@ public class Endereco {
     private String cidade;
     private String estado;
 
-    private String logradouro;        // novo campo
-    private String tipoResidencia;    // novo campo
+    private String logradouro;        
+    private String tipoResidencia;    
     private String tipoLogradouro; 
-    private String pais;              // novo campo
+    private String pais;            
 
     private String nomeEndereco;
     public String getNomeEndereco() { return nomeEndereco; }
