@@ -33,16 +33,6 @@ Este sistema tem como objetivo gerenciar de forma eficiente o cadastro de livros
 
 ---
 
-## VISUALIZAÇÃO
-![Início](inicio.png)  
-![Gráfico](grafico.png)  
-![Pedidos](pedidos.png)  
-![Transações](transacoes.png)
-![Usuários](usuarios.png)
-![Ranking](ranking.png)  
-![Carrinho](carrinho.png)  
-  
----
 ## Requisitos Funcionais
 
 ### Grupo: Cadastro de Livros
