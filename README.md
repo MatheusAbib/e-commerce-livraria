@@ -7,6 +7,9 @@
 
 Este sistema tem como objetivo gerenciar de forma eficiente o cadastro de livros, clientes e o processo de vendas eletrônicas, incluindo controle de estoque, histórico de vendas e recomendações personalizadas com IA generativa. A solução foi desenvolvida para garantir alta performance, segurança, integridade dos dados e atender a todas as regras e requisitos definidos para o negócio.
 
+📄 [Ver Documento de Requisitos (DRS)](docs/DRS_LES_2_2025.pdf)
+
+
 ---
 
 ## Sumário
