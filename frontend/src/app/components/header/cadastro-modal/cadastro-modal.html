@@ -1,0 +1,86 @@
+<div class="custom-modal" [class.active]="visible">
+  <div class="custom-modal-overlay" (click)="fechar()"></div>
+  <div class="custom-modal-content">
+    <button class="custom-modal-close" (click)="fechar()" [disabled]="loading">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon">
+        <i class="pi pi-user-plus"></i>
+      </div>
+      <h2>Criar conta</h2>
+      <p>Preencha os dados para se cadastrar</p>
+    </div>
+    <div class="custom-modal-body">
+      <div class="field">
+        <label>Nome completo *</label>
+        <input type="text" [(ngModel)]="nome" placeholder="Seu nome completo" class="auth-input" [disabled]="loading">
+      </div>
+      <div class="field">
+        <label>E-mail *</label>
+        <input type="email" [(ngModel)]="email" placeholder="seu@email.com" class="auth-input" [disabled]="loading">
+      </div>
+      <div class="field">
+        <label>CPF</label>
+        <input type="text" [(ngModel)]="cpf" (input)="formatarCPF($event)" placeholder="000.000.000-00" class="auth-input" maxlength="14" [disabled]="loading">
+      </div>
+      <div class="field">
+        <label>Senha *</label>
+        <div class="password-wrapper">
+          <input id="cadastro-senha" [type]="showSenha ? 'text' : 'password'" [(ngModel)]="senha" (input)="validarSenha()" placeholder="Crie uma senha" class="auth-input" [disabled]="loading">
+          <i class="pi password-toggle" [class.pi-eye]="!showSenha" [class.pi-eye-slash]="showSenha" (click)="toggleSenha()"></i>
+        </div>
+        <div class="password-strength" *ngIf="senha.length > 0">
+          <div class="strength-bar">
+            <div class="strength-segment" [class.active]="senha.length >= 6"></div>
+            <div class="strength-segment" [class.active]="temMaiuscula"></div>
+            <div class="strength-segment" [class.active]="temMinuscula"></div>
+            <div class="strength-segment" [class.active]="temNumero"></div>
+            <div class="strength-segment" [class.active]="temEspecial"></div>
+          </div>
+          <div class="strength-requirements">
+            <span [class.valid]="senha.length >= 6" [class.invalid]="senha.length > 0 && senha.length < 6">
+              <i class="pi" [class.pi-check-circle]="senha.length >= 6" [class.pi-circle]="senha.length > 0 && senha.length < 6"></i>
+              Mínimo 6 caracteres
+            </span>
+            <span [class.valid]="temMaiuscula" [class.invalid]="senha.length > 0 && !temMaiuscula">
+              <i class="pi" [class.pi-check-circle]="temMaiuscula" [class.pi-circle]="senha.length > 0 && !temMaiuscula"></i>
+              1 letra maiúscula
+            </span>
+            <span [class.valid]="temMinuscula" [class.invalid]="senha.length > 0 && !temMinuscula">
+              <i class="pi" [class.pi-check-circle]="temMinuscula" [class.pi-circle]="senha.length > 0 && !temMinuscula"></i>
+              1 letra minúscula
+            </span>
+            <span [class.valid]="temNumero" [class.invalid]="senha.length > 0 && !temNumero">
+              <i class="pi" [class.pi-check-circle]="temNumero" [class.pi-circle]="senha.length > 0 && !temNumero"></i>
+              1 número
+            </span>
+            <span [class.valid]="temEspecial" [class.invalid]="senha.length > 0 && !temEspecial">
+              <i class="pi" [class.pi-check-circle]="temEspecial" [class.pi-circle]="senha.length > 0 && !temEspecial"></i>
+              1 caractere especial
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirmar senha *</label>
+        <div class="password-wrapper">
+          <input id="cadastro-confirmar" [type]="showConfirmarSenha ? 'text' : 'password'" [(ngModel)]="confirmarSenha" placeholder="Confirme sua senha" class="auth-input" (keyup.enter)="fazerCadastro()" [disabled]="loading">
+          <i class="pi password-toggle" [class.pi-eye]="!showConfirmarSenha" [class.pi-eye-slash]="showConfirmarSenha" (click)="toggleConfirmarSenha()"></i>
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <button class="btn-primary" (click)="fazerCadastro()" [disabled]="loading || !formValido()">
+        <i class="pi" [class.pi-spin]="loading" [class.pi-spinner]="loading" [class.pi-user-plus]="!loading"></i>
+        {{ loading ? 'Cadastrando...' : 'Cadastrar' }}
+      </button>
+      <div class="auth-divider"><span>ou</span></div>
+      <button class="btn-secondary" (click)="abrirLogin()" [disabled]="loading">
+        <i class="pi pi-sign-in"></i> Já tenho conta
+      </button>
+    </div>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>

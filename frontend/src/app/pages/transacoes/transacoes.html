@@ -1,0 +1,199 @@
+<div class="transacoes-container">
+  <div class="page-header">
+    <div class="page-header-content">
+      <div class="page-header-icon">
+        <i class="pi pi-history"></i>
+      </div>
+      <div class="page-header-text">
+        <h1>Minhas Transações</h1>
+        <p>Acompanhe todas as suas atividades no sistema</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="filtros-container">
+    <div class="filtro-header">
+      <h3><i class="pi pi-filter"></i> Filtrar Atividades</h3>
+    </div>
+    <div class="filtros-grid">
+      <div class="filtro-item">
+        <label>Ação</label>
+        <p-dropdown
+          [options]="actionOptions"
+          [(ngModel)]="filtros.action"
+          placeholder="Todas as ações"
+          [showClear]="true">
+        </p-dropdown>
+      </div>
+
+      <div class="filtro-item">
+        <label>Data</label>
+        <p-calendar
+          [(ngModel)]="filtros.date"
+          dateFormat="dd/mm/yy"
+          placeholder="Selecione uma data">
+        </p-calendar>
+      </div>
+
+      <div class="filtro-item">
+        <label>Nível</label>
+        <p-dropdown
+          [options]="levelOptions"
+          [(ngModel)]="filtros.level"
+          placeholder="Todos os níveis"
+          [showClear]="true">
+        </p-dropdown>
+      </div>
+
+      <div class="filtro-item full-width">
+<div class="filtro-actions">
+  <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-search]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+  </button>
+  <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-times]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Limpando...' : 'Limpar' }}
+  </button>
+</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="table-header">
+      <div class="table-title">
+        <i class="pi pi-list"></i>
+        <span>Histórico de Atividades</span>
+      </div>
+      <div class="table-count">
+        <span class="count-badge">{{ filteredLogs.length }}</span>
+        <span>registros</span>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <p-table
+        [value]="filteredLogs"
+        [loading]="loading"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        [totalRecords]="totalRecords"
+        styleClass="p-datatable-striped p-datatable-gridlines">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Data/Hora</th>
+            <th>Ação</th>
+            <th>Detalhes</th>
+            <th class="text-center">Nível</th>
+            <th style="width: 60px;">Ações</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-log>
+          <tr>
+            <td>
+              <span class="date-cell">
+                <i class="pi pi-calendar"></i>
+                {{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}
+              </span>
+            </td>
+            <td>
+              <span class="action-cell">
+                <i [class]="getActionIcon(log.action)"></i>
+                {{ getActionLabel(log.action) }}
+              </span>
+            </td>
+            <td>
+              <span class="details-cell" [title]="log.details">
+                {{ log.details ? (log.details.length > 60 ? log.details.substring(0, 60) + '...' : log.details) : '-' }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="log-level" [class]="getLevelClass(log.level)">
+                {{ getLevelLabel(log.level) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button class="btn-ver-detalhes" (click)="abrirDetalhes(log)" title="Ver detalhes">
+                <i class="pi pi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="pi pi-inbox"></i>
+                <h3>Nenhuma transação encontrada</h3>
+                <p>Não há registros para os filtros selecionados</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="loadingbody">
+          <tr>
+            <td colspan="5">
+              <div class="loading-state">
+                <i class="pi pi-spin pi-spinner"></i>
+                <p>Carregando suas transações...</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayDetalhesModal">
+  <div class="custom-modal-overlay" (click)="displayDetalhesModal = false"></div>
+  <div class="custom-modal-content" style="width: 600px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="displayDetalhesModal = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon" [class]="'detalhes-' + logSelecionado?.level">
+        <i [class]="getIconClass(logSelecionado?.level)"></i>
+      </div>
+      <h2>{{ getActionLabel(logSelecionado?.action) }}</h2>
+      <p>{{ logSelecionado?.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+    </div>
+    <div class="custom-modal-body" *ngIf="logSelecionado">
+      <div class="detalhes-item">
+        <strong>Usuário:</strong>
+        <span>{{ logSelecionado.userName || 'Sistema' }}</span>
+      </div>
+      <div class="detalhes-item">
+        <strong>Ação:</strong>
+        <span>{{ getActionLabel(logSelecionado.action) }}</span>
+      </div>
+      <div class="detalhes-item" *ngIf="logSelecionado.details">
+        <strong>Detalhes:</strong>
+        <div class="detalhes-details">{{ logSelecionado.details }}</div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions single">
+        <button class="btn-secondary" (click)="displayDetalhesModal = false">
+          <i class="pi pi-times"></i> Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>

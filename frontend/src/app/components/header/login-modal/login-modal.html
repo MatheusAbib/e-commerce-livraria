@@ -1,0 +1,62 @@
+<div class="custom-modal" [class.active]="visible">
+  <div class="custom-modal-overlay" (click)="fechar()"></div>
+  <div class="custom-modal-content">
+    <button class="custom-modal-close" (click)="fechar()" [disabled]="loading">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon">
+        <i class="pi pi-user"></i>
+      </div>
+      <h2>Bem-vindo de volta</h2>
+      <p>Acesse sua conta para continuar</p>
+    </div>
+    <div class="custom-modal-body">
+      <div class="field">
+        <label>E-mail</label>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          placeholder="seu@email.com"
+          class="auth-input"
+          [class.carregado]="dadosCarregados && email"
+          [class.preencher]="dadosCarregados"
+          [disabled]="loading">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <div class="password-wrapper">
+          <input
+            id="login-senha-custom"
+            type="password"
+            [(ngModel)]="senha"
+            placeholder="Digite sua senha"
+            class="auth-input"
+            [class.carregado]="dadosCarregados && senha"
+            [class.preencher]="dadosCarregados"
+            (keyup.enter)="fazerLogin()"
+            [disabled]="loading">
+          <i class="pi pi-eye password-toggle" id="login-toggle" (click)="togglePassword('login-senha-custom', 'login-toggle')"></i>
+        </div>
+      </div>
+      <div class="auth-options">
+        <label class="remember-me">
+          <input type="checkbox" [(ngModel)]="lembrarMe" [disabled]="loading"> Lembrar-me
+        </label>
+        <a class="forgot-password">Esqueceu a senha?</a>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+<button class="btn-primary" (click)="fazerLogin()" [disabled]="loading || !formValido()">
+  <i class="pi" [class.pi-spin]="loading" [class.pi-spinner]="loading" [class.pi-sign-in]="!loading"></i>
+  {{ loading ? 'Entrando...' : 'Entrar' }}
+</button>
+      <div class="auth-divider"><span>ou</span></div>
+      <button class="btn-secondary" (click)="abrirCadastro()" [disabled]="loading">
+        <i class="pi pi-user-plus"></i> Criar conta
+      </button>
+    </div>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>

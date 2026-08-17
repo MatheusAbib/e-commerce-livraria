@@ -1,0 +1,70 @@
+<div class="custom-modal" [class.active]="visible">
+  <div class="custom-modal-overlay" (click)="fechar()"></div>
+  <div class="custom-modal-content" style="width: 600px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="fechar()">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon" style="background: #2a5298;">
+        <i class="pi pi-comment" style="color: white;"></i>
+      </div>
+      <h2>Meus Chats</h2>
+      <p>Conversas com o vendedor</p>
+    </div>
+    <div class="custom-modal-body">
+<div class="chats-tabs">
+  <button class="chats-tab" [class.active]="chatsTabAtivo === 'ativos'" (click)="chatsTabAtivo = 'ativos'">
+    Ativos <span *ngIf="chatsAtivos.length > 0" class="tab-badge">{{ chatsAtivos.length }}</span>
+  </button>
+  <button class="chats-tab" [class.active]="chatsTabAtivo === 'encerrados'" (click)="chatsTabAtivo = 'encerrados'">
+    Encerrados <span *ngIf="chatsEncerrados.length > 0" class="tab-badge">{{ chatsEncerrados.length }}</span>
+  </button>
+</div>
+      <div *ngIf="loadingChats" class="loading-state">
+        <i class="pi pi-spin pi-spinner"></i>
+        <p>Carregando conversas...</p>
+      </div>
+
+      <div *ngIf="!loadingChats && chatsAtivos.length === 0 && chatsTabAtivo === 'ativos'" class="empty-state">
+        <i class="pi pi-inbox"></i>
+        <h3>Nenhuma conversa ativa</h3>
+        <p>Você não tem conversas ativas no momento</p>
+      </div>
+
+      <div *ngIf="!loadingChats && chatsEncerrados.length === 0 && chatsTabAtivo === 'encerrados'" class="empty-state">
+        <i class="pi pi-inbox"></i>
+        <h3>Nenhuma conversa encerrada</h3>
+        <p>Você não tem conversas encerradas</p>
+      </div>
+
+      <div *ngIf="!loadingChats && chatsTabAtivo === 'ativos'">
+          <div *ngFor="let chat of chatsAtivos" class="chat-item" (click)="selecionarChat(chat.pedidoId)">
+          <div class="chat-item-info">
+            <span class="chat-item-pedido">Pedido #{{ chat.pedidoId }}</span>
+            <span class="chat-item-ultima">{{ chat.ultimaMensagem | slice:0:40 }}{{ chat.ultimaMensagem?.length > 40 ? '...' : '' }}</span>
+          </div>
+          <span *ngIf="chat.naoLidas > 0" class="chat-item-badge">{{ chat.naoLidas }}</span>
+          <i class="pi pi-chevron-right"></i>
+        </div>
+      </div>
+
+      <div *ngIf="!loadingChats && chatsTabAtivo === 'encerrados'">
+          <div *ngFor="let chat of chatsEncerrados" class="chat-item" (click)="selecionarChat(chat.pedidoId)">
+          <div class="chat-item-info">
+            <span class="chat-item-pedido">Pedido #{{ chat.pedidoId }}</span>
+            <span class="chat-item-ultima">{{ chat.ultimaMensagem | slice:0:40 }}{{ chat.ultimaMensagem?.length > 40 ? '...' : '' }}</span>
+          </div>
+          <span class="chat-item-status">Encerrado</span>
+          <i class="pi pi-chevron-right"></i>
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions single">
+        <button class="btn-secondary" (click)="fechar()">
+          <i class="pi pi-times"></i> Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

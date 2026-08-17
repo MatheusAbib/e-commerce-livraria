@@ -1,0 +1,205 @@
+.pedidos-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pedidos-table thead {
+  background: #f8fafc;
+}
+
+.pedidos-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4a5a6a;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.pedidos-table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #1a2332;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.pedidos-table tr:last-child td {
+  border-bottom: none;
+}
+
+.pedidos-table tr:hover td {
+  background: #f8fafc;
+}
+
+.motivo-row td {
+  padding: 0.5rem 1rem !important;
+  background: #ffedd5 !important;
+}
+
+.motivo-texto {
+  font-size: 0.85rem;
+  color: #9a3412;
+}
+
+.tabs-container {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e8ecf0;
+  padding: 0.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 0.6rem 1.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #6b7a8f;
+  border-radius: 8px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: "Montserrat", sans-serif;
+}
+
+.tab-btn:hover {
+  background: #f5f5f5;
+}
+
+.tab-btn.active {
+  background: #2a5298;
+  color: white;
+  border-color: #2a5298;
+}
+
+.btn-icon.btn-success-icon {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.btn-icon.btn-success-icon:hover {
+  background: #059669;
+  color: white;
+}
+
+.btn-icon.btn-danger-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-icon.btn-danger-icon:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.pedidos-paginator {
+  border-top: 1px solid #e8ecf0;
+  padding: 0.5rem;
+}
+
+.acoes-cell {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.status-pendente {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.status-envio {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-badge.status-entregue {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-badge.status-devolucao {
+  background: #fde68a;
+  color: #b45309;
+}
+
+.status-badge.status-devolucao-autorizada {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.status-badge.status-devolucao-enviada {
+  background: #fbcfe8;
+  color: #be185d;
+}
+
+.status-badge.status-devolvido {
+  background: #d1d5db;
+  color: #4b5563;
+}
+
+.status-badge.status-cancelado {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-chat-icon {
+  position: relative;
+}
+
+.chat-badge-admin {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #dc2626;
+  color: white;
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 50%;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .pedidos-table th,
+  .pedidos-table td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .tabs-container {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pedidos-table th,
+  .pedidos-table td {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.7rem;
+  }
+}

@@ -1,0 +1,193 @@
+<div class="admin-layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          <i class="pi pi-star"></i> Avaliações dos Clientes
+        </h1>
+        <p class="page-description">Gerencie todas as avaliações feitas pelos clientes</p>
+      </div>
+    </div>
+
+    <div class="filtros-container">
+      <div class="filtro-header">
+        <h3><i class="pi pi-filter"></i> Filtrar Avaliações</h3>
+      </div>
+      <div class="filtros-grid">
+        <div class="filtro-item">
+          <label>Livro</label>
+          <input type="text" [(ngModel)]="filtroLivro" placeholder="Buscar por livro" class="auth-input">
+        </div>
+        <div class="filtro-item">
+          <label>Cliente</label>
+          <input type="text" [(ngModel)]="filtroCliente" placeholder="Buscar por cliente" class="auth-input">
+        </div>
+        <div class="filtro-item">
+          <label>Nota</label>
+          <select [(ngModel)]="filtroNota" class="auth-input">
+            <option value="">Todas</option>
+            <option value="1">1 ★</option>
+            <option value="2">2 ★</option>
+            <option value="3">3 ★</option>
+            <option value="4">4 ★</option>
+            <option value="5">5 ★</option>
+          </select>
+        </div>
+        <div class="filtro-item full-width">
+          <div class="filtro-actions">
+            <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
+              <i class="pi" [class.pi-filter]="!filtrando" [class.pi-spin]="filtrando" [class.pi-spinner]="filtrando"></i>
+              {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+            </button>
+            <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
+              <i class="pi pi-times"></i> Limpar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-header">
+        <div class="table-title">
+          <i class="pi pi-list"></i>
+          <span>Todas as Avaliações</span>
+        </div>
+        <div class="table-count">
+          <span class="count-badge">{{ filteredAvaliacoes.length }}</span>
+          <span>avaliações</span>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div *ngIf="loading || filtrando" class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>{{ loading ? 'Carregando avaliações...' : 'Filtrando avaliações...' }}</p>
+        </div>
+
+        <div *ngIf="!loading && !filtrando && filteredAvaliacoes.length === 0" class="empty-state">
+          <i class="pi pi-star"></i>
+          <h3>Nenhuma avaliação encontrada</h3>
+          <p>Os clientes ainda não fizeram avaliações</p>
+        </div>
+
+        <div *ngIf="!loading && !filtrando && filteredAvaliacoes.length > 0">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Livro</th>
+                <th>Cliente</th>
+                <th class="text-center">Nota</th>
+                <th>Comentário</th>
+                <th class="text-center">Data</th>
+                <th class="text-center" style="width: 60px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let avaliacao of avaliacoesPaginadas">
+                <td>
+                  <span class="livro-cell">
+                    {{ avaliacao.livro?.titulo || 'Livro' }}
+                  </span>
+                </td>
+                <td>{{ avaliacao.cliente?.nome || 'Cliente' }}</td>
+                <td class="text-center">
+                  <div class="estrelas-tabela">
+                    <i *ngFor="let i of [1,2,3,4,5]"
+                       class="pi pi-star-fill"
+                       [class.estrela-cheia]="i <= avaliacao.nota"
+                       [class.estrela-vazia]="i > avaliacao.nota">
+                    </i>
+                  </div>
+                </td>
+                <td>
+                  <span class="details-cell" [title]="avaliacao.comentario">
+                    {{ avaliacao.comentario ? (avaliacao.comentario.length > 50 ? avaliacao.comentario.substring(0, 50) + '...' : avaliacao.comentario) : '-' }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="date-cell">
+                    <i class="pi pi-calendar"></i>
+                    {{ formatarData(avaliacao.dataAvaliacao) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button class="btn-icon btn-excluir" (click)="abrirExcluir(avaliacao)" title="Excluir avaliação">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p-paginator
+            [first]="first"
+            [rows]="rows"
+            [totalRecords]="totalRecords"
+            (onPageChange)="onPageChange($event)"
+            [rowsPerPageOptions]="[10, 20, 50]"
+            styleClass="log-paginator">
+          </p-paginator>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="custom-modal" [class.active]="displayExcluirModal">
+  <div class="custom-modal-overlay" (click)="displayExcluirModal = false"></div>
+  <div class="custom-modal-content" style="width: 500px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="displayExcluirModal = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon" style="background: #fee2e2;">
+        <i class="pi pi-exclamation-triangle" style="color: #dc2626;"></i>
+      </div>
+      <h2>Excluir Avaliação</h2>
+      <p>Tem certeza que deseja excluir esta avaliação?</p>
+    </div>
+    <div class="custom-modal-body" *ngIf="avaliacaoSelecionada">
+      <div class="detalhes-item">
+        <strong>Livro:</strong>
+        <span>{{ avaliacaoSelecionada.livro?.titulo || 'Livro' }}</span>
+      </div>
+      <div class="detalhes-item">
+        <strong>Cliente:</strong>
+        <span>{{ avaliacaoSelecionada.cliente?.nome || 'Cliente' }}</span>
+      </div>
+      <div class="detalhes-item">
+        <strong>Nota:</strong>
+        <div class="estrelas-tabela">
+          <i *ngFor="let i of [1,2,3,4,5]"
+             class="pi pi-star-fill"
+             [class.estrela-cheia]="i <= avaliacaoSelecionada.nota"
+             [class.estrela-vazia]="i > avaliacaoSelecionada.nota">
+          </i>
+        </div>
+      </div>
+      <div class="detalhes-item" *ngIf="avaliacaoSelecionada.comentario">
+        <strong>Comentário:</strong>
+        <div class="detalhes-details">"{{ avaliacaoSelecionada.comentario }}"</div>
+      </div>
+      <div class="detalhes-item">
+        <strong>Data:</strong>
+        <span>{{ formatarData(avaliacaoSelecionada.dataAvaliacao) }}</span>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="displayExcluirModal = false">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-danger" (click)="confirmarExcluir()">
+          <i class="pi pi-trash"></i> Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>

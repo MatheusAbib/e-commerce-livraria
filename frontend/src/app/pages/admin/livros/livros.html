@@ -1,0 +1,186 @@
+<div class="admin-layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          <i class="pi pi-book"></i> Gestão de Livros
+        </h1>
+        <p class="page-description">
+          Gerencie todo o catálogo de livros da biblioteca. Cadastre novos títulos, edite informações e administre o estoque.
+        </p>
+      </div>
+    </div>
+
+    <div class="filtros-container">
+      <div class="filtro-header">
+        <h3><i class="pi pi-filter"></i> Filtrar Livros</h3>
+        <button class="btn-primary btn-novo" (click)="abrirFormulario()">
+          <i class="pi pi-plus"></i> Novo Livro
+        </button>
+      </div>
+<div class="filtros-grid">
+  <div class="filtro-item">
+    <label>Título</label>
+    <input type="text" [(ngModel)]="filtros.titulo" placeholder="Digite o título" class="auth-input">
+  </div>
+  <div class="filtro-item">
+    <label>Autor</label>
+    <input type="text" [(ngModel)]="filtros.autor" placeholder="Digite o autor" class="auth-input">
+  </div>
+  <div class="filtro-item">
+    <label>Editora</label>
+    <input type="text" [(ngModel)]="filtros.editora" placeholder="Digite a editora" class="auth-input">
+  </div>
+  <div class="filtro-item">
+    <label>ISBN</label>
+    <input type="text" [(ngModel)]="filtros.isbn" placeholder="Digite o ISBN" class="auth-input">
+  </div>
+  <div class="filtro-item">
+    <label>Categoria</label>
+    <select [(ngModel)]="filtros.categoria" class="auth-input">
+      <option value="">Todas</option>
+      <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+    </select>
+  </div>
+  <div class="filtro-item">
+    <label>Preço Mínimo</label>
+    <input type="number" [(ngModel)]="filtros.precoMin" placeholder="R$ mínimo" class="auth-input" step="0.01">
+  </div>
+  <div class="filtro-item">
+    <label>Preço Máximo</label>
+    <input type="number" [(ngModel)]="filtros.precoMax" placeholder="R$ máximo" class="auth-input" step="0.01">
+  </div>
+  <div class="filtro-item">
+    <label>Estoque Mínimo</label>
+    <input type="number" [(ngModel)]="filtros.estoqueMin" placeholder="Mínimo" class="auth-input">
+  </div>
+  <div class="filtro-item">
+    <label>Estoque Máximo</label>
+    <input type="number" [(ngModel)]="filtros.estoqueMax" placeholder="Máximo" class="auth-input">
+  </div>
+  <div class="filtro-item">
+    <label>Status</label>
+    <select [(ngModel)]="filtros.status" class="auth-input">
+      <option value="">Todos</option>
+      <option value="ativo">Ativo</option>
+      <option value="inativo">Inativo</option>
+    </select>
+  </div>
+  <div class="filtro-item full-width">
+<div class="filtro-actions">
+  <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-search]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+  </button>
+  <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-times]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Limpando...' : 'Limpar' }}
+  </button>
+</div>
+  </div>
+</div>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-header">
+        <div class="table-title">
+          <i class="pi pi-book"></i>
+          <span>Catálogo de Livros</span>
+        </div>
+        <div class="table-count">
+          <span class="count-badge">{{ livros.length }}</span>
+          <span>livros</span>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div *ngIf="loading" class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Carregando livros...</p>
+        </div>
+
+        <div *ngIf="!loading && livros.length === 0" class="empty-state">
+          <i class="pi pi-inbox"></i>
+          <h3>Nenhum livro encontrado</h3>
+          <p>Não há livros cadastrados para os filtros selecionados</p>
+        </div>
+
+        <div *ngIf="!loading && livros.length > 0">
+          <table class="livros-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Edição</th>
+                <th>Editora</th>
+                <th>Categoria</th>
+                <th>Preço Venda</th>
+                <th>Estoque</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let livro of livrosPaginados" [class.estoque-zerado]="livro.estoque === 0">
+                <td>{{ livro.id }}</td>
+                <td><strong>{{ livro.titulo }}</strong></td>
+                <td>{{ livro.autor || '-' }}</td>
+                <td>{{ livro.edicao || '-' }}</td>
+                <td>{{ livro.editora || '-' }}</td>
+                <td>{{ livro.categoria || '-' }}</td>
+                <td>R$ {{ (livro.precoVenda || 0) | number:'1.2-2' }}</td>
+                <td>{{ livro.estoque || 0 }}</td>
+                <td>
+                  <span class="status-badge" [class.status-ativo]="livro.ativo" [class.status-inativo]="!livro.ativo">
+                    <i [class]="livro.ativo ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+                    {{ livro.ativo ? 'Ativo' : 'Inativo' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="btn-icon" (click)="abrirStatus(livro, !livro.ativo)" [title]="livro.ativo ? 'Inativar' : 'Ativar'">
+                      <i class="pi" [class.pi-check-circle]="livro.ativo" [class.pi-times-circle]="!livro.ativo" [style.color]="livro.ativo ? '#22c55e' : '#94a3b8'"></i>
+                    </button>
+                    <button class="btn-icon" (click)="abrirDetalhes(livro)" title="Visualizar">
+                      <i class="pi pi-eye"></i>
+                    </button>
+                    <button class="btn-icon" (click)="abrirFormulario(livro)" title="Editar">
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button class="btn-icon btn-danger-icon" (click)="abrirExcluir(livro)" title="Excluir">
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p-paginator
+            [first]="first"
+            [rows]="rows"
+            [totalRecords]="totalRecords"
+            (onPageChange)="onPageChange($event)"
+            [rowsPerPageOptions]="[10, 20, 50]"
+            styleClass="livros-paginator">
+          </p-paginator>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<app-admin-modals [categorias]="categorias"></app-admin-modals>
+
+<p-toast position="top-right"></p-toast>

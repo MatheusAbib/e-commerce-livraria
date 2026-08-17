@@ -1,0 +1,340 @@
+<div class="admin-layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <h1 class="page-title">
+            <i class="pi pi-chart-line"></i> Dashboard de Vendas
+          </h1>
+          <p class="page-description">Acompanhe as métricas de vendas, lucros e desempenho da sua livraria</p>
+        </div>
+        <div class="export-buttons">
+          <button class="btn-danger" (click)="exportarPDF()">
+            <i class="pi pi-file-pdf"></i> PDF
+          </button>
+          <button class="btn-primary" (click)="exportarExcel()">
+            <i class="pi pi-file-excel"></i> Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="pi pi-book"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Total de Livros</span>
+          <span class="stat-value">{{ stats.totalLivros }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="pi pi-shopping-cart"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Vendas Totais</span>
+          <span class="stat-value">{{ stats.totalVendas }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon lucro-icon">
+          <i class="pi pi-money-bill"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Lucro Total</span>
+          <span class="stat-value lucro-value">R$ {{ stats.lucroTotal | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon pedidos-icon">
+          <i class="pi pi-box"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Total de Pedidos</span>
+          <span class="stat-value">{{ stats.totalPedidos }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid avaliacoes-stats">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fef3c7;">
+          <i class="pi pi-star" style="color: #f59e0b;"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Nota Média Geral</span>
+          <span class="stat-value">{{ statsAvaliacoes.mediaGeral | number:'1.1-1' }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #dbeafe;">
+          <i class="pi pi-star-fill" style="color: #3b82f6;"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Total de Avaliações</span>
+          <span class="stat-value">{{ statsAvaliacoes.totalAvaliacoes }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #d1fae5;">
+          <i class="pi pi-arrow-up" style="color: #059669;"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Maior Nota</span>
+          <span class="stat-value">{{ statsAvaliacoes.notaMaxima }} ★</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fee2e2;">
+          <i class="pi pi-arrow-down" style="color: #dc2626;"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Menor Nota</span>
+          <span class="stat-value">{{ statsAvaliacoes.notaMinima }} ★</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="filtros-container">
+      <div class="filtro-header">
+        <h3><i class="pi pi-filter"></i> Filtrar Dados</h3>
+      </div>
+      <div class="filtros-grid">
+        <div class="filtro-item">
+          <label>Período</label>
+          <select [(ngModel)]="filtros.periodo" class="auth-input">
+            <option value="day">Hoje</option>
+            <option value="week">Esta Semana</option>
+            <option value="month" selected>Este Mês</option>
+            <option value="year">Este Ano</option>
+          </select>
+        </div>
+        <div class="filtro-item">
+          <label>Status</label>
+          <select [(ngModel)]="filtros.status" class="auth-input">
+            <option value="todos">Todos</option>
+            <option value="ENTREGUE">Entregues</option>
+            <option value="EM_PROCESSAMENTO">Em Processamento</option>
+            <option value="EM_TRANSITO">Em Trânsito</option>
+            <option value="CANCELADO">Cancelados</option>
+            <option value="DEVOLUCAO">Devolução</option>
+          </select>
+        </div>
+        <div class="filtro-item">
+          <label>Livro</label>
+          <select [(ngModel)]="filtros.livro" class="auth-input">
+            <option value="">Todos</option>
+            <option *ngFor="let livro of livrosOptions" [value]="livro">{{ livro }}</option>
+          </select>
+        </div>
+        <div class="filtro-item">
+          <label>Tipo de Gráfico</label>
+          <select [(ngModel)]="filtros.chartType" class="auth-input">
+            <option value="line">Linha</option>
+            <option value="bar">Barras</option>
+          </select>
+        </div>
+        <div class="filtro-item">
+          <label>Data Inicial</label>
+          <input type="date" [(ngModel)]="filtros.dataInicio" class="auth-input">
+        </div>
+        <div class="filtro-item">
+          <label>Data Final</label>
+          <input type="date" [(ngModel)]="filtros.dataFim" class="auth-input">
+        </div>
+        <div class="filtro-item full-width">
+          <div class="filtro-actions">
+            <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
+              <i class="pi"
+                [class.pi-search]="!filtrando"
+                [class.pi-spin]="filtrando"
+                [class.pi-spinner]="filtrando">
+              </i>
+              {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+            </button>
+            <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
+              <i class="pi"
+                [class.pi-times]="!filtrando"
+                [class.pi-spin]="filtrando"
+                [class.pi-spinner]="filtrando">
+              </i>
+              {{ filtrando ? 'Limpando...' : 'Limpar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-wrapper">
+      <div class="chart-container">
+        <div *ngIf="loading" class="chart-state chart-loading">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Carregando dados...</p>
+        </div>
+        <div *ngIf="!loading && !temDados" class="chart-state chart-empty">
+          <i class="pi pi-chart-line"></i>
+          <h3>Nenhum dado disponível</h3>
+          <p>Não há vendas para o período selecionado</p>
+          <button class="btn-limpar" (click)="limparFiltros()">
+            <i class="pi pi-times"></i> Limpar Filtros
+          </button>
+        </div>
+        <canvas *ngIf="!loading && temDados" #salesChart></canvas>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="dashboard-card">
+        <div class="dashboard-card-header">
+          <h3><i class="pi pi-money-bill"></i> Lucro por Livro</h3>
+          <div class="filter-group">
+            <select [(ngModel)]="filtroLivro" (ngModelChange)="onFiltroLivroChange()" class="auth-input">
+              <option value="todos">Todos os livros</option>
+              <option *ngFor="let livro of livrosOptions" [value]="livro">{{ livro }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="dashboard-card-body">
+          <div *ngIf="loading" class="loading-state">
+            <i class="pi pi-spin pi-spinner"></i>
+            <p>Carregando...</p>
+          </div>
+          <div *ngIf="!loading && lucrosFiltrados.length === 0" class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <p>Nenhum dado encontrado</p>
+          </div>
+          <div *ngIf="!loading && lucrosFiltrados.length > 0" class="lucros-grid">
+            <div *ngFor="let item of lucrosPaginados" class="lucro-item">
+              <span class="lucro-nome">{{ item[0] }}</span>
+              <div class="lucro-bar">
+                <div class="lucro-bar-fill" [style.width.%]="getLucroPercent(item[2])"></div>
+              </div>
+              <span class="lucro-valor">R$ {{ item[2] | number:'1.2-2' }}</span>
+              <span class="lucro-qtd">{{ item[1] }} vendidos</span>
+            </div>
+          </div>
+          <div *ngIf="!loading && lucrosFiltrados.length > 0" class="paginator-container">
+            <p-paginator
+              [first]="firstLucro"
+              [rows]="rowsLucro"
+              [totalRecords]="totalRecordsLucro"
+              (onPageChange)="onPageChangeLucro($event)"
+              [rowsPerPageOptions]="[5, 10, 20, 50]"
+              styleClass="lucro-paginator">
+            </p-paginator>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <div class="dashboard-card-header">
+          <h3><i class="pi pi-tags"></i> Distribuição por Status</h3>
+        </div>
+        <div class="dashboard-card-body">
+          <div *ngIf="loading" class="loading-state">
+            <i class="pi pi-spin pi-spinner"></i>
+            <p>Carregando...</p>
+          </div>
+          <div *ngIf="!loading && statusDistribuicao.length === 0" class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <p>Nenhum dado encontrado</p>
+          </div>
+          <div *ngIf="!loading && statusDistribuicao.length > 0">
+            <div *ngFor="let item of statusDistribuicao" class="status-item">
+              <span class="status-label">{{ getStatusLabel(item.status) }}</span>
+              <div class="status-bar">
+                <div class="status-bar-fill" [style.width.%]="item.percentual"></div>
+              </div>
+              <span class="status-count">{{ item.total }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid avaliacoes-grid">
+      <div class="dashboard-card">
+        <div class="dashboard-card-header">
+          <h3><i class="pi pi-trophy" style="color: #f59e0b;"></i> Ranking por Avaliação</h3>
+        </div>
+        <div class="dashboard-card-body">
+          <div *ngIf="loadingAvaliacoes" class="loading-state">
+            <i class="pi pi-spin pi-spinner"></i>
+            <p>Carregando...</p>
+          </div>
+          <div *ngIf="!loadingAvaliacoes && rankingLivros.length === 0" class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <p>Nenhuma avaliação encontrada</p>
+          </div>
+          <div *ngIf="!loadingAvaliacoes && rankingLivros.length > 0">
+            <div *ngFor="let item of rankingLivrosPaginados; let i = index" class="ranking-item">
+              <div class="ranking-posicao">
+                <span class="posicao-numero" [class.top1]="i === 0" [class.top2]="i === 1" [class.top3]="i === 2">
+                  #{{ i + 1 }}
+                </span>
+              </div>
+              <div class="ranking-info">
+                <span class="ranking-livro">{{ item.titulo }}</span>
+                <div class="ranking-estrelas">
+                  <i *ngFor="let star of [1,2,3,4,5]"
+                     class="pi pi-star-fill"
+[class.estrela-cheia]="star <= arredondarNota(item.media)"
+[class.estrela-vazia]="star > arredondarNota(item.media)">
+                  </i>
+                  <span class="ranking-nota">{{ item.media | number:'1.1-1' }}</span>
+                </div>
+              </div>
+              <span class="ranking-total">{{ item.total }} avaliações</span>
+            </div>
+            <p-paginator
+              [first]="firstRanking"
+              [rows]="rowsRanking"
+              [totalRecords]="totalRecordsRanking"
+              (onPageChange)="onPageChangeRanking($event)"
+              [rowsPerPageOptions]="[5, 10, 20]"
+              styleClass="ranking-paginator">
+            </p-paginator>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <div class="dashboard-card-header">
+          <h3><i class="pi pi-chart-pie" style="color: #8b5cf6;"></i> Distribuição das Notas</h3>
+        </div>
+        <div class="dashboard-card-body">
+          <div *ngIf="loadingAvaliacoes" class="loading-state">
+            <i class="pi pi-spin pi-spinner"></i>
+            <p>Carregando...</p>
+          </div>
+          <div *ngIf="!loadingAvaliacoes && distribuicaoNotas.length === 0" class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <p>Nenhuma avaliação encontrada</p>
+          </div>
+          <div *ngIf="!loadingAvaliacoes && distribuicaoNotas.length > 0">
+            <div *ngFor="let item of distribuicaoNotas" class="status-item">
+              <span class="status-label">
+                <span *ngFor="let star of [1,2,3,4,5]"
+                      class="estrela-pequena"
+                      [class.estrela-cheia]="star <= item.nota">
+                  ★
+                </span>
+              </span>
+              <div class="status-bar">
+                <div class="status-bar-fill"
+                     [style.width.%]="item.percentual"
+                     [style.background]="getCorNota(item.nota)">
+                </div>
+              </div>
+              <span class="status-count">{{ item.total }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

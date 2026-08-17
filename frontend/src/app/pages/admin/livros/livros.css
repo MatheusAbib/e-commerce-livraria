@@ -1,0 +1,129 @@
+.livros-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.livros-table thead {
+  background: #f8fafc;
+}
+
+.livros-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4a5a6a;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.livros-table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #1a2332;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.livros-table tr:last-child td {
+  border-bottom: none;
+}
+
+.livros-table tr:hover td {
+  background: #f8fafc;
+}
+
+.livros-table tr.estoque-zerado td {
+  background-color: #fef3c7 !important;
+}
+
+.livros-table tr.estoque-zerado:hover td {
+  background-color: #fde68a !important;
+}
+
+.livros-table .imagem-thumb {
+  width: 40px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #e8ecf0;
+}
+
+.livros-table .livro-nome {
+  font-weight: 500;
+}
+
+.pi-check-circle {
+  font-size: 1.1rem;
+}
+
+.pi-times-circle {
+  font-size: 1.1rem;
+}
+
+.btn-icon:hover .pi-check-circle {
+  color: #16a34a;
+}
+
+.btn-icon:hover .pi-times-circle {
+  color: #dc2626;
+}
+
+.w-full {
+  width: 100% !important;
+}
+
+.price-wrapper {
+  position: relative;
+}
+
+.price-symbol {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 600;
+  color: #4a5a6a;
+  z-index: 1;
+}
+
+.price-input {
+  padding-left: 32px !important;
+}
+
+.modal-actions.single {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.modal-actions.single button {
+  flex: 1;
+  justify-content: center;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .livros-table th,
+  .livros-table td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .livros-table th,
+  .livros-table td {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.7rem;
+  }
+}

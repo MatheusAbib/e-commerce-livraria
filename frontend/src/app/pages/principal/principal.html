@@ -1,0 +1,375 @@
+<div class="banner-main">
+  <div class="banner-container">
+    <div class="banner-content">
+      <div class="banner-text">
+        <h1>Bem-vindo à <span>Livraria Online</span></h1>
+        <p>Titulos para todos os gostos. Compre com seguranca e receba em casa.</p>
+        <div class="banner-features">
+          <span><i class="pi pi-truck"></i> Entrega rapida</span>
+          <span><i class="pi pi-lock"></i> Pagamento seguro</span>
+          <span><i class="pi pi-undo"></i> Devolucao facil</span>
+        </div>
+      </div>
+      <div class="banner-image">
+        <img src="/images/livro.png" alt="Livro" class="book-float-icon">
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container-fluid" id="produtos">
+  <div class="section-header">
+    <h2>Escolha Seu Livro</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div class="produtos-wrapper">
+    <div class="produtos-layout">
+      <aside class="filtros-lateral">
+        <div class="filtros-container">
+          <div class="filtro-header">
+            <h3><i class="pi pi-filter"></i> Filtrar Livros</h3>
+          </div>
+          <div class="filtros-grid">
+            <div class="filtro-item">
+              <label>Título</label>
+              <input pInputText [(ngModel)]="filtros.titulo" placeholder="Digite o título" (keyup.enter)="aplicarFiltros()">
+            </div>
+            <div class="filtro-item">
+              <label>Autor</label>
+              <input pInputText [(ngModel)]="filtros.autor" placeholder="Digite o autor" (keyup.enter)="aplicarFiltros()">
+            </div>
+            <div class="filtro-item">
+              <label>Editora</label>
+              <input pInputText [(ngModel)]="filtros.editora" placeholder="Digite a editora" (keyup.enter)="aplicarFiltros()">
+            </div>
+            <div class="filtro-item">
+              <label>Categoria</label>
+              <p-dropdown [options]="categorias" [(ngModel)]="filtros.categoria" placeholder="Todas" [showClear]="true"></p-dropdown>
+            </div>
+            <div class="filtro-item">
+              <label>Preço Máximo</label>
+              <input pInputText type="number" [(ngModel)]="filtros.precoMax" placeholder="R$" (keyup.enter)="aplicarFiltros()">
+            </div>
+            <div class="filtro-item full-width">
+<div class="filtro-actions">
+  <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-filter]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+  </button>
+  <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-times]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Limpando...' : 'Limpar' }}
+  </button>
+</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="produtos-lista">
+        <div *ngIf="loading" class="text-center">
+          <p-progressSpinner></p-progressSpinner>
+          <p class="loader-texto">Buscando livros...</p>
+        </div>
+
+        <div *ngIf="!loading && filteredLivros.length === 0" class="empty-state">
+          <i class="pi pi-search" style="font-size: 3rem; color: #cbd5e1;"></i>
+          <h3>Nenhum livro encontrado</h3>
+          <p>Tente ajustar os filtros ou buscar por outro termo.</p>
+          <button class="p-button-outlined" (click)="limparFiltros()">
+            <i class="pi pi-times"></i> Limpar Filtros
+          </button>
+        </div>
+
+        <div *ngIf="!loading && filteredLivros.length > 0" class="produtos-grid">
+          <p-card *ngFor="let livro of livrosPaginados">
+            <ng-template pTemplate="header">
+              <div class="card-header-wrapper">
+                <img [src]="livro.imagemUrl ? 'http://localhost:8081/uploads/' + livro.imagemUrl : 'https://via.placeholder.com/200x280?text=Sem+Imagem'" [alt]="livro.titulo">
+                <span *ngIf="livro.estoque <= 0 || !livro.ativo" class="badge-esgotado-card">
+                  {{ !livro.ativo ? 'INATIVO' : 'ESGOTADO' }}
+                </span>
+                <button
+                  class="btn-favorito"
+                  (click)="favoritar(livro.id)"
+                  [class.favoritado]="favoritosIds.includes(livro.id)"
+                  title="Favoritar">
+                  <i class="pi" [class.pi-heart]="!favoritosIds.includes(livro.id)" [class.pi-heart-fill]="favoritosIds.includes(livro.id)"></i>
+                </button>
+              </div>
+            </ng-template>
+            <h3>{{livro.titulo}}</h3>
+            <p>{{livro.autor || 'Autor desconhecido'}}</p>
+            <div class="produto-preco">R$ {{livro.precoVenda || 0 | number:'1.2-2'}}</div>
+<div class="produto-avaliacao" *ngIf="livro.avaliacao && livro.avaliacao.totalAvaliacoes > 0">
+  <div class="estrelas-card">
+    <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-readonly">
+
+      <i *ngIf="getTipoEstrelaPrincipal(livro.avaliacao.media, star) === 'cheia'"
+         class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.9rem;"></i>
+
+      <i *ngIf="getTipoEstrelaPrincipal(livro.avaliacao.media, star) === 'vazia'"
+         class="pi pi-star" style="color: #d1d5db; font-size: 0.9rem;"></i>
+
+      <span *ngIf="getTipoEstrelaPrincipal(livro.avaliacao.media, star) === 'meia'"
+            class="estrela-meia-wrapper" style="width: 0.9rem; height: 0.9rem;">
+        <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.9rem; clip-path: inset(0 50% 0 0);"></i>
+        <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 0.9rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
+      </span>
+
+    </span>
+  </div>
+  <span class="avaliacao-nota-card">{{ formatarNota(livro.avaliacao.media) }}</span>
+  <span class="avaliacao-total-card">({{ livro.avaliacao.totalAvaliacoes }})</span>
+</div>
+            <div class="produto-sem-avaliacao" *ngIf="!livro.avaliacao || livro.avaliacao.totalAvaliacoes === 0">
+              <span class="sem-avaliacao-texto">Sem avaliações</span>
+            </div>
+            <div class="produto-botoes full-width">
+              <button class="btn-secondary" (click)="verDetalhes(livro)">
+                <i class="pi pi-eye"></i> Ver
+              </button>
+              <span *ngIf="!isLoggedIn" pTooltip="Faça login para comprar" tooltipPosition="top" [showDelay]="0">
+                <button class="btn-primary" disabled>
+                  <i class="pi pi-cart-plus"></i> Comprar
+                </button>
+              </span>
+              <span *ngIf="isLoggedIn">
+                <button class="btn-primary" (click)="adicionarAoCarrinho(livro.id)" [disabled]="livro.estoque <= 0 || !livro.ativo">
+                  <i class="pi pi-cart-plus"></i> Comprar
+                </button>
+              </span>
+            </div>
+          </p-card>
+        </div>
+
+        <p-paginator
+          *ngIf="!loading && filteredLivros.length > 0"
+          [first]="first"
+          [rows]="rows"
+          [totalRecords]="totalRecords"
+          (onPageChange)="onPageChange($event)"
+          [rowsPerPageOptions]="[12, 24, 48]">
+        </p-paginator>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-dialog
+  header="Detalhes do Livro"
+  [(visible)]="displayDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '95%', maxWidth: '900px' }"
+  styleClass="livro-dialog">
+
+  <div *ngIf="selectedLivro" class="detalhes-container">
+    <div class="detalhes-grid">
+      <div class="detalhes-imagem-wrapper">
+        <div class="detalhes-imagem">
+          <img [src]="selectedLivro.imagemUrl ? 'http://localhost:8081/uploads/' + selectedLivro.imagemUrl : 'https://via.placeholder.com/300x400?text=Sem+Imagem'" [alt]="selectedLivro.titulo" class="zoom-image">
+          <div class="zoom-lens"></div>
+        </div>
+        <div class="imagem-badges">
+          <span *ngIf="selectedLivro.ativo && selectedLivro.estoque > 0" class="badge-estoque">Em estoque</span>
+          <span *ngIf="selectedLivro.estoque <= 0 && selectedLivro.ativo" class="badge-esgotado">Esgotado</span>
+          <span *ngIf="!selectedLivro.ativo" class="badge-inativo">Inativo</span>
+        </div>
+      </div>
+
+      <div class="detalhes-info">
+        <div class="detalhes-header">
+          <h2 class="detalhes-titulo">{{selectedLivro.titulo}}</h2>
+          <button
+            class="btn-favorito-modal"
+            (click)="favoritarDoModal()"
+            [class.favoritado]="selectedIsFavorited"
+            title="Favoritar">
+            <i class="pi" [class.pi-heart]="!selectedIsFavorited" [class.pi-heart-fill]="selectedIsFavorited"></i>
+          </button>
+        </div>
+        <p class="detalhes-autor"><i class="pi pi-user"></i> {{selectedLivro.autor || 'Autor desconhecido'}}</p>
+
+        <div class="detalhes-metas">
+          <div class="meta-item">
+            <span class="meta-label">Editora</span>
+            <span class="meta-value">{{selectedLivro.editora || '-'}}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">ISBN</span>
+            <span class="meta-value">{{selectedLivro.isbn || '-'}}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Páginas</span>
+            <span class="meta-value">{{selectedLivro.paginas || '-'}}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Categoria</span>
+            <span class="meta-value">{{selectedLivro.categoria || '-'}}</span>
+          </div>
+        </div>
+
+        <div class="detalhes-preco">
+          <span class="preco-atual">R$ {{selectedLivro.precoVenda || 0 | number:'1.2-2'}}</span>
+          <span class="preco-parcelado">ou até 3x de R$ {{(selectedLivro.precoVenda / 3) || 0 | number:'1.2-2'}} sem juros</span>
+        </div>
+
+<div class="modal-avaliacao" *ngIf="selectedLivro?.avaliacao && selectedLivro.avaliacao.totalAvaliacoes > 0">
+  <div class="avaliacao-resumo-modal">
+    <div class="estrelas-modal">
+      <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-readonly">
+
+        <i *ngIf="getTipoEstrelaPrincipal(selectedLivro.avaliacao.media, star) === 'cheia'"
+           class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.2rem;"></i>
+
+        <i *ngIf="getTipoEstrelaPrincipal(selectedLivro.avaliacao.media, star) === 'vazia'"
+           class="pi pi-star" style="color: #d1d5db; font-size: 1.2rem;"></i>
+
+        <span *ngIf="getTipoEstrelaPrincipal(selectedLivro.avaliacao.media, star) === 'meia'"
+              class="estrela-meia-wrapper" style="width: 1.2rem; height: 1.2rem;">
+          <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.2rem; clip-path: inset(0 50% 0 0);"></i>
+          <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 1.2rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
+        </span>
+
+      </span>
+    </div>
+    <span class="avaliacao-nota-modal">{{ formatarNota(selectedLivro.avaliacao.media) }}</span>
+    <span class="avaliacao-total-modal">({{ selectedLivro.avaliacao.totalAvaliacoes }} avaliações)</span>
+  </div>
+</div>
+        <div class="modal-sem-avaliacao" *ngIf="!selectedLivro?.avaliacao || selectedLivro.avaliacao.totalAvaliacoes === 0">
+          <span style="color: #94a3b8; font-size: 0.9rem;">Este livro ainda não possui avaliações</span>
+        </div>
+
+        <div *ngIf="selectedLivro.ativo">
+          <div class="detalhes-quantidade" *ngIf="selectedLivro.estoque > 0">
+            <label>Quantidade</label>
+            <div class="quantidade-controles">
+              <button class="qtd-btn" (click)="diminuirQuantidade()" [disabled]="quantidadeSelecionada <= 1">-</button>
+              <span class="qtd-valor">{{quantidadeSelecionada}}</span>
+              <button class="qtd-btn" (click)="aumentarQuantidade()" [disabled]="quantidadeSelecionada >= selectedLivro.estoque">+</button>
+              <span class="qtd-estoque">({{selectedLivro.estoque}} disponíveis)</span>
+            </div>
+          </div>
+
+          <button
+            *ngIf="selectedLivro.estoque > 0 && !isLoggedIn"
+            class="btn-primary"
+            disabled
+            pTooltip="Faça login para comprar"
+            tooltipPosition="top">
+            <i class="pi pi-cart-plus"></i> Adicionar ao Carrinho
+          </button>
+
+          <button
+            *ngIf="selectedLivro.estoque > 0 && isLoggedIn"
+            class="btn-primary"
+            (click)="adicionarAoCarrinhoComQuantidade(selectedLivro.id)">
+            <i class="pi pi-cart-plus"></i> Adicionar ao Carrinho
+          </button>
+
+          <p *ngIf="selectedLivro.estoque <= 0" class="text-danger">Produto esgotado</p>
+        </div>
+
+        <div *ngIf="!selectedLivro.ativo" class="produto-inativo-msg">
+          <i class="pi pi-exclamation-triangle"></i>
+          <span>Este produto está inativo no momento.</span>
+          <p *ngIf="selectedLivro.motivoInativacao" class="motivo-inativacao-texto">
+            <strong>Motivo:</strong> {{selectedLivro.motivoInativacao}}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="selectedLivro?.sinopse" class="sinopse-texto">
+      <h4>Sinopse</h4>
+      <p>{{selectedLivro.sinopse}}</p>
+    </div>
+
+    <div *ngIf="!selectedLivro.ativo && selectedLivro.motivoInativacao" class="motivo-inativacao">
+      <h4>Motivo da Inativação</h4>
+      <p><i class="pi pi-info-circle"></i> {{selectedLivro.motivoInativacao}}</p>
+    </div>
+<!-- Seção de Comentários -->
+<div class="comentarios-section">
+  <div class="comentarios-header" (click)="toggleComentarios()">
+    <div class="comentarios-header-left">
+      <i class="pi pi-comment"></i>
+      <span>Comentários dos Clientes</span>
+      <span class="comentarios-count" *ngIf="selectedLivro?.avaliacao?.totalAvaliacoes > 0">
+        ({{ selectedLivro.avaliacao.totalAvaliacoes }})
+      </span>
+    </div>
+    <div class="comentarios-header-right">
+      <span class="comentarios-toggle-text">
+        {{ comentariosExpandido ? 'Ocultar' : 'Ver todos' }}
+      </span>
+      <i class="pi" [class.pi-chevron-down]="!comentariosExpandido" [class.pi-chevron-up]="comentariosExpandido"></i>
+    </div>
+  </div>
+
+  <div *ngIf="comentariosExpandido" class="comentarios-body">
+    <div *ngIf="comentariosLoading" class="comentarios-loading">
+      <i class="pi pi-spin pi-spinner"></i>
+      <span>Carregando comentários...</span>
+    </div>
+
+    <div *ngIf="!comentariosLoading && comentariosPaginados.length === 0" class="comentarios-empty">
+      <i class="pi pi-inbox"></i>
+      <span>Nenhum comentário ainda. Seja o primeiro a avaliar!</span>
+    </div>
+
+    <div *ngIf="!comentariosLoading && comentariosPaginados.length > 0" class="comentarios-list">
+      <div *ngFor="let comentario of comentariosPaginados" class="comentario-item">
+        <div class="comentario-avatar">
+          <span>{{ getIniciais(comentario.cliente?.nome) }}</span>
+        </div>
+        <div class="comentario-content">
+          <div class="comentario-header">
+            <span class="comentario-nome">{{ comentario.cliente?.nome || 'Cliente' }}</span>
+            <span class="comentario-data">{{ formatarDataComentario(comentario.dataAvaliacao) }}</span>
+          </div>
+          <div class="comentario-estrelas">
+            <i *ngFor="let star of [1,2,3,4,5]"
+               class="pi pi-star-fill"
+               [class.estrela-cheia]="star <= comentario.nota"
+               [class.estrela-vazia]="star > comentario.nota">
+            </i>
+          </div>
+          <p class="comentario-texto" *ngIf="comentario.comentario">
+            "{{ comentario.comentario }}"
+          </p>
+          <p class="comentario-sem-texto" *ngIf="!comentario.comentario">
+            <em>Sem comentário escrito</em>
+          </p>
+        </div>
+      </div>
+
+      <p-paginator
+        *ngIf="comentariosTotal > comentariosRows"
+        [first]="comentariosFirst"
+        [rows]="comentariosRows"
+        [totalRecords]="comentariosTotal"
+        (onPageChange)="onComentariosPageChange($event)"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        styleClass="comentarios-paginator">
+      </p-paginator>
+    </div>
+  </div>
+</div>
+
+
+  </div>
+</p-dialog>
+
+<p-toast position="top-right"></p-toast>

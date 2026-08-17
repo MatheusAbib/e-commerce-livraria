@@ -1,0 +1,459 @@
+<div class="carrinho-container">
+  <div class="carrinho-header">
+    <div class="carrinho-header-left">
+      <button class="btn-voltar" (click)="voltar()">
+        <i class="pi pi-arrow-left"></i>
+      </button>
+      <div class="header-title">
+        <h1>Meu Carrinho</h1>
+        <span class="header-subtitle" *ngIf="carrinho.length > 0">{{ carrinho.length }} itens</span>
+      </div>
+    </div>
+    <div class="carrinho-header-right">
+      <span class="header-total" *ngIf="carrinho.length > 0">Total: R$ {{ total | number:'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <div class="carrinho-timer" *ngIf="timerDisplay">
+    <i class="pi pi-clock"></i>
+    <span>Tempo restante: {{ timerDisplay }}</span>
+  </div>
+
+  <div class="carrinho-content" [class.vazio]="carrinho.length === 0" [class.com-items]="carrinho.length > 0">
+    <div class="carrinho-itens">
+      <div *ngIf="carrinho.length === 0" class="carrinho-vazio">
+        <i class="pi pi-shopping-cart"></i>
+        <h3>Seu carrinho está vazio</h3>
+        <p>Adicione produtos para continuar com sua compra</p>
+        <button class="btn-primary btn-sm" (click)="voltar()">
+          <i class="pi pi-shopping-bag"></i> Voltar às Compras
+        </button>
+      </div>
+
+      <div *ngIf="carrinho.length > 0" class="carrinho-tabela">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Preço</th>
+              <th>Quantidade</th>
+              <th>Subtotal</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+<tbody>
+  <tr *ngFor="let item of carrinho" [class.item-problema]="!item.produto.ativo || item.produto.estoque <= 0 || item.quantidade > item.produto.estoque">
+    <td>
+      <div class="produto-info">
+        <img [src]="item.produto?.imagemUrl ? 'http://localhost:8081/uploads/' + item.produto.imagemUrl : 'https://via.placeholder.com/60x80?text=Sem+Imagem'">
+        <div>
+          <span>{{ item.produto.titulo }}</span>
+          <span *ngIf="!item.produto.ativo" class="status-inativo">INATIVO</span>
+          <span *ngIf="item.produto.ativo && item.produto.estoque <= 0" class="status-esgotado">ESGOTADO</span>
+          <span *ngIf="item.produto.ativo && item.produto.estoque > 0 && item.quantidade > item.produto.estoque" class="status-insuficiente">ESTOQUE INSUFICIENTE</span>
+        </div>
+      </div>
+    </td>
+    <td>R$ {{ item.produto.precoVenda | number:'1.2-2' }}</td>
+    <td>
+      <div class="quantidade-controles">
+        <button (click)="alterarQuantidade(item.id, -1)" [disabled]="item.quantidade <= 1 || !item.produto.ativo || item.produto.estoque <= 0">
+          <i class="pi pi-minus"></i>
+        </button>
+        <span>{{ item.quantidade }}</span>
+        <button (click)="alterarQuantidade(item.id, 1)" [disabled]="item.quantidade >= 3 || !item.produto.ativo || item.produto.estoque <= 0 || item.quantidade >= item.produto.estoque">
+          <i class="pi pi-plus"></i>
+        </button>
+      </div>
+    </td>
+    <td>R$ {{ (item.produto.precoVenda * item.quantidade) | number:'1.2-2' }}</td>
+    <td>
+      <button class="btn-remover" (click)="removerItem(item.id)">
+        <i class="pi pi-trash"></i>
+      </button>
+    </td>
+  </tr>
+</tbody>
+        </table>
+
+        <div class="carrinho-actions">
+          <button class="btn-danger" (click)="limparCarrinho()">
+            <i class="pi pi-trash"></i> Limpar Carrinho
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="carrinho-resumo" *ngIf="carrinho.length > 0">
+      <h3><i class="pi pi-receipt"></i> Resumo do Pedido</h3>
+
+      <div class="resumo-linha">
+        <span>Subtotal</span>
+        <span>R$ {{ subtotal | number:'1.2-2' }}</span>
+      </div>
+
+<div class="resumo-frete-detalhes">
+  <div class="resumo-linha frete-base">
+    <span>Frete Base</span>
+    <span>R$ {{ freteBase | number:'1.2-2' }}</span>
+  </div>
+  <div class="resumo-linha frete-adicional" *ngIf="enderecoSelecionado && adicionalEstado > 0">
+    <span>Adicional {{ enderecoSelecionado.estado }}</span>
+    <span>R$ {{ adicionalEstado | number:'1.2-2' }}</span>
+  </div>
+  <div class="resumo-linha frete-total">
+    <span><strong>Frete Total</strong></span>
+    <span><strong>R$ {{ frete | number:'1.2-2' }}</strong></span>
+  </div>
+</div>
+<div *ngIf="cuponsAplicados.length > 0" class="desconto-container">
+  <div *ngFor="let cupom of cuponsAplicados" class="resumo-linha desconto">
+    <span>Desconto ({{ cupom.porcentagem }}%)</span>
+    <span class="text-success">-R$ {{ (subtotal * cupom.porcentagem / 100) | number:'1.2-2' }}</span>
+  </div>
+  <div class="resumo-linha desconto-total">
+    <span><strong>Desconto Total</strong></span>
+    <span class="text-success"><strong>-R$ {{ desconto | number:'1.2-2' }}</strong></span>
+  </div>
+</div>
+
+      <div class="resumo-linha total">
+        <span><strong>Total</strong></span>
+        <span><strong>R$ {{ total | number:'1.2-2' }}</strong></span>
+      </div>
+
+      <div class="cupom-container">
+        <div class="cupom-input">
+          <input [(ngModel)]="codigoCupom" placeholder="Digite seu cupom" class="auth-input">
+          <button class="p-button-outlined " (click)="aplicarCupom()">
+            <i class="pi pi-ticket"></i> Aplicar
+          </button>
+        </div>
+        <div class="cupons-aplicados" *ngIf="cuponsAplicados.length > 0">
+          <span *ngFor="let cupom of cuponsAplicados; let i = index" class="cupom-tag">
+            {{ cupom.codigo }}
+            <i class="pi pi-times" (click)="removerCupom(i)"></i>
+          </span>
+        </div>
+      </div>
+
+      <div class="endereco-container">
+        <div class="endereco-header">
+          <label><i class="pi pi-map-marker"></i> Endereço de Entrega</label>
+          <button class="btn-link" (click)="abrirModalEndereco()">
+            <i class="pi pi-plus"></i> Novo
+          </button>
+        </div>
+        <select [(ngModel)]="enderecoSelecionado" (change)="onEnderecoChange()" class="auth-input">
+          <option [ngValue]="null">-- Selecione um endereço --</option>
+          <option *ngFor="let endereco of enderecos" [ngValue]="endereco">
+            {{ endereco.nomeEndereco }} - {{ endereco.cidade }}, {{ endereco.estado }}
+          </option>
+        </select>
+      </div>
+
+<div class="cartoes-container">
+  <div class="cartoes-header">
+    <label><i class="pi pi-credit-card"></i> Forma de Pagamento</label>
+    <div class="cartoes-actions">
+      <button class="btn-link" (click)="abrirModalCartao()">
+        <i class="pi pi-plus"></i> Novo
+      </button>
+      <button class="btn-link" (click)="toggleSelectCartao()" *ngIf="cartoes.length > 0">
+        <i class="pi pi-credit-card"></i> Adicionar Existente
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="mostrarSelectCartao && cartoesNaoSelecionados.length > 0" class="cartao-select-container">
+    <select [(ngModel)]="cartaoParaAdicionar" class="auth-input">
+      <option [ngValue]="null">-- Selecione um cartão --</option>
+      <option *ngFor="let c of cartoesNaoSelecionados" [ngValue]="c">
+        {{ c.bandeira }} **** **** **** {{ c.numero.slice(-4) }}
+      </option>
+    </select>
+    <button class="btn-primary btn-sm" (click)="adicionarCartaoSelecionado()" [disabled]="!cartaoParaAdicionar">
+      <i class="pi pi-plus"></i>
+    </button>
+    <button class="btn-secondary btn-sm" (click)="toggleSelectCartao()">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <div *ngIf="cartoesSelecionados.length === 0" class="empty-cartoes">
+    <span>Nenhum cartão adicionado</span>
+  </div>
+
+  <div *ngFor="let cartao of cartoesSelecionados; let i = index" class="cartao-item">
+    <div class="cartao-info">
+      <i class="pi pi-credit-card"></i>
+      <span>{{ cartao.bandeira }} **** {{ cartao.ultimosDigitos }}</span>
+    </div>
+    <input
+      (input)="formatarValorCartao($event, cartao)"
+      placeholder="R$ 0,00"
+      class="auth-input cartao-valor"
+      [class.cartao-valor-invalido]="cartao.valorErro"
+    >
+    <button class="btn-remover" (click)="removerCartaoPagamento(i)">
+      <i class="pi pi-trash"></i>
+    </button>
+  </div>
+
+  <div *ngIf="valoresInvalidos" class="erro-pagamento">
+    <i class="pi pi-exclamation-triangle"></i>
+    <span>O valor total dos cartões não corresponde ao total do pedido (R$ {{ total | number:'1.2-2' }})</span>
+  </div>
+</div>
+      <button class="btn-finalizar" (click)="abrirConfirmacao()">
+        <i class="pi pi-credit-card"></i> Finalizar Compra
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayConfirmarLimpeza">
+  <div class="custom-modal-overlay" (click)="cancelarLimpeza()"></div>
+  <div class="custom-modal-content" style="width: 400px; max-width: 95%;">
+    <div class="custom-modal-header">
+      <div class="auth-icon" style="background: #fee2e2;">
+        <i class="pi pi-exclamation-triangle" style="color: #dc2626;"></i>
+      </div>
+      <h2>Confirmar Limpeza</h2>
+    </div>
+    <div class="custom-modal-body" style="text-align: center;">
+      <p style="color: #4a5a6a; font-size: 0.95rem;">
+        Tem certeza que deseja limpar o carrinho?
+        <br><br>
+        <span style="color: #94a3b8; font-size: 0.85rem;">Esta ação não pode ser desfeita.</span>
+      </p>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cancelarLimpeza()">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-danger" (click)="confirmarLimpeza()">
+          <i class="pi pi-trash"></i> Sim, limpar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayConfirmacao">
+  <div class="custom-modal-overlay" (click)="fecharConfirmacao()"></div>
+  <div class="custom-modal-content" style="width: 600px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="fecharConfirmacao()">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon" style="background: #dcfce7;">
+        <i class="pi pi-check-circle" style="color: #22c55e;"></i>
+      </div>
+      <h2>Confirmar Pedido</h2>
+      <p>Confira os dados antes de finalizar</p>
+    </div>
+    <div class="custom-modal-body">
+      <div class="confirmacao-itens">
+        <div *ngFor="let item of carrinho" class="confirmacao-item">
+          <span>{{ item.produto.titulo }} x {{ item.quantidade }}</span>
+          <span>R$ {{ (item.produto.precoVenda * item.quantidade) | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+<div class="confirmacao-resumo">
+  <div><span>Subtotal:</span> <span>R$ {{ subtotal | number:'1.2-2' }}</span></div>
+  <div><span>Frete:</span> <span>R$ {{ frete | number:'1.2-2' }}</span></div>
+  <div *ngIf="cuponsAplicados.length > 0" class="confirmacao-cupons">
+    <div *ngFor="let cupom of cuponsAplicados" class="confirmacao-cupom">
+      <span>Cupom {{ cupom.porcentagem }}% ({{ cupom.codigo }})</span>
+      <span>-R$ {{ (subtotal * cupom.porcentagem / 100) | number:'1.2-2' }}</span>
+    </div>
+    <div class="confirmacao-desconto-total">
+      <span><strong>Desconto Total</strong></span>
+      <span><strong>-R$ {{ desconto | number:'1.2-2' }}</strong></span>
+    </div>
+  </div>
+  <div *ngIf="desconto > 0 && cuponsAplicados.length === 0" class="confirmacao-cupom">
+    <span>Desconto</span>
+    <span>-R$ {{ desconto | number:'1.2-2' }}</span>
+  </div>
+  <div class="confirmacao-total"><span><strong>Total:</strong></span> <span><strong>R$ {{ total | number:'1.2-2' }}</strong></span></div>
+</div>
+
+      <div class="confirmacao-dados">
+        <div> <strong>Endereço:</strong> {{ enderecoSelecionado?.rua }}, {{ enderecoSelecionado?.numero }} - {{ enderecoSelecionado?.bairro }}, {{ enderecoSelecionado?.cidade }}/{{ enderecoSelecionado?.estado }}</div>
+        <div> <strong>Pagamento:</strong>
+          <span *ngFor="let cartao of cartoesSelecionados; let i = index">
+            {{ cartao.bandeira }} **** {{ cartao.ultimosDigitos }} (R$ {{ cartao.valor | number:'1.2-2' }})<span *ngIf="i < cartoesSelecionados.length - 1">, </span>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="fecharConfirmacao()">
+          <i class="pi pi-times"></i> Voltar
+        </button>
+        <button class="btn-primary" (click)="finalizarCompra()">
+          <i class="pi pi-check"></i> Confirmar Pedido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayEnderecoModal">
+  <div class="custom-modal-overlay" (click)="displayEnderecoModal = false"></div>
+  <div class="custom-modal-content" style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="displayEnderecoModal = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-map-marker"></i></div>
+      <h2>Adicionar Endereço</h2>
+    </div>
+    <div class="custom-modal-body">
+      <div class="field">
+        <label>Nome do Endereço</label>
+        <input [(ngModel)]="novoEndereco.nomeEndereco" placeholder="Ex: Casa, Trabalho" class="auth-input">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Rua *</label>
+          <input [(ngModel)]="novoEndereco.rua" placeholder="Rua" class="auth-input">
+        </div>
+        <div class="form-group">
+          <label>Número *</label>
+          <input [(ngModel)]="novoEndereco.numero" placeholder="Número" class="auth-input">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bairro *</label>
+          <input [(ngModel)]="novoEndereco.bairro" placeholder="Bairro" class="auth-input">
+        </div>
+        <div class="form-group">
+          <label>Cidade *</label>
+          <input [(ngModel)]="novoEndereco.cidade" placeholder="Cidade" class="auth-input">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Estado *</label>
+          <select [(ngModel)]="novoEndereco.estado" class="auth-input">
+            <option value="">Selecione</option>
+            <option value="AC">Acre</option>
+            <option value="AL">Alagoas</option>
+            <option value="AP">Amapá</option>
+            <option value="AM">Amazonas</option>
+            <option value="BA">Bahia</option>
+            <option value="CE">Ceará</option>
+            <option value="DF">Distrito Federal</option>
+            <option value="ES">Espírito Santo</option>
+            <option value="GO">Goiás</option>
+            <option value="MA">Maranhão</option>
+            <option value="MT">Mato Grosso</option>
+            <option value="MS">Mato Grosso do Sul</option>
+            <option value="MG">Minas Gerais</option>
+            <option value="PA">Pará</option>
+            <option value="PB">Paraíba</option>
+            <option value="PR">Paraná</option>
+            <option value="PE">Pernambuco</option>
+            <option value="PI">Piauí</option>
+            <option value="RJ">Rio de Janeiro</option>
+            <option value="RN">Rio Grande do Norte</option>
+            <option value="RS">Rio Grande do Sul</option>
+            <option value="RO">Rondônia</option>
+            <option value="RR">Roraima</option>
+            <option value="SC">Santa Catarina</option>
+            <option value="SP">São Paulo</option>
+            <option value="SE">Sergipe</option>
+            <option value="TO">Tocantins</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>CEP *</label>
+          <input [(ngModel)]="novoEndereco.cep" placeholder="00000-000" class="auth-input" maxlength="9">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Complemento</label>
+          <input [(ngModel)]="novoEndereco.complemento" placeholder="Complemento" class="auth-input">
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="fecharModalEndereco()">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-primary" (click)="salvarNovoEndereco()">
+          <i class="pi pi-save"></i> Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="custom-modal" [class.active]="displayCartaoModal">
+  <div class="custom-modal-overlay" (click)="displayCartaoModal = false"></div>
+  <div class="custom-modal-content" style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="displayCartaoModal = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-credit-card"></i></div>
+      <h2>Adicionar Cartão</h2>
+    </div>
+    <div class="custom-modal-body">
+      <div class="field">
+        <label>Número do Cartão *</label>
+        <input [(ngModel)]="novoCartao.numero" (input)="formatarNumeroCartao($event)" placeholder="0000 0000 0000 0000" class="auth-input" maxlength="19">
+      </div>
+      <div class="field">
+        <label>Nome no Cartão *</label>
+        <input [(ngModel)]="novoCartao.nomeTitular" placeholder="Como está no cartão" class="auth-input">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bandeira *</label>
+          <select [(ngModel)]="novoCartao.bandeira" class="auth-input">
+            <option value="">Selecione</option>
+            <option value="Visa">Visa</option>
+            <option value="Mastercard">Mastercard</option>
+            <option value="Elo">Elo</option>
+            <option value="American Express">American Express</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>CVV *</label>
+          <input [(ngModel)]="novoCartao.cvv" placeholder="000" class="auth-input" maxlength="4">
+        </div>
+        <div class="form-group">
+          <label>Validade *</label>
+          <input [(ngModel)]="novoCartao.dataValidade" type="month" class="auth-input">
+        </div>
+      </div>
+      <div class="field" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+        <input type="checkbox" [(ngModel)]="novoCartao.preferencial" id="preferencial-cartao">
+        <label for="preferencial-cartao" style="margin: 0; cursor: pointer;">Cartão Preferencial</label>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="fecharModalCartao()">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-primary" (click)="salvarNovoCartao()">
+          <i class="pi pi-save"></i> Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>

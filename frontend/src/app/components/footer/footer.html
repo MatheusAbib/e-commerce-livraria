@@ -1,0 +1,50 @@
+<footer>
+  <div class="footer-container">
+<div class="footer-col">
+  <h3>Sobre Nós</h3>
+  <p>Livraria online com mais de 500 titulos em diversas categorias. Aqui voce encontra livros de romance, terror, ficcao cientifica, fantasia e muito mais.</p>
+  <p style="margin-top: 0.5rem; font-size: 0.8rem;">
+    <i class="pi pi-check-circle" style="color: #22c55e; margin-right: 0.3rem;"></i> Entrega rapida e segura<br>
+    <i class="pi pi-check-circle" style="color: #22c55e; margin-right: 0.3rem;"></i> Pagamento parcelado em ate 3x sem juros<br>
+    <i class="pi pi-check-circle" style="color: #22c55e; margin-right: 0.3rem;"></i> Devolucao facil em ate 7 dias<br>
+    <i class="pi pi-check-circle" style="color: #22c55e; margin-right: 0.3rem;"></i> Atendimento ao cliente 24h por chat
+  </p>
+  <div class="social-links" style="margin-top: 0.75rem;">
+    <a href="#"><i class="pi pi-twitter"></i></a>
+    <a href="#"><i class="pi pi-instagram"></i></a>
+    <a href="#"><i class="pi pi-linkedin"></i></a>
+  </div>
+</div>
+    <div class="footer-col">
+      <h3>Categorias</h3>
+      <ul>
+        <li>Ficção</li>
+        <li>Não-Ficção</li>
+        <li>Técnicos</li>
+        <li>Infantil</li>
+        <li>Didáticos</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h3>Contato</h3>
+      <ul class="contact-list">
+        <li><i class="pi pi-map-marker"></i> Rua das Rosas, 123 - São Paulo, SP</li>
+        <li><i class="pi pi-phone"></i> (11) 1234-5678</li>
+        <li><i class="pi pi-envelope"></i> contato@livrosonline.com</li>
+      </ul>
+    </div>
+  </div>
+<div class="footer-bottom">
+  <p>&copy; {{anoAtual}} Livros Online. Todos os direitos reservados.</p>
+  <div class="footer-bottom-links">
+    <a routerLink="/principal">Início</a>
+    <ng-container *ngIf="isLoggedIn; else guestFooter">
+      <a routerLink="/pedidos">Meus Pedidos</a>
+      <a routerLink="/transacoes">Minhas Transações</a>
+    </ng-container>
+    <ng-template #guestFooter>
+      <span class="guest-footer-msg">Faça login ou cadastre-se e tenha acesso a todas as funcionalidades</span>
+    </ng-template>
+  </div>
+</div>
+</footer>

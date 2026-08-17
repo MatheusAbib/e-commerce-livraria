@@ -1,0 +1,96 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { PaginatorModule } from 'primeng/paginator';
+import { AdminSidebarComponent } from '../../../components/admin-sidebar/admin-sidebar';
+import { AdminService } from '../../../services/admin.service';
+
+@Component({
+  selector: 'app-ranking-admin',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    PaginatorModule,
+    AdminSidebarComponent
+  ],
+  templateUrl: './ranking.html',
+  styleUrls: ['./ranking.css', '../admin-common.css']
+})
+export class RankingAdminComponent implements OnInit {
+  ranking: any[] = [];
+  rankingFiltrado: any[] = [];
+  rankingPaginado: any[] = [];
+  loading: boolean = true;
+  busca: string = '';
+  timeoutBusca: any = null;
+
+  first: number = 0;
+  rows: number = 10;
+  totalRecords: number = 0;
+
+  constructor(private adminService: AdminService) {}
+
+  ngOnInit(): void {
+    this.carregarRanking();
+  }
+
+  async carregarRanking(): Promise<void> {
+    this.loading = true;
+    try {
+      const data = await this.adminService.getRanking().toPromise();
+      this.ranking = data || [];
+      this.rankingFiltrado = [...this.ranking];
+      this.totalRecords = this.rankingFiltrado.length;
+      this.atualizarPaginacao();
+    } catch (error) {
+      console.error('Erro ao carregar ranking:', error);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  onBuscaChange(): void {
+    clearTimeout(this.timeoutBusca);
+    this.loading = true;
+
+    this.timeoutBusca = setTimeout(() => {
+      const termo = this.busca.toLowerCase().trim();
+      if (!termo) {
+        this.rankingFiltrado = [...this.ranking];
+      } else {
+        this.rankingFiltrado = this.ranking.filter(cliente =>
+          cliente.nome?.toLowerCase().includes(termo)
+        );
+      }
+      this.totalRecords = this.rankingFiltrado.length;
+      this.first = 0;
+      this.atualizarPaginacao();
+      this.loading = false;
+    }, 1500);
+  }
+
+  atualizarPaginacao(): void {
+    this.rankingPaginado = this.rankingFiltrado.slice(this.first, this.first + this.rows);
+  }
+
+  onPageChange(event: any): void {
+    this.first = event.first;
+    this.rows = event.rows;
+    this.atualizarPaginacao();
+  }
+
+  getPositionClass(posicao: number): string {
+    if (posicao === 0) return 'position-1';
+    if (posicao === 1) return 'position-2';
+    if (posicao === 2) return 'position-3';
+    return '';
+  }
+
+  getMedalIcon(posicao: number): string {
+    if (posicao === 0) return 'pi pi-crown';
+    if (posicao === 1) return 'pi pi-medal';
+    if (posicao === 2) return 'pi pi-medal';
+    return '';
+  }
+}

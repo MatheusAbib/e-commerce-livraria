@@ -1,0 +1,467 @@
+<div class="custom-modal" [class.active]="visible">
+  <div class="custom-modal-overlay" (click)="fechar()"></div>
+  <div class="custom-modal-content">
+    <button class="custom-modal-close" (click)="fechar()">
+      <i class="pi pi-times"></i>
+    </button>
+
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-user"></i></div>
+      <h2>Meu Perfil</h2>
+      <p>Gerencie suas informações pessoais</p>
+    </div>
+
+    <div class="custom-modal-body" *ngIf="!loading">
+<div *ngIf="usuario" class="perfil-info-grid">
+  <div class="perfil-info-item">
+    <span class="perfil-info-label">Nome completo</span>
+    <span class="perfil-info-value">{{usuario?.nome || 'Carregando...'}}</span>
+  </div>
+  <div class="perfil-info-item">
+    <span class="perfil-info-label">E-mail</span>
+    <span class="perfil-info-value">{{usuario?.email || 'Carregando...'}}</span>
+  </div>
+  <div class="perfil-info-item">
+    <span class="perfil-info-label">CPF</span>
+    <span class="perfil-info-value">{{usuario?.cpf || 'Não informado'}}</span>
+  </div>
+  <div class="perfil-info-item">
+    <span class="perfil-info-label">Data de Nascimento</span>
+    <span class="perfil-info-value">{{usuario?.nascimento || 'Não informado'}}</span>
+  </div>
+<div class="perfil-info-item">
+  <span class="perfil-info-label">Gênero</span>
+  <span class="perfil-info-value">{{getGeneroLabel(usuario?.genero) || 'Não informado'}}</span>
+</div>
+<div class="perfil-info-item">
+  <span class="perfil-info-label">Telefone</span>
+  <span class="perfil-info-value">
+    <span *ngIf="usuario?.telefone; else semTelefone">
+      {{usuario?.telefone}}
+      <span class="perfil-info-tipo">({{getTipoTelefoneLabel(usuario?.tipotelefone) || 'Não informado'}})</span>
+    </span>
+    <ng-template #semTelefone>Não informado</ng-template>
+  </span>
+</div>
+</div>
+
+      <div class="perfil-actions">
+        <button class="btn-primary" (click)="editarDados()">
+          <i class="pi pi-pencil"></i> Editar Dados
+        </button>
+        <button class="p-button-outlined btn-sm" (click)="alterarSenha()">
+          <i class="pi pi-key"></i> Alterar Senha
+        </button>
+      </div>
+
+      <hr>
+
+      <div class="perfil-section">
+        <div class="perfil-section-header">
+          <h4><i class="pi pi-map-marker"></i> Endereços</h4>
+          <button class="p-button-outlined btn-sm" (click)="adicionarEndereco()">
+            <i class="pi pi-plus"></i> Adicionar
+          </button>
+        </div>
+
+        <div *ngIf="perfilEnderecos.length === 0" class="empty-state">
+          <i class="pi pi-map-marker" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+          <p>Nenhum endereço cadastrado</p>
+          <span>Clique em "Adicionar" para criar um novo endereço</span>
+        </div>
+
+        <div *ngFor="let endereco of perfilEnderecos" class="perfil-card">
+          <div class="perfil-card-header">
+            <div>
+              <i [class]="getEnderecoIcon(endereco.tipo)"></i>
+              <strong>{{endereco.nomeEndereco || getEnderecoLabel(endereco.tipo)}}</strong>
+              <span class="perfil-badge" *ngIf="endereco.tipo === 'COBRANCA'">Cobrança</span>
+            </div>
+            <div class="perfil-card-actions">
+              <button class="perfil-btn-icon" (click)="editarEndereco(endereco)" title="Editar">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button class="perfil-btn-icon perfil-btn-danger" (click)="confirmarExclusao('endereco', endereco.id)" title="Excluir">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="perfil-card-body">
+            <p>{{endereco.rua}}, {{endereco.numero}} - {{endereco.bairro}}</p>
+            <p>{{endereco.cidade}}/{{endereco.estado}} - CEP: {{endereco.cep}}</p>
+            <p class="perfil-card-complemento" *ngIf="endereco.complemento">Complemento: {{endereco.complemento}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="perfil-section">
+        <div class="perfil-section-header">
+          <h4><i class="pi pi-credit-card"></i> Cartões</h4>
+          <button class="p-button-outlined btn-sm" (click)="adicionarCartao()">
+            <i class="pi pi-plus"></i> Adicionar
+          </button>
+        </div>
+
+        <div *ngIf="perfilCartoes.length === 0" class="empty-state">
+          <i class="pi pi-credit-card" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+          <p>Nenhum cartão cadastrado</p>
+          <span>Clique em "Adicionar" para criar um novo cartão</span>
+        </div>
+
+        <div *ngFor="let cartao of perfilCartoes" class="perfil-card">
+          <div class="perfil-card-header">
+            <div>
+              <i class="pi pi-credit-card"></i>
+              <strong>{{cartao.bandeira}}</strong>
+              <span class="perfil-card-number">**** **** **** {{cartao.numero ? cartao.numero.slice(-4) : '****'}}</span>
+              <span class="perfil-badge perfil-badge-primary" *ngIf="cartao.preferencial">Preferencial</span>
+            </div>
+            <div class="perfil-card-actions">
+              <button class="perfil-btn-icon" (click)="editarCartao(cartao)" title="Editar">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button class="perfil-btn-icon perfil-btn-danger" (click)="confirmarExclusao('cartao', cartao.id)" title="Excluir">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="perfil-card-body">
+            <p>Validade: {{cartao.dataValidade}}</p>
+            <p>Titular: {{cartao.nomeTitular}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="custom-modal-footer">
+      <div class="modal-actions single">
+        <button class="btn-secondary" (click)="fechar()">
+          <i class="pi pi-times"></i> Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayEditarEndereco">
+  <div class="custom-modal-overlay" (click)="displayEditarEndereco = false"></div>
+  <div class="custom-modal-content" style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="displayEditarEndereco = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-map-marker"></i></div>
+      <h2>{{ enderecoEditando?.id ? 'Editar Endereço' : 'Adicionar Endereço' }}</h2>
+    </div>
+    <div class="custom-modal-body">
+      <div class="field">
+        <label>Nome do Endereço</label>
+        <input [(ngModel)]="enderecoEditando.nomeEndereco" placeholder="Ex: Casa, Trabalho" class="auth-input">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Rua *</label>
+          <input [(ngModel)]="enderecoEditando.rua" placeholder="Digite o nome da rua" class="auth-input">
+        </div>
+        <div class="form-group">
+          <label>Número *</label>
+          <input [(ngModel)]="enderecoEditando.numero" placeholder="Número" class="auth-input">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bairro *</label>
+          <input [(ngModel)]="enderecoEditando.bairro" placeholder="Digite o bairro" class="auth-input">
+        </div>
+        <div class="form-group">
+          <label>Cidade *</label>
+          <input [(ngModel)]="enderecoEditando.cidade" placeholder="Digite a cidade" class="auth-input">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Estado *</label>
+          <select [(ngModel)]="enderecoEditando.estado" class="auth-input">
+            <option value="">Selecione</option>
+            <option value="AC">Acre</option>
+            <option value="AL">Alagoas</option>
+            <option value="AP">Amapá</option>
+            <option value="AM">Amazonas</option>
+            <option value="BA">Bahia</option>
+            <option value="CE">Ceará</option>
+            <option value="DF">Distrito Federal</option>
+            <option value="ES">Espírito Santo</option>
+            <option value="GO">Goiás</option>
+            <option value="MA">Maranhão</option>
+            <option value="MT">Mato Grosso</option>
+            <option value="MS">Mato Grosso do Sul</option>
+            <option value="MG">Minas Gerais</option>
+            <option value="PA">Pará</option>
+            <option value="PB">Paraíba</option>
+            <option value="PR">Paraná</option>
+            <option value="PE">Pernambuco</option>
+            <option value="PI">Piauí</option>
+            <option value="RJ">Rio de Janeiro</option>
+            <option value="RN">Rio Grande do Norte</option>
+            <option value="RS">Rio Grande do Sul</option>
+            <option value="RO">Rondônia</option>
+            <option value="RR">Roraima</option>
+            <option value="SC">Santa Catarina</option>
+            <option value="SP">São Paulo</option>
+            <option value="SE">Sergipe</option>
+            <option value="TO">Tocantins</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>CEP *</label>
+          <input [(ngModel)]="enderecoEditando.cep" (input)="formatarCEP($event)" placeholder="00000-000" class="auth-input" maxlength="9">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo de Residência</label>
+          <input [(ngModel)]="enderecoEditando.tipoResidencia" placeholder="Casa/Apartamento" class="auth-input">
+        </div>
+        <div class="form-group">
+          <label>Complemento</label>
+          <input [(ngModel)]="enderecoEditando.complemento" placeholder="Complemento (opcional)" class="auth-input">
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="displayEditarEndereco = false">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-primary" (click)="salvarEndereco()">
+          <i class="pi pi-save"></i> Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayEditarCartao">
+  <div class="custom-modal-overlay" (click)="displayEditarCartao = false"></div>
+  <div class="custom-modal-content" style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="displayEditarCartao = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-credit-card"></i></div>
+      <h2>{{ cartaoEditando?.id ? 'Editar Cartão' : 'Adicionar Cartão' }}</h2>
+    </div>
+    <div class="custom-modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Número do Cartão *</label>
+          <input [(ngModel)]="cartaoEditando.numero" (input)="formatarNumeroCartao($event)" placeholder="0000 0000 0000 0000" class="auth-input" maxlength="19">
+        </div>
+        <div class="form-group">
+          <label>Nome no Cartão *</label>
+          <input [(ngModel)]="cartaoEditando.nomeTitular" placeholder="Como está no cartão" class="auth-input">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bandeira *</label>
+          <select [(ngModel)]="cartaoEditando.bandeira" class="auth-input">
+            <option value="">Selecione</option>
+            <option value="Visa">Visa</option>
+            <option value="Mastercard">Mastercard</option>
+            <option value="Elo">Elo</option>
+            <option value="American Express">American Express</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>CVV *</label>
+          <input [(ngModel)]="cartaoEditando.cvv" (input)="formatarCVV($event)" placeholder="000" class="auth-input" maxlength="4">
+        </div>
+<div class="form-group">
+  <label>Validade *</label>
+  <input
+    [(ngModel)]="cartaoEditando.dataValidade"
+    type="month"
+    class="auth-input"
+    [value]="cartaoEditando.dataValidade">
+</div>
+      </div>
+
+      <div class="field" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+        <input type="checkbox" [(ngModel)]="cartaoEditando.preferencial" id="preferencial-check">
+        <label for="preferencial-check" style="margin: 0; cursor: pointer;">Cartão Preferencial</label>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="displayEditarCartao = false">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-primary" (click)="salvarCartao()">
+          <i class="pi pi-save"></i> Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayEditarPerfil">
+  <div class="custom-modal-overlay" (click)="displayEditarPerfil = false"></div>
+  <div class="custom-modal-content" style="width: 450px; max-width: 95%;">
+    <button class="custom-modal-close" (click)="displayEditarPerfil = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-user"></i></div>
+      <h2>Editar Dados</h2>
+    </div>
+    <div class="custom-modal-body" *ngIf="usuario">
+      <div class="field">
+        <label>Nome completo *</label>
+        <input [ngModel]="usuario.nome" (ngModelChange)="usuario.nome = $event" placeholder="Seu nome completo" class="auth-input">
+      </div>
+      <div class="field">
+        <label>E-mail *</label>
+        <input [ngModel]="usuario.email" (ngModelChange)="usuario.email = $event" type="email" placeholder="seu@email.com" class="auth-input">
+      </div>
+      <div class="field">
+        <label>CPF</label>
+        <input [ngModel]="usuario.cpf" (ngModelChange)="usuario.cpf = $event" (input)="formatarCPF($event)" placeholder="000.000.000-00" class="auth-input" maxlength="14">
+      </div>
+      <div class="field">
+        <label>Data de Nascimento</label>
+        <input [ngModel]="usuario.nascimento" (ngModelChange)="usuario.nascimento = $event" type="date" class="auth-input">
+      </div>
+      <div class="field">
+        <label>Gênero</label>
+        <select [ngModel]="usuario.genero" (ngModelChange)="usuario.genero = $event" class="auth-input">
+          <option value="">Selecione</option>
+          <option value="MASCULINO">Masculino</option>
+          <option value="FEMININO">Feminino</option>
+          <option value="PREFIRO_NAO_INFORMAR">Prefiro não informar</option>
+        </select>
+      </div>
+      <div class="field" *ngIf="usuario">
+        <label>Telefone</label>
+        <div class="telefone-group">
+          <select [(ngModel)]="usuario.tipotelefone" class="auth-input telefone-tipo" (ngModelChange)="onTipoTelefoneChange()">
+            <option value="">Tipo</option>
+            <option value="RESIDENCIAL">Residencial</option>
+            <option value="COMERCIAL">Comercial</option>
+            <option value="CELULAR">Celular</option>
+          </select>
+          <input
+            [ngModel]="usuario.telefone"
+            (ngModelChange)="usuario.telefone = $event"
+            (input)="formatarTelefone($event)"
+            [placeholder]="getTelefonePlaceholder()"
+            class="auth-input telefone-input"
+            maxlength="15">
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="displayEditarPerfil = false">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-primary" (click)="salvarDados()">
+          <i class="pi pi-save"></i> Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayAlterarSenha">
+  <div class="custom-modal-overlay" (click)="displayAlterarSenha = false"></div>
+  <div class="custom-modal-content" style="width: 420px; max-width: 95%;">
+    <button class="custom-modal-close" (click)="displayAlterarSenha = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-key"></i></div>
+      <h2>Alterar Senha</h2>
+    </div>
+    <div class="custom-modal-body">
+      <div class="field">
+        <label>Nova senha *</label>
+        <div class="password-wrapper">
+          <input
+            [(ngModel)]="novaSenha"
+            [type]="showNovaSenha ? 'text' : 'password'"
+            placeholder="Digite a nova senha"
+            class="auth-input"
+            id="nova-senha-input">
+          <i
+            class="pi password-toggle"
+            [class.pi-eye]="!showNovaSenha"
+            [class.pi-eye-slash]="showNovaSenha"
+            (click)="toggleNovaSenha()"></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirmar senha *</label>
+        <div class="password-wrapper">
+          <input
+            [(ngModel)]="confirmarSenha"
+            [type]="showConfirmarSenha ? 'text' : 'password'"
+            placeholder="Confirme a nova senha"
+            class="auth-input"
+            id="confirmar-senha-input">
+          <i
+            class="pi password-toggle"
+            [class.pi-eye]="!showConfirmarSenha"
+            [class.pi-eye-slash]="showConfirmarSenha"
+            (click)="toggleConfirmarSenha()"></i>
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="displayAlterarSenha = false">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-primary" (click)="salvarSenha()">
+          <i class="pi pi-save"></i> Alterar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayConfirmarExclusao">
+  <div class="custom-modal-overlay" (click)="cancelarExclusao()"></div>
+  <div class="custom-modal-content" style="width: 400px; max-width: 95%;">
+    <div class="custom-modal-header">
+      <div class="auth-icon" style="background: #fee2e2;">
+        <i class="pi pi-exclamation-triangle" style="color: #dc2626;"></i>
+      </div>
+      <h2>Confirmar Exclusão</h2>
+    </div>
+    <div class="custom-modal-body" style="text-align: center;">
+      <p style="color: #4a5a6a; font-size: 0.95rem;">
+        Tem certeza que deseja excluir este {{ itemParaExcluir?.tipo === 'endereco' ? 'endereço' : 'cartão' }}?
+        <br><br>
+        <span style="color: #94a3b8; font-size: 0.85rem;">Esta ação não pode ser desfeita.</span>
+      </p>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cancelarExclusao()">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-danger" (click)="executarExclusao()">
+          <i class="pi pi-trash"></i> Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>

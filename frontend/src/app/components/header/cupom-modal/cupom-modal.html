@@ -1,0 +1,80 @@
+<div class="custom-modal" [class.active]="visible">
+  <div class="custom-modal-overlay" (click)="fechar()"></div>
+  <div class="custom-modal-content" style="width: 500px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="fechar()">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-tag"></i></div>
+      <h2>Meus Cupons</h2>
+      <p>Gerencie seus cupons de desconto</p>
+    </div>
+
+    <div class="tabs-container">
+      <button class="tab-btn" [class.active]="abaAtiva === 'disponiveis'" (click)="abaAtiva = 'disponiveis'">
+        <i class="pi pi-check-circle"></i> Disponíveis
+        <span class="tab-badge" *ngIf="cuponsDisponiveis.length > 0">{{ cuponsDisponiveis.length }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="abaAtiva === 'usados'" (click)="abaAtiva = 'usados'">
+        <i class="pi pi-clock"></i> Usados
+        <span class="tab-badge" *ngIf="cuponsUsados.length > 0">{{ cuponsUsados.length }}</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="carregando" class="loading-state">
+        <i class="pi pi-spin pi-spinner"></i>
+        <p>Carregando cupons...</p>
+      </div>
+
+      <div *ngIf="!carregando && abaAtiva === 'disponiveis' && cuponsDisponiveis.length === 0" class="empty-state">
+        <i class="pi pi-inbox"></i>
+        <h3>Nenhum cupom disponível</h3>
+        <p>Você ainda não possui cupons de desconto</p>
+      </div>
+
+      <div *ngIf="!carregando && abaAtiva === 'usados' && cuponsUsados.length === 0" class="empty-state">
+        <i class="pi pi-check-circle"></i>
+        <h3>Nenhum cupom usado</h3>
+        <p>Você ainda não utilizou nenhum cupom</p>
+      </div>
+
+      <div *ngIf="!carregando && abaAtiva === 'disponiveis' && cuponsDisponiveis.length > 0">
+        <div *ngFor="let cupom of cuponsDisponiveis" class="cupom-card">
+          <div class="cupom-info">
+            <div class="cupom-codigo">{{ cupom.codigo }}</div>
+            <div class="cupom-detalhes">
+              <span class="cupom-desconto">{{ cupom.porcentagem }}% de desconto</span>
+              <span class="cupom-validade">Válido até: {{ cupom.dataExpiracao | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          <button class="btn-copiar" (click)="copiarCupom(cupom.codigo)">
+            <i class="pi pi-copy"></i> Copiar
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!carregando && abaAtiva === 'usados' && cuponsUsados.length > 0">
+        <div *ngFor="let cupom of cuponsUsados" class="cupom-card usado">
+          <div class="cupom-info">
+            <div class="cupom-codigo">{{ cupom.codigo }}</div>
+            <div class="cupom-detalhes">
+              <span class="cupom-desconto">{{ cupom.porcentagem }}% de desconto</span>
+              <span class="cupom-usado">Usado em: {{ cupom.dataUso || cupom.dataGeracao | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          <span class="status-usado">Já utilizado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="custom-modal-footer">
+      <div class="modal-actions single">
+        <button class="btn-secondary" (click)="fechar()">
+          <i class="pi pi-times"></i> Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<p-toast position="top-right"></p-toast>

@@ -1,0 +1,188 @@
+<div class="admin-layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          <i class="pi pi-box"></i> Gerenciamento de Pedidos
+        </h1>
+        <p class="page-description">
+          Gerencie todos os pedidos da livraria. Aprove solicitações, acompanhe entregas e administre devoluções.
+        </p>
+      </div>
+    </div>
+
+    <div class="tabs-container">
+      <button class="tab-btn" [class.active]="tabAtivo === 'todos'" (click)="trocarTab('todos')">Todos</button>
+      <button class="tab-btn" [class.active]="tabAtivo === 'processamento'" (click)="trocarTab('processamento')">Em Processamento</button>
+      <button class="tab-btn" [class.active]="tabAtivo === 'transito'" (click)="trocarTab('transito')">Em Trânsito</button>
+      <button class="tab-btn" [class.active]="tabAtivo === 'entregues'" (click)="trocarTab('entregues')">Entregues</button>
+      <button class="tab-btn" [class.active]="tabAtivo === 'devolucao'" (click)="trocarTab('devolucao')">Devolução Solicitada</button>
+      <button class="tab-btn" [class.active]="tabAtivo === 'autorizado'" (click)="trocarTab('autorizado')">Devolução Autorizada</button>
+      <button class="tab-btn" [class.active]="tabAtivo === 'enviado'" (click)="trocarTab('enviado')">Devolução Enviada</button>
+      <button class="tab-btn" [class.active]="tabAtivo === 'devolvidos'" (click)="trocarTab('devolvidos')">Devolvidos</button>
+      <button class="tab-btn" [class.active]="tabAtivo === 'cancelados'" (click)="trocarTab('cancelados')">Cancelados</button>
+    </div>
+
+    <div class="filtros-container">
+      <div class="filtro-header">
+        <h3><i class="pi pi-filter"></i> Filtrar Pedidos</h3>
+      </div>
+      <div class="filtros-grid">
+        <div class="filtro-item">
+          <label>Status</label>
+          <select [(ngModel)]="filtros.status" class="auth-input">
+            <option value="">Todos</option>
+            <option value="EM_PROCESSAMENTO">Em Processamento</option>
+            <option value="EM_TRANSITO">Em Trânsito</option>
+            <option value="ENTREGUE">Entregue</option>
+            <option value="CANCELADO">Cancelado</option>
+            <option value="DEVOLUCAO">Devolução Solicitada</option>
+            <option value="AUTORIZADO_DEVOLUCAO">Devolução Autorizada</option>
+            <option value="ENVIADO_DEVOLUCAO">Devolução Enviada</option>
+            <option value="DEVOLVIDO">Devolvido</option>
+          </select>
+        </div>
+        <div class="filtro-item">
+          <label>Cliente</label>
+          <input type="text" [(ngModel)]="filtros.cliente" placeholder="Nome do cliente" class="auth-input" (keyup.enter)="aplicarFiltros()">
+        </div>
+        <div class="filtro-item full-width">
+<div class="filtro-actions">
+  <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-search]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+  </button>
+  <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-times]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Limpando...' : 'Limpar' }}
+  </button>
+</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-header">
+        <div class="table-title">
+          <i class="pi pi-list"></i>
+          <span>Lista de Pedidos</span>
+        </div>
+        <div class="table-count">
+          <span class="count-badge">{{ pedidosFiltrados.length }}</span>
+          <span>pedidos</span>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div *ngIf="loading" class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Carregando pedidos...</p>
+        </div>
+
+        <div *ngIf="!loading && pedidosFiltrados.length === 0" class="empty-state">
+          <i class="pi pi-inbox"></i>
+          <h3>Nenhum pedido encontrado</h3>
+          <p>Não há pedidos para os filtros selecionados</p>
+        </div>
+
+        <div *ngIf="!loading && pedidosFiltrados.length > 0">
+          <table class="pedidos-table">
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Cliente</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Valor Total</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let pedido of pedidosPaginados">
+                <tr>
+                  <td><strong>#{{ pedido.id }}</strong></td>
+                  <td>
+                    <i class="pi pi-user" style="color: #2a5298; margin-right: 8px;"></i>
+                    {{ pedido.cliente?.nome || 'N/D' }}
+                  </td>
+                  <td>
+                    <span class="status-badge" [class]="getStatusClass(pedido.status)">
+                      {{ getStatusLabel(pedido.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <i class="pi pi-calendar" style="color: #94a3b8; margin-right: 6px;"></i>
+                    {{ pedido.dataPedido | date:'dd/MM/yyyy' }}
+                  </td>
+                  <td><strong style="color: #2a5298;">R$ {{ (pedido.valorTotal || 0) | number:'1.2-2' }}</strong></td>
+                  <td>
+                    <div class="acoes-cell">
+                      <button class="btn-icon" (click)="abrirDetalhes(pedido)" title="Ver detalhes">
+                        <i class="pi pi-eye"></i>
+                      </button>
+
+                      <button *ngIf="pedido.status === 'EM_PROCESSAMENTO'" class="btn-icon btn-success-icon" (click)="abrirStatus(pedido, 'EM_TRANSITO')" title="Aprovar">
+                        <i class="pi pi-check"></i>
+                      </button>
+
+                      <button *ngIf="pedido.status === 'DEVOLUCAO'" class="btn-icon btn-success-icon" (click)="abrirStatus(pedido, 'AUTORIZADO_DEVOLUCAO')" title="Autorizar Devolução">
+                        <i class="pi pi-check"></i>
+                      </button>
+
+                      <button *ngIf="pedido.status === 'ENVIADO_DEVOLUCAO'" class="btn-icon btn-success-icon" (click)="abrirStatus(pedido, 'DEVOLVIDO')" title="Confirmar Recebimento">
+                        <i class="pi pi-check"></i>
+                      </button>
+
+                      <button *ngIf="pedido.status === 'CANCELADO'" class="btn-icon btn-danger-icon" (click)="abrirExcluir(pedido)" title="Excluir">
+                        <i class="pi pi-trash"></i>
+                      </button>
+                      <button
+                        *ngIf="pedido.temConversa"
+                        class="btn-icon btn-chat-icon"
+                        (click)="abrirChatAdmin(pedido)"
+                        title="Abrir chat">
+                        <i class="pi pi-comment"></i>
+                        <span *ngIf="pedido.chatNaoLidas > 0" class="chat-badge-admin">{{ pedido.chatNaoLidas }}</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="pedido.status === 'DEVOLUCAO' && pedido.motivoDevolucao" class="motivo-row">
+                  <td colspan="6">
+                    <span class="motivo-texto">
+                      <i class="pi pi-comment" style="margin-right: 8px; color: #d97706;"></i>
+                      <strong>Motivo da Devolução:</strong> {{ pedido.motivoDevolucao }}
+                    </span>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+
+          <p-paginator
+            [first]="first"
+            [rows]="rows"
+            [totalRecords]="totalRecords"
+            (onPageChange)="onPageChange($event)"
+            [rowsPerPageOptions]="[10, 20, 50]"
+            styleClass="pedidos-paginator">
+          </p-paginator>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<app-admin-modals></app-admin-modals>
+
+<p-toast position="top-right"></p-toast>

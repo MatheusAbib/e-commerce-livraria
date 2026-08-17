@@ -1,0 +1,24 @@
+<ng-container *ngIf="!(router.url.includes('/admin'))">
+  <app-header></app-header>
+</ng-container>
+
+<router-outlet></router-outlet>
+
+<ng-container *ngIf="!(router.url.includes('/admin'))">
+  <app-footer></app-footer>
+</ng-container>
+
+<app-global-chat></app-global-chat>
+
+<app-admin-modals></app-admin-modals>
+
+<app-chatbot *ngIf="isLoggedIn && !isAdmin"></app-chatbot>
+
+<div *ngIf="loading" class="loading-overlay">
+  <div class="loading-spinner">
+    <i class="pi pi-spin pi-spinner"></i>
+    <span>Carregando...</span>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>

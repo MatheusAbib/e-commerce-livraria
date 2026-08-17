@@ -1,0 +1,113 @@
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.log-table thead {
+  background: #f8fafc;
+}
+
+.log-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4a5a6a;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.log-table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #1a2332;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.log-table tr:last-child td {
+  border-bottom: none;
+}
+
+.log-table tr:hover td {
+  background: #f8fafc;
+}
+
+.date-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-cell i {
+  color: #6b7a8f;
+  font-size: 0.8rem;
+}
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-cell i {
+  color: #2a5298;
+  font-size: 0.9rem;
+  width: 18px;
+  text-align: center;
+}
+
+.details-cell {
+  display: block;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.log-level {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.log-level-info {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.log-level-warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.log-level-error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.log-level-success {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.log-paginator {
+  border-top: 1px solid #e8ecf0;
+  padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .log-table th,
+  .log-table td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .log-table th,
+  .log-table td {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.7rem;
+  }
+}

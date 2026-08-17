@@ -1,0 +1,63 @@
+<aside class="admin-sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <i class="pi pi-book"></i>
+      <span>Admin</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a routerLink="/admin/dashboard" routerLinkActive="active" class="sidebar-link">
+      <i class="pi pi-chart-line"></i>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/admin/pedidos" routerLinkActive="active" class="sidebar-link">
+      <i class="pi pi-shopping-bag"></i>
+      <span>Pedidos</span>
+    </a>
+    <a routerLink="/admin/livros" routerLinkActive="active" class="sidebar-link">
+      <i class="pi pi-book"></i>
+      <span>Livros</span>
+    </a>
+    <a routerLink="/admin/Usuarios" routerLinkActive="active" class="sidebar-link">
+      <i class="pi pi-users"></i>
+      <span>Usuarios</span>
+    </a>
+    <a routerLink="/admin/logCompleto" routerLinkActive="active" class="sidebar-link">
+      <i class="pi pi-history"></i>
+      <span>Logs</span>
+    </a>
+    <a routerLink="/admin/ranking" routerLinkActive="active" class="sidebar-link">
+      <i class="pi pi-trophy"></i>
+      <span>Ranking</span>
+    </a>
+    <a routerLink="/admin/avaliacoes" routerLinkActive="active" class="sidebar-link">
+      <i class="pi pi-star"></i>
+    <span>Avaliações</span>
+  </a>
+<a routerLink="/admin/chats" routerLinkActive="active" class="sidebar-link">
+  <i class="pi pi-comment"></i>
+  <span>Chats</span>
+  <span *ngIf="totalChatNaoLidas > 0" class="sidebar-badge">{{ totalChatNaoLidas }}</span>
+</a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user" (click)="abrirPerfil()">
+      <div class="user-avatar">
+        {{ usuario?.nome?.charAt(0)?.toUpperCase() || 'A' }}
+      </div>
+      <div class="user-info">
+        <span class="user-name">{{ usuario?.nome || 'Administrador' }}</span>
+        <span class="user-role">Admin</span>
+      </div>
+      <i class="pi pi-chevron-right user-arrow"></i>
+    </div>
+    <button class="sidebar-link logout" (click)="abrirLogout()">
+      <i class="pi pi-sign-out"></i>
+      <span>Sair</span>
+    </button>
+  </div>
+</aside>
+
+<app-admin-modals #adminModals (perfilAtualizado)="onPerfilAtualizado()"></app-admin-modals>

@@ -1,0 +1,175 @@
+<div class="admin-layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          <i class="pi pi-comment"></i> Chats
+        </h1>
+        <p class="page-description">Gerencie todas as conversas com os clientes</p>
+      </div>
+    </div>
+
+    <div class="filtros-container">
+      <div class="filtro-header">
+        <h3><i class="pi pi-search"></i> Pesquisar</h3>
+      </div>
+      <div class="filtros-grid">
+        <div class="filtro-item">
+          <label>Buscar por cliente</label>
+          <input
+            type="text"
+            [(ngModel)]="filtroCliente"
+            placeholder="Digite o nome do cliente..."
+            class="auth-input"
+            (keyup)="aplicarFiltro()">
+        </div>
+        <div class="filtro-item full-width">
+            <div class="filtro-actions">
+              <button class="btn-filtrar" (click)="aplicarFiltro()" [disabled]="filtrando">
+                <i class="pi"
+                  [class.pi-search]="!filtrando"
+                  [class.pi-spin]="filtrando"
+                  [class.pi-spinner]="filtrando">
+                </i>
+                {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+              </button>
+              <button class="btn-limpar" (click)="limparFiltro()" [disabled]="filtrando">
+                <i class="pi"
+                  [class.pi-times]="!filtrando"
+                  [class.pi-spin]="filtrando"
+                  [class.pi-spinner]="filtrando">
+                </i>
+                {{ filtrando ? 'Limpando...' : 'Limpar' }}
+              </button>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chats-container">
+      <div class="chats-list">
+        <div class="chats-header">
+          <div class="chats-tabs">
+            <button class="chats-tab" [class.active]="chatsTabAtivo === 'ativos'" (click)="chatsTabAtivo = 'ativos'; aplicarFiltro()">
+              Ativos <span *ngIf="totalAtivos > 0" class="tab-badge">{{ totalAtivos }}</span>
+            </button>
+            <button class="chats-tab" [class.active]="chatsTabAtivo === 'encerrados'" (click)="chatsTabAtivo = 'encerrados'; aplicarFiltro()">
+              Encerrados
+            </button>
+          </div>
+          <div class="table-count">
+            <span class="count-badge">{{ conversasFiltradas.length }}</span>
+            <span>conversas</span>
+          </div>
+        </div>
+
+        <div *ngIf="loading" class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Carregando conversas...</p>
+        </div>
+
+        <div *ngIf="!loading && conversasFiltradas.length === 0" class="empty-state">
+          <i class="pi pi-inbox"></i>
+          <h3>Nenhuma conversa</h3>
+          <p>Ainda não há mensagens de clientes</p>
+        </div>
+
+        <div *ngFor="let item of conversasFiltradas" class="conversa-item"
+             [class.ativa]="chatAdminPedido?.id === item.pedidoId"
+             (click)="abrirChatAdminPorId(item.pedidoId)">
+          <div class="conversa-info">
+            <span class="conversa-cliente">{{ item.clienteNome }}</span>
+            <span class="conversa-pedido">Pedido #{{ item.pedidoId }}</span>
+          </div>
+          <div class="conversa-preview">
+            <span class="conversa-ultima">{{ item.ultimaMensagem | slice:0:40 }}{{ item.ultimaMensagem?.length > 40 ? '...' : '' }}</span>
+            <span class="conversa-status" [class.status-ativo]="item.ativo">
+              {{ item.ativo ? 'Ativo' : 'Encerrado' }}
+            </span>
+          </div>
+          <span *ngIf="item.naoLidasAdmin > 0" class="badge-nao-lida">
+            {{ item.naoLidasAdmin }}
+          </span>
+        </div>
+      </div>
+
+      <div class="chat-area-admin">
+        <div *ngIf="!chatAdminPedido" class="chat-placeholder">
+          <i class="pi pi-comment"></i>
+          <h3>Selecione uma conversa</h3>
+          <p>Escolha um chat para visualizar as mensagens</p>
+        </div>
+
+        <div *ngIf="chatAdminPedido" class="chat-container-admin">
+          <div class="chat-header-admin-page">
+            <div class="chat-header-info-admin">
+              <div>
+                <span class="chat-cliente-nome">{{ chatAdminPedido.cliente?.nome || chatAdminPedido.clienteNome }}</span>
+                <span class="chat-pedido-ref">Pedido #{{ chatAdminPedido.id }}</span>
+              </div>
+              <span class="chat-status" [class.status-ativo]="chatAdminAtivo">
+                {{ chatAdminAtivo ? 'Ativo' : 'Encerrado' }}
+              </span>
+            </div>
+            <div class="chat-header-actions">
+              <button class="btn-danger" (click)="encerrarAtendimentoAdmin()" *ngIf="chatAdminAtivo">
+                <i class="pi pi-times-circle"></i> Encerrar
+              </button>
+              <button class="btn-fechar-chat" (click)="fecharChatAdmin()">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="chat-messages-admin-page" #chatAdminMessagesPage>
+            <div *ngIf="mensagensChatAdmin.length === 0" class="chat-empty-admin-page">
+              <i class="pi pi-comment"></i>
+              <p>Nenhuma mensagem ainda</p>
+            </div>
+
+            <div *ngFor="let msg of mensagensChatAdmin" class="chat-message-admin-page"
+                 [class.message-admin-page]="msg.doAdmin"
+                 [class.message-cliente-page]="!msg.doAdmin">
+              <div class="message-bubble-admin-page">
+                <span class="message-text-admin-page">{{ msg.mensagem }}</span>
+                <span class="message-time-admin-page">{{ msg.dataEnvio | date:'HH:mm' }}</span>
+              </div>
+              <div class="message-author-admin-page">
+                {{ msg.doAdmin ? 'Você' : msg.cliente?.nome || 'Cliente' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-footer-admin-page" *ngIf="chatAdminAtivo">
+            <div class="chat-input-wrapper-admin-page">
+              <input
+                type="text"
+                [(ngModel)]="novaMensagemChatAdmin"
+                placeholder="Digite sua mensagem..."
+                (keyup.enter)="enviarMensagemChatAdmin()"
+                class="chat-input-admin-page">
+              <button
+                class="chat-send-btn-admin-page"
+                (click)="enviarMensagemChatAdmin()"
+                [disabled]="!novaMensagemChatAdmin.trim()">
+                <i class="pi pi-send"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="chat-footer-admin-page" *ngIf="!chatAdminAtivo">
+            <div class="chat-encerrado-admin-page">
+              <i class="pi pi-info-circle"></i>
+              <span>Atendimento encerrado</span>
+            </div>
+            <button class="chat-reativar-btn-admin" (click)="reativarAtendimentoAdmin()">
+              <i class="pi pi-refresh"></i> Iniciar nova conversa
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

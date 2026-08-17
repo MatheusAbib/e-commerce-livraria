@@ -1,0 +1,372 @@
+header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 0.75rem 2rem;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1440px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.logo a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.5rem;
+  font-family: "Playfair Display", serif;
+  color: #1a2332;
+}
+
+.logo a i {
+  font-size: 1.4rem;
+  color: #2a5298;
+}
+
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: auto;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #1a2332;
+  transition: all 0.3s;
+  border-radius: 2px;
+}
+
+.menu-toggle.active span:nth-child(1) {
+  transform: rotate(45deg) translate(4px, 4px);
+}
+
+.menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(4px, -4px);
+}
+
+.user-actions.menu-aberto .action-icon {
+  display: none;
+}
+
+.user-actions.menu-aberto .user-info {
+  display: none;
+}
+
+.nav-desktop {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.nav-desktop a {
+  padding: 0.5rem 1.25rem;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #4a5a6a;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.guest-message {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  padding: 0.3rem 0.5rem;
+  font-style: italic;
+}
+
+.nav-desktop a:hover {
+  color: #1a2332;
+  background: #f0f4f8;
+}
+
+.nav-desktop a.active {
+  color: #2a5298;
+}
+
+.nav-desktop a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  border-radius: 4px;
+  background: #2a5298;
+}
+
+.nav-mobile-actions {
+  display: none;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  border-top: 1px solid #e8ecf0;
+  margin-top: 0.5rem;
+}
+
+.nav-mobile-actions a {
+  position: relative;
+  padding: 0.6rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #4a5a6a;
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.nav-mobile-actions a .badge-mobile {
+  margin-left: auto;
+  background: #dc2626;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.nav-mobile-actions a:hover {
+  background: #f0f4f8;
+  color: #1a2332;
+}
+
+.nav-mobile-actions a.logout-mobile:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.nav-mobile-actions a i {
+  width: 20px;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  background: #f0f4f8;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  border-radius: 30px;
+  transition: background 0.2s;
+}
+
+.user-info:hover {
+  background: #e6ecf3;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1a2332;
+}
+
+:host ::ng-deep .user-avatar {
+  width: 32px !important;
+  height: 32px !important;
+  background: #2a5298 !important;
+  color: white !important;
+}
+
+.action-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #4a5a6a;
+  padding: 0.4rem;
+  border-radius: 50%;
+  transition: all 0.2s;
+  width: 36px;
+  height: 36px;
+}
+
+.action-icon:hover {
+  background: #f0f4f8;
+  color: #2a5298;
+}
+
+.action-icon.logout:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.badge-cart,
+.badge-notif {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #dc2626;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 1220px) {
+  .menu-toggle {
+    display: flex;
+  }
+   .user-actions {
+    display: none;
+  }
+
+  .nav-desktop {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    right: 0;
+    left: 0;
+    background: white;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e8ecf0;
+    gap: 0.25rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+  }
+
+  .nav-desktop.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .nav-desktop a {
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .nav-desktop a.active::after {
+    display: none;
+  }
+
+  .nav-desktop a.active {
+    background: #e8f0fe;
+  }
+
+  .nav-mobile-actions {
+    display: flex;
+  }
+
+  .guest-message {
+    padding: 0.6rem 1rem;
+    text-align: center;
+  }
+
+  .user-name {
+    display: none;
+  }
+
+  .header-actions .p-button-outlined {
+    display: none;
+  }
+}
+
+
+@media (max-width: 480px) {
+  header {
+    padding: 1rem 0.75rem;
+  }
+
+  .logo a {
+    font-size: 1.3rem;
+  }
+
+  .logo a i {
+    font-size: 1.3rem;
+  }
+
+  .action-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    padding: 0.3rem;
+  }
+
+  .user-actions {
+    gap: 0.5rem;
+  }
+
+  .badge-cart,
+  .badge-notif {
+    font-size: 0.5rem;
+    min-width: 14px;
+    height: 14px;
+    padding: 0.05rem 0.3rem;
+  }
+
+  .nav-desktop {
+    padding: 0.75rem 1rem;
+    top: calc(100% + 0.5rem);
+  }
+
+  .nav-desktop a {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .nav-mobile-actions a {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+}

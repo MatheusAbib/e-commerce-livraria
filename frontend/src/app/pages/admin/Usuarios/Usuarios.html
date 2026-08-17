@@ -1,0 +1,316 @@
+<div class="admin-layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          <i class="pi pi-users"></i> Gestão de Clientes
+        </h1>
+        <p class="page-description">Gerencie todos os clientes cadastrados no sistema</p>
+      </div>
+    </div>
+
+    <div class="filtros-container">
+      <div class="filtro-header">
+        <h3><i class="pi pi-filter"></i> Filtrar Clientes</h3>
+        <button class="btn-primary" style="width: auto;" (click)="abrirCadastro()">
+          <i class="pi pi-user-plus"></i> Adicionar Cliente
+        </button>
+      </div>
+      <div class="filtros-grid">
+        <div class="filtro-item">
+          <label>Nome</label>
+          <input type="text" [(ngModel)]="filtros.nome" placeholder="Digite o nome" class="auth-input" (keyup.enter)="aplicarFiltros()">
+        </div>
+        <div class="filtro-item">
+          <label>Email</label>
+          <input type="text" [(ngModel)]="filtros.email" placeholder="Digite o email" class="auth-input" (keyup.enter)="aplicarFiltros()">
+        </div>
+        <div class="filtro-item">
+          <label>CPF</label>
+          <input type="text" [(ngModel)]="filtros.cpf" placeholder="Digite o CPF" class="auth-input" (keyup.enter)="aplicarFiltros()">
+        </div>
+        <div class="filtro-item">
+          <label>Gênero</label>
+          <select [(ngModel)]="filtros.genero" class="auth-input">
+            <option *ngFor="let op of generosOptions" [value]="op.value">{{ op.label }}</option>
+          </select>
+        </div>
+        <div class="filtro-item">
+          <label>Status</label>
+          <select [(ngModel)]="filtros.ativo" class="auth-input">
+            <option *ngFor="let op of statusOptions" [value]="op.value">{{ op.label }}</option>
+          </select>
+        </div>
+        <div class="filtro-item full-width">
+<div class="filtro-actions">
+  <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-search]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+  </button>
+  <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
+    <i class="pi"
+       [class.pi-times]="!filtrando"
+       [class.pi-spin]="filtrando"
+       [class.pi-spinner]="filtrando">
+    </i>
+    {{ filtrando ? 'Limpando...' : 'Limpar' }}
+  </button>
+</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-header">
+        <div class="table-title">
+          <i class="pi pi-users"></i>
+          <span>Lista de Clientes</span>
+        </div>
+        <div class="table-count">
+          <span class="count-badge">{{ clientesFiltrados.length }}</span>
+          <span>clientes</span>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div *ngIf="loading" class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Carregando clientes...</p>
+        </div>
+
+        <div *ngIf="!loading && clientesFiltrados.length === 0" class="empty-state">
+          <i class="pi pi-inbox"></i>
+          <h3>Nenhum cliente encontrado</h3>
+          <p>Não há clientes para os filtros selecionados</p>
+        </div>
+
+        <div *ngIf="!loading && clientesFiltrados.length > 0">
+          <table class="cliente-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>CPF</th>
+                <th>Status</th>
+                <th class="text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cliente of clientesPaginados">
+                <td>{{ cliente.id }}</td>
+                <td><strong>{{ cliente.nome || '-' }}</strong></td>
+                <td>{{ cliente.email || '-' }}</td>
+                <td>{{ formatarTelefoneExibicao(cliente.telefone) }}</td>
+                <td>{{ formatarCPFExibicao(cliente.cpf) }}</td>
+                <td>
+                  <span class="status-badge" [class]="getStatusClass(cliente.ativo)">
+                    <i [class]="getStatusIcon(cliente.ativo)"></i>
+                    {{ getStatusText(cliente.ativo) }}
+                  </span>
+                </td>
+                <td>
+                  <div class="acoes-cell">
+                    <button class="btn-icon" (click)="abrirSenha(cliente)" title="Alterar Senha">
+                      <i class="pi pi-key"></i>
+                    </button>
+                    <button class="btn-icon" (click)="abrirStatus(cliente, !cliente.ativo)" title="Alterar Status">
+                      <i class="pi" [class.pi-check-circle]="cliente.ativo" [class.pi-times-circle]="!cliente.ativo"></i>
+                    </button>
+                    <button class="btn-icon btn-danger-icon" (click)="abrirExcluir(cliente)" title="Excluir">
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p-paginator
+            [first]="first"
+            [rows]="rows"
+            [totalRecords]="totalRecords"
+            (onPageChange)="onPageChange($event)"
+            [rowsPerPageOptions]="[10, 20, 50]"
+            styleClass="cliente-paginator">
+          </p-paginator>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="custom-modal" [class.active]="displayCadastroModal">
+  <div class="custom-modal-overlay" (click)="displayCadastroModal = false"></div>
+  <div class="custom-modal-content" style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="displayCadastroModal = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-user-plus"></i></div>
+      <h2>Novo Cliente</h2>
+      <p>Preencha os dados para cadastrar um novo cliente</p>
+    </div>
+    <div class="custom-modal-body">
+      <div class="field">
+        <label>Nome Completo *</label>
+        <input type="text" [(ngModel)]="novoCliente.nome" placeholder="Digite o nome completo" class="auth-input">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="novoCliente.email" placeholder="exemplo@email.com" class="auth-input">
+        </div>
+        <div class="form-group">
+          <label>Senha *</label>
+          <div class="password-wrapper">
+            <input type="password" [(ngModel)]="novoCliente.senha" placeholder="Digite uma senha" class="auth-input" id="novo-cliente-senha">
+            <i class="pi pi-eye password-toggle" (click)="togglePassword('novo-cliente-senha')"></i>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>CPF</label>
+          <input type="text" [(ngModel)]="novoCliente.cpf" (input)="formatarCPF($event)" placeholder="000.000.000-00" class="auth-input" maxlength="14">
+        </div>
+        <div class="form-group">
+          <label>Telefone</label>
+          <input type="text" [(ngModel)]="novoCliente.telefone" (input)="formatarTelefone($event)" placeholder="(00) 00000-0000" class="auth-input" maxlength="15">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Gênero</label>
+          <select [(ngModel)]="novoCliente.genero" class="auth-input">
+            <option value="PREFIRO_NAO_INFORMAR">Prefiro não informar</option>
+            <option value="MASCULINO">Masculino</option>
+            <option value="FEMININO">Feminino</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Data de Nascimento</label>
+          <input type="date" [(ngModel)]="novoCliente.dataNascimento" class="auth-input">
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="displayCadastroModal = false">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-primary" (click)="salvarCliente()">
+          <i class="pi pi-save"></i> Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displaySenhaModal">
+  <div class="custom-modal-overlay" (click)="displaySenhaModal = false"></div>
+  <div class="custom-modal-content" style="width: 420px; max-width: 95%;">
+    <button class="custom-modal-close" (click)="displaySenhaModal = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon"><i class="pi pi-key"></i></div>
+      <h2>Alterar Senha</h2>
+      <p>Altere a senha do cliente</p>
+    </div>
+    <div class="custom-modal-body">
+      <div class="field">
+        <label>Nova senha</label>
+        <div class="password-wrapper">
+          <input type="password" [(ngModel)]="clienteSenha.novaSenha" placeholder="Digite a nova senha" class="auth-input" id="editar-senha">
+          <i class="pi pi-eye password-toggle" (click)="togglePassword('editar-senha')"></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirmar senha</label>
+        <div class="password-wrapper">
+          <input type="password" [(ngModel)]="clienteSenha.confirmarSenha" placeholder="Confirme a nova senha" class="auth-input" id="editar-confirmar-senha">
+          <i class="pi pi-eye password-toggle" (click)="togglePassword('editar-confirmar-senha')"></i>
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="displaySenhaModal = false">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-primary" (click)="confirmarAlterarSenha()">
+          <i class="pi pi-save"></i> Alterar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayStatusModal">
+  <div class="custom-modal-overlay" (click)="displayStatusModal = false"></div>
+  <div class="custom-modal-content" style="width: 450px; max-width: 95%;">
+    <div class="custom-modal-header">
+      <div class="auth-icon" [style.background]="clienteStatus.ativo ? '#dcfce7' : '#fee2e2'">
+        <i class="pi" [class.pi-check-circle]="clienteStatus.ativo" [class.pi-times-circle]="!clienteStatus.ativo" [style.color]="clienteStatus.ativo ? '#22c55e' : '#dc2626'"></i>
+      </div>
+      <h2>{{ clienteStatus.ativo ? 'Ativar' : 'Inativar' }} Cliente</h2>
+    </div>
+    <div class="custom-modal-body">
+      <p style="color: #4a5a6a; font-size: 0.95rem;">
+        Deseja {{ clienteStatus.ativo ? 'ativar' : 'inativar' }} o cliente "{{ clienteStatus.nome }}"?
+      </p>
+      <div class="field">
+        <label>Motivo da alteração *</label>
+        <textarea [(ngModel)]="motivoStatus" rows="3" placeholder="Informe o motivo da alteração de status" class="auth-input"></textarea>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="displayStatusModal = false">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-primary" (click)="confirmarAlterarStatus()">
+          <i class="pi pi-check"></i> Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-modal" [class.active]="displayExcluirModal">
+  <div class="custom-modal-overlay" (click)="displayExcluirModal = false"></div>
+  <div class="custom-modal-content" style="width: 400px; max-width: 95%;">
+    <div class="custom-modal-header">
+      <div class="auth-icon" style="background: #fee2e2;">
+        <i class="pi pi-exclamation-triangle" style="color: #dc2626;"></i>
+      </div>
+      <h2>Confirmar Exclusão</h2>
+    </div>
+    <div class="custom-modal-body" style="text-align: center;">
+      <p style="color: #4a5a6a; font-size: 0.95rem;">
+        Tem certeza que deseja excluir permanentemente o cliente <strong>"{{ clienteExcluir.nome }}"</strong>?
+      </p>
+      <p style="color: #94a3b8; font-size: 0.85rem;">Esta ação não pode ser desfeita.</p>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="displayExcluirModal = false">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+        <button class="btn-danger" (click)="confirmarExcluir()">
+          <i class="pi pi-trash"></i> Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>

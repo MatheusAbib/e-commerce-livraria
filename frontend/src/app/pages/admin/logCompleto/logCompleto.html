@@ -1,0 +1,186 @@
+<div class="admin-layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          <i class="pi pi-clipboard"></i> Log de Transações
+        </h1>
+        <p class="page-description">Monitoramento completo de todas as atividades do sistema</p>
+      </div>
+    </div>
+
+    <div class="filtros-container">
+      <div class="filtro-header">
+        <h3><i class="pi pi-filter"></i> Filtrar Logs</h3>
+      </div>
+      <div class="filtros-grid">
+        <div class="filtro-item">
+          <label>Usuário</label>
+          <select [(ngModel)]="filtros.usuario" class="auth-input">
+            <option value="">Todos os usuários</option>
+            <option *ngFor="let u of usuarios" [value]="u.id">{{ u.nome }}</option>
+          </select>
+        </div>
+        <div class="filtro-item">
+          <label>Ação</label>
+          <select [(ngModel)]="filtros.acao" class="auth-input">
+            <option *ngFor="let op of acoesOptions" [value]="op.value">{{ op.label }}</option>
+          </select>
+        </div>
+        <div class="filtro-item">
+          <label>Data</label>
+          <input type="date" [(ngModel)]="filtros.data" class="auth-input">
+        </div>
+        <div class="filtro-item">
+          <label>Nível</label>
+          <select [(ngModel)]="filtros.nivel" class="auth-input">
+            <option *ngFor="let op of niveisOptions" [value]="op.value">{{ op.label }}</option>
+          </select>
+        </div>
+        <div class="filtro-item full-width">
+          <div class="filtro-actions">
+            <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
+              <i class="pi"
+                [class.pi-search]="!filtrando"
+                [class.pi-spin]="filtrando"
+                [class.pi-spinner]="filtrando">
+              </i>
+              {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+            </button>
+            <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
+              <i class="pi"
+                [class.pi-times]="!filtrando"
+                [class.pi-spin]="filtrando"
+                [class.pi-spinner]="filtrando">
+              </i>
+              {{ filtrando ? 'Limpando...' : 'Limpar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-header">
+        <div class="table-title">
+          <i class="pi pi-list"></i>
+          <span>Histórico de Atividades</span>
+        </div>
+        <div class="table-count">
+          <span class="count-badge">{{ logsFiltrados.length }}</span>
+          <span>registros</span>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div *ngIf="loading" class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Carregando logs...</p>
+        </div>
+
+        <div *ngIf="!loading && logsFiltrados.length === 0" class="empty-state">
+          <i class="pi pi-inbox"></i>
+          <h3>Nenhum registro encontrado</h3>
+          <p>Não há logs para os filtros selecionados</p>
+        </div>
+
+        <div *ngIf="!loading && logsFiltrados.length > 0">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Usuário</th>
+                <th>Ação</th>
+                <th>Detalhes</th>
+                <th class="text-center">Nível</th>
+                <th style="width: 60px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of logsPaginados">
+                <td>
+                  <span class="date-cell">
+                    <i class="pi pi-calendar"></i>
+                    {{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}
+                  </span>
+                </td>
+                <td>{{ getNomeUsuario(log.userId) }}</td>
+                <td>
+                  <span class="action-cell">
+                    <i [class]="getActionIcon(log.action)"></i>
+                    {{ getActionLabel(log.action) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="details-cell" [title]="log.details">
+                    {{ log.details ? (log.details.length > 60 ? log.details.substring(0, 60) + '...' : log.details) : '-' }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="log-level" [class]="getNivelClass(log.level)">
+                    {{ getNivelLabel(log.level) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button class="btn-icon" (click)="abrirDetalhes(log)" title="Ver detalhes">
+                    <i class="pi pi-eye"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p-paginator
+            [first]="first"
+            [rows]="rows"
+            [totalRecords]="totalRecords"
+            (onPageChange)="onPageChange($event)"
+            [rowsPerPageOptions]="[10, 20, 50]"
+            styleClass="log-paginator">
+          </p-paginator>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="custom-modal" [class.active]="displayDetalhesModal">
+  <div class="custom-modal-overlay" (click)="displayDetalhesModal = false"></div>
+  <div class="custom-modal-content" style="width: 600px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="displayDetalhesModal = false">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon" [class]="'detalhes-' + logSelecionado?.level">
+        <i [class]="getIconClass(logSelecionado?.level)"></i>
+      </div>
+      <h2>{{ getActionLabel(logSelecionado?.action) }}</h2>
+      <p>{{ logSelecionado?.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+    </div>
+    <div class="custom-modal-body" *ngIf="logSelecionado">
+      <div class="detalhes-item">
+        <strong>Usuário:</strong>
+        <span>{{ getNomeUsuario(logSelecionado.userId) }}</span>
+      </div>
+      <div class="detalhes-item">
+        <strong>Ação:</strong>
+        <span>{{ getActionLabel(logSelecionado.action) }}</span>
+      </div>
+      <div class="detalhes-item" *ngIf="logSelecionado.details">
+        <strong>Detalhes:</strong>
+        <div class="detalhes-details">{{ logSelecionado.details }}</div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions single">
+        <button class="btn-secondary" (click)="displayDetalhesModal = false">
+          <i class="pi pi-times"></i> Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast position="top-right"></p-toast>

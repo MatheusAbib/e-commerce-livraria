@@ -1,0 +1,153 @@
+.campo-busca {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e8ecf0;
+  margin-bottom: 1.5rem;
+}
+
+.campo-busca label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+  color: #1a2332;
+}
+
+.campo-busca label i {
+  color: #2a5298;
+  margin-right: 8px;
+}
+
+.campo-busca .auth-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1.5px solid #d1d5db;
+  font-size: 0.9rem;
+  background: white;
+  color: #1a2332;
+  box-sizing: border-box;
+  height: 42px;
+}
+
+.campo-busca .auth-input:focus {
+  border-color: #2a5298;
+  outline: none;
+}
+
+.ranking-table-wrapper {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e8ecf0;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ranking-table thead {
+  background: #f8fafc;
+}
+
+.ranking-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4a5a6a;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.ranking-table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #1a2332;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.ranking-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ranking-table tr:hover td {
+  background: #f8fafc;
+}
+
+.ranking-position {
+  font-weight: bold;
+  width: 80px;
+  font-size: 1.1rem;
+}
+
+.position-1 {
+  color: #f7b731;
+}
+
+.position-2 {
+  color: #c0c0c0;
+}
+
+.position-3 {
+  color: #cd7f32;
+}
+
+.medal-icon {
+  margin-right: 6px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #1a2332, #2c3e50);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #1a2332;
+}
+
+.user-email {
+  font-size: 0.8rem;
+  color: #6b7a8f;
+}
+
+.purchase-count,
+.purchase-value {
+  text-align: center;
+}
+
+.purchase-value {
+  font-weight: 600;
+  color: #22c55e;
+}
+
+.ranking-paginator {
+  border-top: 1px solid #e8ecf0;
+  padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .purchase-count,
+  .purchase-value {
+    display: none;
+  }
+  .ranking-table th.purchase-count,
+  .ranking-table th.purchase-value {
+    display: none;
+  }
+}
