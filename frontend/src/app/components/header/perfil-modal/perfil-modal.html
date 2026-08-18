@@ -11,123 +11,127 @@
       <p>Gerencie suas informações pessoais</p>
     </div>
 
-    <div class="custom-modal-body" *ngIf="!loading">
-<div *ngIf="usuario" class="perfil-info-grid">
-  <div class="perfil-info-item">
-    <span class="perfil-info-label">Nome completo</span>
-    <span class="perfil-info-value">{{usuario?.nome || 'Carregando...'}}</span>
-  </div>
-  <div class="perfil-info-item">
-    <span class="perfil-info-label">E-mail</span>
-    <span class="perfil-info-value">{{usuario?.email || 'Carregando...'}}</span>
-  </div>
-  <div class="perfil-info-item">
-    <span class="perfil-info-label">CPF</span>
-    <span class="perfil-info-value">{{usuario?.cpf || 'Não informado'}}</span>
-  </div>
-  <div class="perfil-info-item">
-    <span class="perfil-info-label">Data de Nascimento</span>
-    <span class="perfil-info-value">{{usuario?.nascimento || 'Não informado'}}</span>
-  </div>
-<div class="perfil-info-item">
-  <span class="perfil-info-label">Gênero</span>
-  <span class="perfil-info-value">{{getGeneroLabel(usuario?.genero) || 'Não informado'}}</span>
-</div>
-<div class="perfil-info-item">
-  <span class="perfil-info-label">Telefone</span>
-  <span class="perfil-info-value">
-    <span *ngIf="usuario?.telefone; else semTelefone">
-      {{usuario?.telefone}}
-      <span class="perfil-info-tipo">({{getTipoTelefoneLabel(usuario?.tipotelefone) || 'Não informado'}})</span>
-    </span>
-    <ng-template #semTelefone>Não informado</ng-template>
-  </span>
-</div>
-</div>
+    <div class="custom-modal-body" style="position: relative; min-height: 300px;">
+      <app-loader [loading]="loading" message="Carregando seus dados..."></app-loader>
 
-      <div class="perfil-actions">
-        <button class="btn-primary" (click)="editarDados()">
-          <i class="pi pi-pencil"></i> Editar Dados
-        </button>
-        <button class="p-button-outlined btn-sm" (click)="alterarSenha()">
-          <i class="pi pi-key"></i> Alterar Senha
-        </button>
-      </div>
+      <div *ngIf="!loading">
+        <div *ngIf="usuario" class="perfil-info-grid">
+          <div class="perfil-info-item">
+            <span class="perfil-info-label">Nome completo</span>
+            <span class="perfil-info-value">{{usuario?.nome || 'Carregando...'}}</span>
+          </div>
+          <div class="perfil-info-item">
+            <span class="perfil-info-label">E-mail</span>
+            <span class="perfil-info-value">{{usuario?.email || 'Carregando...'}}</span>
+          </div>
+          <div class="perfil-info-item">
+            <span class="perfil-info-label">CPF</span>
+            <span class="perfil-info-value">{{usuario?.cpf || 'Não informado'}}</span>
+          </div>
+          <div class="perfil-info-item">
+            <span class="perfil-info-label">Data de Nascimento</span>
+            <span class="perfil-info-value">{{usuario?.nascimento || 'Não informado'}}</span>
+          </div>
+          <div class="perfil-info-item">
+            <span class="perfil-info-label">Gênero</span>
+            <span class="perfil-info-value">{{getGeneroLabel(usuario?.genero) || 'Não informado'}}</span>
+          </div>
+          <div class="perfil-info-item">
+            <span class="perfil-info-label">Telefone</span>
+            <span class="perfil-info-value">
+              <span *ngIf="usuario?.telefone; else semTelefone">
+                {{usuario?.telefone}}
+                <span class="perfil-info-tipo">({{getTipoTelefoneLabel(usuario?.tipotelefone) || 'Não informado'}})</span>
+              </span>
+              <ng-template #semTelefone>Não informado</ng-template>
+            </span>
+          </div>
+        </div>
 
-      <hr>
-
-      <div class="perfil-section">
-        <div class="perfil-section-header">
-          <h4><i class="pi pi-map-marker"></i> Endereços</h4>
-          <button class="p-button-outlined btn-sm" (click)="adicionarEndereco()">
-            <i class="pi pi-plus"></i> Adicionar
+        <div class="perfil-actions">
+          <button class="btn-primary" (click)="editarDados()">
+            <i class="pi pi-pencil"></i> Editar Dados
+          </button>
+          <button class="p-button-outlined btn-sm" (click)="alterarSenha()">
+            <i class="pi pi-key"></i> Alterar Senha
           </button>
         </div>
 
-        <div *ngIf="perfilEnderecos.length === 0" class="empty-state">
-          <i class="pi pi-map-marker" style="font-size: 2.5rem; color: #cbd5e1;"></i>
-          <p>Nenhum endereço cadastrado</p>
-          <span>Clique em "Adicionar" para criar um novo endereço</span>
-        </div>
+        <hr>
 
-        <div *ngFor="let endereco of perfilEnderecos" class="perfil-card">
-          <div class="perfil-card-header">
-            <div>
-              <i [class]="getEnderecoIcon(endereco.tipo)"></i>
-              <strong>{{endereco.nomeEndereco || getEnderecoLabel(endereco.tipo)}}</strong>
-              <span class="perfil-badge" *ngIf="endereco.tipo === 'COBRANCA'">Cobrança</span>
+        <div class="perfil-section">
+          <div class="perfil-section-header">
+            <h4><i class="pi pi-map-marker"></i> Endereços</h4>
+            <button class="p-button-outlined btn-sm" (click)="adicionarEndereco()">
+              <i class="pi pi-plus"></i> Adicionar
+            </button>
+          </div>
+
+          <div *ngIf="perfilEnderecos.length === 0" class="empty-state">
+            <i class="pi pi-map-marker" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+            <p>Nenhum endereço cadastrado</p>
+            <span>Clique em "Adicionar" para criar um novo endereço</span>
+          </div>
+
+          <div *ngFor="let endereco of perfilEnderecos" class="perfil-card">
+            <div class="perfil-card-header">
+              <div>
+                <i [class]="getEnderecoIcon(endereco.tipo)"></i>
+                <strong>{{endereco.nomeEndereco || getEnderecoLabel(endereco.tipo)}}</strong>
+                <span class="perfil-badge" *ngIf="endereco.tipo === 'COBRANCA'">Cobrança</span>
+              </div>
+              <div class="perfil-card-actions">
+                <button class="perfil-btn-icon" (click)="editarEndereco(endereco)" title="Editar">
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button class="perfil-btn-icon perfil-btn-danger" (click)="confirmarExclusao('endereco', endereco.id)" title="Excluir">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
             </div>
-            <div class="perfil-card-actions">
-              <button class="perfil-btn-icon" (click)="editarEndereco(endereco)" title="Editar">
-                <i class="pi pi-pencil"></i>
-              </button>
-              <button class="perfil-btn-icon perfil-btn-danger" (click)="confirmarExclusao('endereco', endereco.id)" title="Excluir">
-                <i class="pi pi-trash"></i>
-              </button>
+            <div class="perfil-card-body">
+              <p>{{endereco.rua}}, {{endereco.numero}} - {{endereco.bairro}}</p>
+              <p>{{endereco.cidade}}/{{endereco.estado}} - CEP: {{endereco.cep}}</p>
+              <p class="perfil-card-complemento" *ngIf="endereco.complemento">Complemento: {{endereco.complemento}}</p>
             </div>
           </div>
-          <div class="perfil-card-body">
-            <p>{{endereco.rua}}, {{endereco.numero}} - {{endereco.bairro}}</p>
-            <p>{{endereco.cidade}}/{{endereco.estado}} - CEP: {{endereco.cep}}</p>
-            <p class="perfil-card-complemento" *ngIf="endereco.complemento">Complemento: {{endereco.complemento}}</p>
+        </div>
+
+        <div class="perfil-section">
+          <div class="perfil-section-header">
+            <h4><i class="pi pi-credit-card"></i> Cartões</h4>
+            <button class="p-button-outlined btn-sm" (click)="adicionarCartao()">
+              <i class="pi pi-plus"></i> Adicionar
+            </button>
           </div>
-        </div>
-      </div>
 
-      <div class="perfil-section">
-        <div class="perfil-section-header">
-          <h4><i class="pi pi-credit-card"></i> Cartões</h4>
-          <button class="p-button-outlined btn-sm" (click)="adicionarCartao()">
-            <i class="pi pi-plus"></i> Adicionar
-          </button>
-        </div>
-
-        <div *ngIf="perfilCartoes.length === 0" class="empty-state">
-          <i class="pi pi-credit-card" style="font-size: 2.5rem; color: #cbd5e1;"></i>
-          <p>Nenhum cartão cadastrado</p>
-          <span>Clique em "Adicionar" para criar um novo cartão</span>
-        </div>
-
-        <div *ngFor="let cartao of perfilCartoes" class="perfil-card">
-          <div class="perfil-card-header">
-            <div>
-              <i class="pi pi-credit-card"></i>
-              <strong>{{cartao.bandeira}}</strong>
-              <span class="perfil-card-number">**** **** **** {{cartao.numero ? cartao.numero.slice(-4) : '****'}}</span>
-              <span class="perfil-badge perfil-badge-primary" *ngIf="cartao.preferencial">Preferencial</span>
-            </div>
-            <div class="perfil-card-actions">
-              <button class="perfil-btn-icon" (click)="editarCartao(cartao)" title="Editar">
-                <i class="pi pi-pencil"></i>
-              </button>
-              <button class="perfil-btn-icon perfil-btn-danger" (click)="confirmarExclusao('cartao', cartao.id)" title="Excluir">
-                <i class="pi pi-trash"></i>
-              </button>
-            </div>
+          <div *ngIf="perfilCartoes.length === 0" class="empty-state">
+            <i class="pi pi-credit-card" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+            <p>Nenhum cartão cadastrado</p>
+            <span>Clique em "Adicionar" para criar um novo cartão</span>
           </div>
-          <div class="perfil-card-body">
-            <p>Validade: {{cartao.dataValidade}}</p>
-            <p>Titular: {{cartao.nomeTitular}}</p>
+
+          <div *ngFor="let cartao of perfilCartoes" class="perfil-card">
+            <div class="perfil-card-header">
+              <div>
+                <i class="pi pi-credit-card"></i>
+                <strong>{{cartao.bandeira}}</strong>
+                <span class="perfil-card-number">**** **** **** {{cartao.numero ? cartao.numero.slice(-4) : '****'}}</span>
+                <span class="perfil-badge perfil-badge-primary" *ngIf="cartao.preferencial">Preferencial</span>
+              </div>
+              <div class="perfil-card-actions">
+                <button class="perfil-btn-icon" (click)="editarCartao(cartao)" title="Editar">
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button class="perfil-btn-icon perfil-btn-danger" (click)="confirmarExclusao('cartao', cartao.id)" title="Excluir">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="perfil-card-body">
+              <p>Validade: {{cartao.dataValidade}}</p>
+              <p>Titular: {{cartao.nomeTitular}}</p>
+            </div>
           </div>
         </div>
       </div>

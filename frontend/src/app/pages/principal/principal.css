@@ -346,9 +346,33 @@
 
 .produto-botoes {
   display: flex;
+    flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: auto;
   padding-top: 0.5rem;
+}
+.produto-botoes span {
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 80px;
+  display: block;
+}
+
+.produto-botoes span button {
+  width: 100%;
+}
+
+.produto-botoes .btn-secondary {
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 80px;
+  font-size: 0.8rem;
+  padding: 0.6rem 0.3rem;
+}
+
+.produto-botoes .btn-primary {
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 80px;
+  font-size: 0.8rem;
+  padding: 0.6rem 0.3rem;
 }
 
 
@@ -1236,3 +1260,13 @@
     align-items: flex-start;
   }
 }
+
+@media (max-width: 400px) {
+  .produto-botoes .btn-secondary,
+  .produto-botoes .btn-primary,
+  .produto-botoes span {
+    flex: 1 1 100%;
+    min-width: 60px;
+  }
+}
+

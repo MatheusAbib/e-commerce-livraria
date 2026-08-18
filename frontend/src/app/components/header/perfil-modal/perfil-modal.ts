@@ -6,11 +6,13 @@ import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../services/auth';
+import { LoaderService } from '../../../services/loader.service';
+import { LoaderComponent } from '../../shared/loader/loader.component';
 
 @Component({
   selector: 'app-perfil-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, DialogModule, ToastModule],
+  imports: [CommonModule, FormsModule, ButtonModule, DialogModule, ToastModule, LoaderComponent],
   providers: [MessageService],
   templateUrl: './perfil-modal.html',
   styleUrls: ['./perfil-modal.css']
@@ -41,7 +43,8 @@ export class PerfilModalComponent implements OnInit {
   constructor(
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private loaderService: LoaderService
   ) {}
 
   ngOnInit(): void {
@@ -63,34 +66,35 @@ export class PerfilModalComponent implements OnInit {
     this.visibleChange.emit(false);
   }
 
-async carregarDadosPerfil(): Promise<void> {
-  if (!this.usuario) return;
-  this.loading = true;
+  async carregarDadosPerfil(): Promise<void> {
+    if (!this.usuario) return;
+    this.loading = true;
 
-  try {
-    const token = this.authService.getToken();
-    const response = await fetch(`http://localhost:8081/api/clientes/${this.usuario.id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+    try {
+      const token = this.authService.getToken();
+      const response = await fetch(`http://localhost:8081/api/clientes/${this.usuario.id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      if (response.ok) {
+        const text = await response.text();
+        console.log('RESPOSTA PERFIL:', text);
+        const dados = JSON.parse(text);
+        this.usuario = dados;
+        this.perfilEnderecos = dados.enderecos || [];
+        this.perfilCartoes = dados.cartoes || [];
+        this.cdr.detectChanges();
       }
-    });
-    if (response.ok) {
-      const text = await response.text();
-      console.log('RESPOSTA PERFIL:', text);
-      const dados = JSON.parse(text);
-      this.usuario = dados;
-      this.perfilEnderecos = dados.enderecos || [];
-      this.perfilCartoes = dados.cartoes || [];
-      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Erro ao carregar perfil:', error);
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao carregar perfil'});
+    } finally {
+      this.loading = false;
     }
-  } catch (error) {
-    console.error('Erro ao carregar perfil:', error);
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao carregar perfil'});
-  } finally {
-    this.loading = false;
   }
-}
+
   editarDados(): void {
     this.displayEditarPerfil = true;
   }
@@ -460,55 +464,55 @@ async carregarDadosPerfil(): Promise<void> {
     this.displayConfirmarExclusao = true;
   }
 
-async executarExclusao(): Promise<void> {
-  const item = this.itemParaExcluir;
-  if (!item) return;
+  async executarExclusao(): Promise<void> {
+    const item = this.itemParaExcluir;
+    if (!item) return;
 
-  try {
-    const token = this.authService.getToken();
-    let url = '';
-    let nomeItem = '';
-    if (item.tipo === 'endereco') {
-      const endereco = this.perfilEnderecos.find(e => e.id === item.id);
-      nomeItem = endereco?.nomeEndereco || 'Endereço';
-      url = `http://localhost:8081/api/enderecos/${item.id}`;
-    } else if (item.tipo === 'cartao') {
-      const cartao = this.perfilCartoes.find(c => c.id === item.id);
-      nomeItem = cartao?.bandeira || 'Cartão';
-      url = `http://localhost:8081/api/clientes/${this.usuario.id}/cartoes/${item.id}`;
-    }
-
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': 'Bearer ' + token
+    try {
+      const token = this.authService.getToken();
+      let url = '';
+      let nomeItem = '';
+      if (item.tipo === 'endereco') {
+        const endereco = this.perfilEnderecos.find(e => e.id === item.id);
+        nomeItem = endereco?.nomeEndereco || 'Endereço';
+        url = `http://localhost:8081/api/enderecos/${item.id}`;
+      } else if (item.tipo === 'cartao') {
+        const cartao = this.perfilCartoes.find(c => c.id === item.id);
+        nomeItem = cartao?.bandeira || 'Cartão';
+        url = `http://localhost:8081/api/clientes/${this.usuario.id}/cartoes/${item.id}`;
       }
-    });
 
-    if (response.ok) {
-      const tipoNome = item.tipo === 'endereco' ? 'Endereço' : 'Cartão';
-      this.messageService.add({severity:'success', summary:'Sucesso', detail: `${tipoNome} excluído!`});
-      this.authService.adicionarNotificacao(
-        `${tipoNome} Excluído`,
-        `${tipoNome} "${nomeItem}" foi removido do seu perfil.`,
-        'warning'
-      );
-      this.displayConfirmarExclusao = false;
-      this.itemParaExcluir = null;
-      await this.carregarDadosPerfil();
-    } else {
-      this.messageService.add({severity:'error', summary:'Erro', detail: `Erro ao excluir ${item.tipo === 'endereco' ? 'endereço' : 'cartão'}`});
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+
+      if (response.ok) {
+        const tipoNome = item.tipo === 'endereco' ? 'Endereço' : 'Cartão';
+        this.messageService.add({severity:'success', summary:'Sucesso', detail: `${tipoNome} excluído!`});
+        this.authService.adicionarNotificacao(
+          `${tipoNome} Excluído`,
+          `${tipoNome} "${nomeItem}" foi removido do seu perfil.`,
+          'warning'
+        );
+        this.displayConfirmarExclusao = false;
+        this.itemParaExcluir = null;
+        await this.carregarDadosPerfil();
+      } else {
+        this.messageService.add({severity:'error', summary:'Erro', detail: `Erro ao excluir ${item.tipo === 'endereco' ? 'endereço' : 'cartão'}`});
+      }
+    } catch (error) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
     }
-  } catch (error) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
   }
-}
 
-formatarCPF(event: any): void {
-  let valor = event.target.value.replace(/\D/g, '');
-  if (valor.length > 11) valor = valor.slice(0, 11);
-  valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
-  valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+  formatarCPF(event: any): void {
+    let valor = event.target.value.replace(/\D/g, '');
+    if (valor.length > 11) valor = valor.slice(0, 11);
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
     valor = valor.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
     event.target.value = valor;
   }
