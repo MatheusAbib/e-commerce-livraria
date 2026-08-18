@@ -6,6 +6,7 @@ import com.biblioteca.biblioteca_online.model.Avaliacao;
 import com.biblioteca.biblioteca_online.model.Cliente;
 import com.biblioteca.biblioteca_online.model.Livro;
 import com.biblioteca.biblioteca_online.model.Pedido;
+import com.biblioteca.biblioteca_online.model.Log;
 import com.biblioteca.biblioteca_online.repository.AvaliacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,9 @@ public class AvaliacaoService {
 
     @Autowired
     private PedidoService pedidoService;
+
+    @Autowired
+    private LogService logService;
 
     @Transactional
     public Avaliacao criarAvaliacao(CriarAvaliacaoDTO dto, Long clienteId) {
@@ -93,15 +97,40 @@ public class AvaliacaoService {
     public Avaliacao atualizarAvaliacao(Long id, CriarAvaliacaoDTO dto, Long clienteId) {
         Avaliacao avaliacao = avaliacaoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Avaliação não encontrada"));
-        
+
         if (!avaliacao.getCliente().getId().equals(clienteId)) {
             throw new RuntimeException("Você só pode editar suas próprias avaliações");
         }
-        
+
         avaliacao.setNota(dto.getNota());
         avaliacao.setComentario(dto.getComentario());
         avaliacao.setDataAvaliacao(LocalDateTime.now());
-        
+
         return avaliacaoRepository.save(avaliacao);
+    }
+
+    @Transactional
+    public Avaliacao removerComentario(Long id) {
+        Avaliacao avaliacao = avaliacaoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Avaliação não encontrada"));
+
+        avaliacao.setComentario(null);
+        avaliacao.setDataAvaliacao(LocalDateTime.now());
+
+        Avaliacao avaliacaoAtualizada = avaliacaoRepository.save(avaliacao);
+
+        try {
+            Log log = new Log();
+            log.setUserId(avaliacao.getCliente().getId());
+            log.setAction("comentario_removido");
+            log.setDetails("Comentário removido pelo admin da avaliação do livro: " +
+                          avaliacao.getLivro().getTitulo());
+            log.setLevel("info");
+            logService.salvarLog(log);
+        } catch (Exception e) {
+            System.err.println("Erro ao registrar log: " + e.getMessage());
+        }
+
+        return avaliacaoAtualizada;
     }
 }

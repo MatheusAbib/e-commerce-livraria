@@ -50,69 +50,69 @@
           </span>
         </div>
 
-<div class="pedido-produtos">
-  <div *ngFor="let item of pedido.itens" class="produto-item">
-    <img
-      [src]="item.livro?.imagemUrl ? 'http://localhost:8081/uploads/' + item.livro.imagemUrl : 'https://via.placeholder.com/60x80?text=Sem+Imagem'"
-      class="produto-imagem"
-      [alt]="item.livro?.titulo">
-    <div class="produto-info">
-      <div class="produto-nome">{{ item.livro?.titulo || 'Livro desconhecido' }}</div>
-      <div class="produto-detalhes">
-        <span>Quantidade: {{ item.quantidade || 1 }}</span>
-        <span class="produto-preco">{{ formatarMoeda(item.precoUnitario || 0) }}</span>
-      </div>
-      <div *ngIf="item.statusDevolucao === 'DEVOLUCAO'" class="status-devolucao-badge">
-        <i class="pi pi-clock"></i> {{ item.quantidadeDevolvida }}/{{ item.quantidade }} em devolução
-      </div>
-      <div *ngIf="item.statusDevolucao === 'DEVOLVIDO'" class="status-devolvido-badge">
-        <i class="pi pi-check-circle"></i> {{ item.quantidadeDevolvida }}/{{ item.quantidade }} devolvido
-      </div>
-      <div *ngIf="item.statusDevolucao === 'DEVOLUCAO_PARCIAL'" class="status-parcial-badge">
-        <i class="pi pi-clock"></i> {{ item.quantidadeDevolvida }}/{{ item.quantidade }} em devolução
-      </div>
+        <div class="pedido-produtos">
+          <div *ngFor="let item of pedido.itens" class="produto-item">
+            <img
+              [src]="item.livro?.imagemUrl ? 'http://localhost:8081/uploads/' + item.livro.imagemUrl : 'https://via.placeholder.com/60x80?text=Sem+Imagem'"
+              class="produto-imagem"
+              [alt]="item.livro?.titulo">
+            <div class="produto-info">
+              <div class="produto-nome">{{ item.livro?.titulo || 'Livro desconhecido' }}</div>
+              <div class="produto-detalhes">
+                <span>Quantidade: {{ item.quantidade || 1 }}</span>
+                <span class="produto-preco">{{ formatarMoeda(item.precoUnitario || 0) }}</span>
+              </div>
+              <div *ngIf="item.statusDevolucao === 'DEVOLUCAO'" class="status-devolucao-badge">
+                <i class="pi pi-clock"></i> {{ item.quantidadeDevolvida }}/{{ item.quantidade }} em devolução
+              </div>
+              <div *ngIf="item.statusDevolucao === 'DEVOLVIDO'" class="status-devolvido-badge">
+                <i class="pi pi-check-circle"></i> {{ item.quantidadeDevolvida }}/{{ item.quantidade }} devolvido
+              </div>
+              <div *ngIf="item.statusDevolucao === 'DEVOLUCAO_PARCIAL'" class="status-parcial-badge">
+                <i class="pi pi-clock"></i> {{ item.quantidadeDevolvida }}/{{ item.quantidade }} em devolução
+              </div>
 
-      <div *ngIf="item.jaAvaliou" class="produto-avaliacao-feita">
-        <div class="estrelas-card">
-          <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-readonly" style="width: 0.7rem; height: 0.7rem;">
-            <i *ngIf="getTipoEstrelaAvaliacao(item.notaAvaliacao, star) === 'cheia'"
-               class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.7rem;"></i>
-            <i *ngIf="getTipoEstrelaAvaliacao(item.notaAvaliacao, star) === 'vazia'"
-               class="pi pi-star" style="color: #d1d5db; font-size: 0.7rem;"></i>
-            <span *ngIf="getTipoEstrelaAvaliacao(item.notaAvaliacao, star) === 'meia'"
-                  class="estrela-meia-wrapper" style="width: 0.7rem; height: 0.7rem;">
-              <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.7rem; clip-path: inset(0 50% 0 0);"></i>
-              <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 0.7rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
-            </span>
-          </span>
-        </div>
-        <span class="avaliacao-feita-texto">Avaliado</span>
-        <span *ngIf="item.comentarioAvaliacao" class="avaliacao-comentario-curto" title="{{ item.comentarioAvaliacao }}">
-          "{{ item.comentarioAvaliacao.length > 30 ? item.comentarioAvaliacao.substring(0, 30) + '...' : item.comentarioAvaliacao }}"
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
-
-      <div *ngIf="pedido.status === 'DEVOLUCAO' && pedido.motivoDevolucao" class="motivo-devolucao">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
-          <div style="flex: 1;">
-            <strong>Motivo da devolução:</strong>
-            <p style="margin: 0.25rem 0 0 0;">{{ pedido.motivoDevolucao }}</p>
-          </div>
-          <div *ngIf="pedido.fotosDevolucao && pedido.fotosDevolucao.length > 0" class="fotos-devolucao-container">
-            <div *ngFor="let foto of pedido.fotosDevolucao; let i = index" class="foto-devolucao-thumbnail" (click)="abrirFotoDevolucao(foto.caminho)">
-              <i class="pi pi-image"></i>
-              <span>Foto {{ i + 1 }}</span>
+              <div *ngIf="item.jaAvaliou" class="produto-avaliacao-feita">
+                <div class="estrelas-card">
+                  <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-readonly" style="width: 0.7rem; height: 0.7rem;">
+                    <i *ngIf="getTipoEstrelaAvaliacao(item.notaAvaliacao, star) === 'cheia'"
+                       class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.7rem;"></i>
+                    <i *ngIf="getTipoEstrelaAvaliacao(item.notaAvaliacao, star) === 'vazia'"
+                       class="pi pi-star" style="color: #d1d5db; font-size: 0.7rem;"></i>
+                    <span *ngIf="getTipoEstrelaAvaliacao(item.notaAvaliacao, star) === 'meia'"
+                          class="estrela-meia-wrapper" style="width: 0.7rem; height: 0.7rem;">
+                      <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.7rem; clip-path: inset(0 50% 0 0);"></i>
+                      <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 0.7rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
+                    </span>
+                  </span>
+                </div>
+                <span class="avaliacao-feita-texto">Avaliado</span>
+                <span *ngIf="item.comentarioAvaliacao" class="avaliacao-comentario-curto" title="{{ item.comentarioAvaliacao }}">
+                  "{{ item.comentarioAvaliacao.length > 30 ? item.comentarioAvaliacao.substring(0, 30) + '...' : item.comentarioAvaliacao }}"
+                </span>
+              </div>
             </div>
           </div>
-          <div *ngIf="!pedido.fotosDevolucao || pedido.fotosDevolucao.length === 0" class="sem-fotos-devolucao">
-            <i class="pi pi-image" style="color: #94a3b8;"></i>
-            <span style="color: #94a3b8; font-size: 0.8rem;">Nenhuma imagem anexada</span>
+        </div>
+
+        <div *ngIf="pedido.status === 'DEVOLUCAO' && pedido.motivoDevolucao" class="motivo-devolucao">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+            <div style="flex: 1;">
+              <strong>Motivo da devolução:</strong>
+              <p style="margin: 0.25rem 0 0 0;">{{ pedido.motivoDevolucao }}</p>
+            </div>
+          <div *ngIf="pedido.fotosDevolucao && pedido.fotosDevolucao.length > 0" class="fotos-devolucao-container">
+            <div class="foto-devolucao-thumbnail" (click)="abrirModalFotos(pedido.fotosDevolucao, 0)">
+              <i class="pi pi-image"></i>
+              <span>{{ pedido.fotosDevolucao.length }} foto{{ pedido.fotosDevolucao.length > 1 ? 's' : '' }}</span>
+            </div>
+          </div>
+            <div *ngIf="!pedido.fotosDevolucao || pedido.fotosDevolucao.length === 0" class="sem-fotos-devolucao">
+              <i class="pi pi-image" style="color: #94a3b8;"></i>
+              <span style="color: #94a3b8; font-size: 0.8rem;">Nenhuma imagem anexada</span>
+            </div>
           </div>
         </div>
-      </div>
 
         <div class="pedido-total">
           <div *ngIf="pedido.status !== 'DEVOLUCAO' && pedido.status !== 'DEVOLVIDO' && pedido.status !== 'ENVIADO_DEVOLUCAO' && pedido.status !== 'EM_TRANSITO' && pedido.status !== 'EM_PROCESSAMENTO' && pedido.status !== 'ENTREGUE'">
@@ -122,9 +122,9 @@
 
           <div *ngIf="pedido.status === 'EM_PROCESSAMENTO'">
             <div class="status-card status-card-processamento">
-<div class="status-card-icon" style="background: #fef3c7; color: #d97706;">
-  <i class="pi pi-clock"></i>
-</div>
+              <div class="status-card-icon" style="background: #fef3c7; color: #d97706;">
+                <i class="pi pi-clock"></i>
+              </div>
               <div class="status-card-content">
                 <h4>Pedido em processamento</h4>
                 <p>Seu pedido está sendo preparado para envio.</p>
@@ -249,7 +249,9 @@
                       </div>
                       <span class="cupom-valor">{{ pedido.cupomPorcentagem }}% de desconto na próxima compra</span>
                       <small *ngIf="pedido.cupomDisponivel">Use este cupom no seu próximo pedido!</small>
-                      <small *ngIf="!pedido.cupomDisponivel" class="texto-usado">Este cupom já foi utilizado</small>
+                      <small *ngIf="!pedido.cupomDisponivel && pedido.cupomDataUso" class="cupom-usado-em">
+                        Usado em: {{ pedido.cupomDataUso | date:'dd/MM/yyyy' }}
+                      </small>
                       <button *ngIf="pedido.cupomDisponivel" class="p-button-outlined" (click)="copiarCupom(pedido.cupomGerado)">
                         <i class="pi pi-copy"></i> Copiar
                       </button>
@@ -297,13 +299,12 @@
             <i class="pi pi-check"></i> Marcar como Entregue
           </button>
 
-          <button
-            *ngIf="pedido.status === 'ENTREGUE' && !verificarPrazoDevolucao(pedido.dataEntrega)"
-            class="btn-devolucao"
-            (click)="abrirDevolucao(pedido.id)">
-            <i class="pi pi-undo"></i> Solicitar Devolução
-          </button>
-
+<button
+  *ngIf="pedido.status === 'ENTREGUE' && !verificarPrazoDevolucao(pedido.dataEntrega) && pedido.temItemDisponivelParaDevolucao"
+  class="btn-devolucao"
+  (click)="abrirDevolucao(pedido.id)">
+  <i class="pi pi-undo"></i> Solicitar Devolução
+</button>
           <button
             *ngIf="pedido.status === 'ENTREGUE' && verificarPrazoDevolucao(pedido.dataEntrega)"
             class="btn-devolucao disabled"
@@ -328,7 +329,7 @@
           </button>
 
           <button
-            *ngIf="pedido.status === 'DEVOLVIDO'"
+            *ngIf="pedido.status === 'EM_TRANSITO' || pedido.status === 'AUTORIZADO_DEVOLUCAO' || pedido.status === 'DEVOLVIDO'"
             class="btn-falar-vendedor"
             (click)="abrirChatVendedor(pedido.id)">
             <i class="pi pi-comment"></i> Falar com vendedor
@@ -350,8 +351,8 @@
   <div class="custom-modal-overlay" (click)="displayCancelamentoModal = false"></div>
   <div class="custom-modal-content" style="width: 400px; max-width: 95%;">
     <div class="custom-modal-header">
-      <div class="auth-icon" style="background: #fef3c7;">
-        <i class="pi pi-exclamation-triangle" style="color: #d97706;"></i>
+      <div class="auth-icon auth-icon-warning">
+        <i class="pi pi-exclamation-triangle"></i>
       </div>
       <h2>Cancelar Pedido</h2>
     </div>
@@ -381,7 +382,9 @@
       <i class="pi pi-times"></i>
     </button>
     <div class="custom-modal-header">
-      <div class="auth-icon"><i class="pi pi-undo"></i></div>
+      <div class="auth-icon auth-icon-devolucao">
+        <i class="pi pi-undo"></i>
+      </div>
       <h2>Solicitar Devolução</h2>
       <p>Selecione os itens para devolução</p>
     </div>
@@ -460,8 +463,8 @@
       <i class="pi pi-times"></i>
     </button>
     <div class="custom-modal-header">
-      <div class="auth-icon" style="background: #3b82f6;">
-        <i class="pi pi-send" style="color: white;"></i>
+      <div class="auth-icon auth-icon-info">
+        <i class="pi pi-send"></i>
       </div>
       <h2>Instruções de Envio</h2>
       <p>Siga os passos abaixo para enviar seu pacote de devolução</p>
@@ -515,14 +518,14 @@
               <input
                 type="text"
                 [(ngModel)]="codigoRastreamento"
-                (ngModelChange)="onRastreamentoChange()"
+                (input)="validarCodigoRastreamentoInput($event.target.value)"
                 placeholder="Ex: AA123456789BR"
                 class="auth-input"
                 style="text-transform: uppercase;">
               <button
                 class="btn-primary btn-sm"
                 (click)="salvarRastreamento()"
-                [disabled]="!codigoRastreamento">
+                [disabled]="!codigoRastreamento || !codigoRastreamentoValido">
                 <i class="pi pi-save"></i> Salvar
               </button>
             </div>
@@ -553,8 +556,8 @@
   <div class="custom-modal-overlay" (click)="displayConfirmarReembolso = false"></div>
   <div class="custom-modal-content" style="width: 450px; max-width: 95%;">
     <div class="custom-modal-header">
-      <div class="auth-icon" style="background: #dcfce7;">
-        <i class="pi pi-check-circle" style="color: #22c55e;"></i>
+      <div class="auth-icon auth-icon-success">
+        <i class="pi pi-check-circle"></i>
       </div>
       <h2>Confirmar Reembolso</h2>
       <p>Confirme que você recebeu o reembolso</p>
@@ -589,8 +592,8 @@
   <div class="custom-modal-overlay" (click)="fecharConfirmarEntrega()"></div>
   <div class="custom-modal-content" style="width: 450px; max-width: 95%;">
     <div class="custom-modal-header">
-      <div class="auth-icon" style="background: #dbeafe;">
-        <i class="pi pi-check-circle" style="color: #3b82f6;"></i>
+      <div class="auth-icon auth-icon-info">
+        <i class="pi pi-check-circle"></i>
       </div>
       <h2>Confirmar Entrega</h2>
       <p>Confirme que você recebeu o pedido</p>
@@ -630,6 +633,51 @@
   </div>
 </div>
 
+<div class="custom-modal" [class.active]="displayFotosModal">
+  <div class="custom-modal-overlay" (click)="fecharModalFotos()"></div>
+  <div class="custom-modal-content" style="width: 600px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+    <button class="custom-modal-close" (click)="fecharModalFotos()">
+      <i class="pi pi-times"></i>
+    </button>
+    <div class="custom-modal-header">
+      <div class="auth-icon auth-icon-primary">
+        <i class="pi pi-image"></i>
+      </div>
+      <h2>Fotos da Devolução</h2>
+      <p>Visualize as imagens anexadas à solicitação de devolução</p>
+    </div>
+    <div class="custom-modal-body" style="text-align: center;">
+      <div class="fotos-carousel">
+        <button class="carousel-btn carousel-prev" (click)="fotoAnterior()" *ngIf="fotosDevolucaoList.length > 1">
+          <i class="pi pi-chevron-left"></i>
+        </button>
+        <img [src]="'http://localhost:8081/' + fotoAtual" class="foto-modal-img" alt="Foto da devolução">
+        <button class="carousel-btn carousel-next" (click)="fotoProxima()" *ngIf="fotosDevolucaoList.length > 1">
+          <i class="pi pi-chevron-right"></i>
+        </button>
+      </div>
+      <div class="fotos-thumbnails" *ngIf="fotosDevolucaoList.length > 1">
+        <div *ngFor="let foto of fotosDevolucaoList; let i = index"
+             class="thumb-item"
+             [class.active]="i === fotoIndexAtual"
+             (click)="selecionarFoto(i)">
+          <img [src]="'http://localhost:8081/' + foto" alt="Miniatura {{ i + 1 }}">
+        </div>
+      </div>
+      <div class="foto-counter" *ngIf="fotosDevolucaoList.length > 1">
+        {{ fotoIndexAtual + 1 }} de {{ fotosDevolucaoList.length }}
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <div class="modal-actions single">
+        <button class="btn-secondary" (click)="fecharModalFotos()">
+          <i class="pi pi-times"></i> Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="custom-modal" [class.active]="displayAvaliacaoModal">
   <div class="custom-modal-overlay" (click)="fecharAvaliacao()"></div>
   <div class="custom-modal-content" style="width: 600px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
@@ -637,8 +685,8 @@
       <i class="pi pi-times"></i>
     </button>
     <div class="custom-modal-header">
-      <div class="auth-icon" style="background: #fbbf24;">
-        <i class="pi pi-star" style="color: white;"></i>
+      <div class="auth-icon auth-icon-avaliacao">
+        <i class="pi pi-star"></i>
       </div>
       <h2>Avaliar Produtos</h2>
       <p>Avalie os produtos do pedido #{{ pedidoAvaliacao?.id }}</p>
@@ -658,70 +706,62 @@
           </div>
         </div>
 
-<div *ngIf="!avaliacao.avaliado" class="avaliacao-inputs">
-  <div class="estrelas-container">
-    <span *ngFor="let star of [0,1,2,3,4]"
-          class="estrela-wrapper"
-          (click)="alternarEstrela(i, star)">
+        <div *ngIf="!avaliacao.avaliado" class="avaliacao-inputs">
+          <div class="estrelas-container">
+            <span *ngFor="let star of [0,1,2,3,4]"
+                  class="estrela-wrapper"
+                  (click)="alternarEstrela(i, star)">
+              <i *ngIf="getTipoEstrela(avaliacao, star) === 'cheia'"
+                 class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.8rem;"></i>
+              <i *ngIf="getTipoEstrela(avaliacao, star) === 'vazia'"
+                 class="pi pi-star" style="color: #d1d5db; font-size: 1.8rem;"></i>
+              <span *ngIf="getTipoEstrela(avaliacao, star) === 'meia'"
+                    class="estrela-meia-wrapper">
+                <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.8rem; clip-path: inset(0 50% 0 0);"></i>
+                <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 1.8rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
+              </span>
+            </span>
+            <span class="avaliacao-nota-texto">{{ avaliacao.nota.toFixed(1) }}</span>
+          </div>
 
-      <i *ngIf="getTipoEstrela(avaliacao, star) === 'cheia'"
-         class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.8rem;"></i>
+          <textarea
+            [(ngModel)]="avaliacao.comentario"
+            placeholder="Deixe um comentário (opcional)"
+            class="auth-input"
+            rows="2">
+          </textarea>
 
-      <i *ngIf="getTipoEstrela(avaliacao, star) === 'vazia'"
-         class="pi pi-star" style="color: #d1d5db; font-size: 1.8rem;"></i>
+          <button class="btn-primary btn-salvar-avaliacao" (click)="salvarAvaliacao(i)">
+            <i class="pi pi-check"></i> {{ avaliacao.avaliacaoId ? 'Atualizar Avaliação' : 'Salvar Avaliação' }}
+          </button>
+        </div>
 
-      <span *ngIf="getTipoEstrela(avaliacao, star) === 'meia'"
-            class="estrela-meia-wrapper">
-        <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.8rem; clip-path: inset(0 50% 0 0);"></i>
-        <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 1.8rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
-      </span>
+        <div *ngIf="avaliacao.avaliado" class="avaliacao-feita">
+          <div class="estrelas-container">
+            <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-readonly">
+              <i *ngIf="getTipoEstrela(avaliacao, star) === 'cheia'"
+                 class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.8rem;"></i>
+              <i *ngIf="getTipoEstrela(avaliacao, star) === 'vazia'"
+                 class="pi pi-star" style="color: #d1d5db; font-size: 1.8rem;"></i>
+              <span *ngIf="getTipoEstrela(avaliacao, star) === 'meia'"
+                    class="estrela-meia-wrapper">
+                <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.8rem; clip-path: inset(0 50% 0 0);"></i>
+                <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 1.8rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
+              </span>
+            </span>
+            <span class="avaliacao-nota-texto">{{ avaliacao.nota.toFixed(1) }}</span>
+          </div>
 
-    </span>
-    <span class="avaliacao-nota-texto">{{ avaliacao.nota.toFixed(1) }}</span>
-  </div>
+          <p *ngIf="avaliacao.comentario" class="avaliacao-comentario-feito">
+            "{{ avaliacao.comentario }}"
+          </p>
 
-  <textarea
-    [(ngModel)]="avaliacao.comentario"
-    placeholder="Deixe um comentário (opcional)"
-    class="auth-input"
-    rows="2">
-  </textarea>
-
-  <button class="btn-primary btn-salvar-avaliacao" (click)="salvarAvaliacao(i)">
-    <i class="pi pi-check"></i> {{ avaliacao.avaliacaoId ? 'Atualizar Avaliação' : 'Salvar Avaliação' }}
-  </button>
-</div>
-
-<div *ngIf="avaliacao.avaliado" class="avaliacao-feita">
-  <div class="estrelas-container">
-    <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-readonly">
-
-      <i *ngIf="getTipoEstrela(avaliacao, star) === 'cheia'"
-         class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.8rem;"></i>
-
-      <i *ngIf="getTipoEstrela(avaliacao, star) === 'vazia'"
-         class="pi pi-star" style="color: #d1d5db; font-size: 1.8rem;"></i>
-
-      <span *ngIf="getTipoEstrela(avaliacao, star) === 'meia'"
-            class="estrela-meia-wrapper">
-        <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.8rem; clip-path: inset(0 50% 0 0);"></i>
-        <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 1.8rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
-      </span>
-
-    </span>
-    <span class="avaliacao-nota-texto">{{ avaliacao.nota.toFixed(1) }}</span>
-  </div>
-
-  <p *ngIf="avaliacao.comentario" class="avaliacao-comentario-feito">
-    "{{ avaliacao.comentario }}"
-  </p>
-
-  <div class="avaliacao-acoes-edit">
-    <button class="btn-primary" (click)="editarAvaliacao(i)">
-      <i class="pi pi-pencil"></i> Editar Avaliação
-    </button>
-  </div>
-</div>
+          <div class="avaliacao-acoes-edit">
+            <button class="btn-primary" (click)="editarAvaliacao(i)">
+              <i class="pi pi-pencil"></i> Editar Avaliação
+            </button>
+          </div>
+        </div>
 
         <hr *ngIf="i < avaliacoes.length - 1" class="avaliacao-divider">
       </div>
@@ -735,6 +775,5 @@
     </div>
   </div>
 </div>
-
 
 <p-toast position="top-right"></p-toast>

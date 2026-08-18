@@ -93,15 +93,22 @@
                   </span>
                 </td>
                 <td>{{ avaliacao.cliente?.nome || 'Cliente' }}</td>
-                <td class="text-center">
-                  <div class="estrelas-tabela">
-                    <i *ngFor="let i of [1,2,3,4,5]"
-                       class="pi pi-star-fill"
-                       [class.estrela-cheia]="i <= avaliacao.nota"
-                       [class.estrela-vazia]="i > avaliacao.nota">
-                    </i>
-                  </div>
-                </td>
+<td class="text-center">
+  <div class="estrelas-tabela">
+    <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-admin">
+      <i *ngIf="getTipoEstrelaAdmin(avaliacao.nota, star) === 'cheia'"
+         class="pi pi-star-fill" style="color: #fbbf24; font-size: 1rem;"></i>
+      <i *ngIf="getTipoEstrelaAdmin(avaliacao.nota, star) === 'vazia'"
+         class="pi pi-star" style="color: #d1d5db; font-size: 1rem;"></i>
+      <span *ngIf="getTipoEstrelaAdmin(avaliacao.nota, star) === 'meia'"
+            class="estrela-meia-admin" style="width: 1rem; height: 1rem; display: inline-block; position: relative;">
+        <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 1rem; clip-path: inset(0 50% 0 0); position: absolute; top: 0; left: 0;"></i>
+        <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 1rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
+      </span>
+    </span>
+    <span class="nota-texto-admin">{{ avaliacao.nota | number:'1.1-1' }}</span>
+  </div>
+</td>
                 <td>
                   <span class="details-cell" [title]="avaliacao.comentario">
                     {{ avaliacao.comentario ? (avaliacao.comentario.length > 50 ? avaliacao.comentario.substring(0, 50) + '...' : avaliacao.comentario) : '-' }}
@@ -113,11 +120,11 @@
                     {{ formatarData(avaliacao.dataAvaliacao) }}
                   </span>
                 </td>
-                <td class="text-center">
-                  <button class="btn-icon btn-excluir" (click)="abrirExcluir(avaliacao)" title="Excluir avaliação">
-                    <i class="pi pi-trash"></i>
-                  </button>
-                </td>
+<td class="text-center">
+  <button class="btn-icon btn-excluir" (click)="abrirExcluir(avaliacao)" title="Remover comentário">
+    <i class="pi pi-trash"></i>
+  </button>
+</td>
               </tr>
             </tbody>
           </table>
@@ -143,11 +150,11 @@
       <i class="pi pi-times"></i>
     </button>
     <div class="custom-modal-header">
-      <div class="auth-icon" style="background: #fee2e2;">
-        <i class="pi pi-exclamation-triangle" style="color: #dc2626;"></i>
+      <div class="auth-icon" style="background: #fef3c7;">
+        <i class="pi pi-comment" style="color: #d97706;"></i>
       </div>
-      <h2>Excluir Avaliação</h2>
-      <p>Tem certeza que deseja excluir esta avaliação?</p>
+      <h2>Remover Comentário</h2>
+      <p>Tem certeza que deseja remover o comentário desta avaliação?</p>
     </div>
     <div class="custom-modal-body" *ngIf="avaliacaoSelecionada">
       <div class="detalhes-item">
@@ -160,21 +167,36 @@
       </div>
       <div class="detalhes-item">
         <strong>Nota:</strong>
-        <div class="estrelas-tabela">
-          <i *ngFor="let i of [1,2,3,4,5]"
-             class="pi pi-star-fill"
-             [class.estrela-cheia]="i <= avaliacaoSelecionada.nota"
-             [class.estrela-vazia]="i > avaliacaoSelecionada.nota">
-          </i>
-        </div>
+<div class="estrelas-tabela">
+  <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-admin">
+    <i *ngIf="getTipoEstrelaAdmin(avaliacaoSelecionada.nota, star) === 'cheia'"
+       class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.2rem;"></i>
+    <i *ngIf="getTipoEstrelaAdmin(avaliacaoSelecionada.nota, star) === 'vazia'"
+       class="pi pi-star" style="color: #d1d5db; font-size: 1.2rem;"></i>
+    <span *ngIf="getTipoEstrelaAdmin(avaliacaoSelecionada.nota, star) === 'meia'"
+          class="estrela-meia-admin" style="width: 1.2rem; height: 1.2rem; display: inline-block; position: relative;">
+      <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 1.2rem; clip-path: inset(0 50% 0 0); position: absolute; top: 0; left: 0;"></i>
+      <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 1.2rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
+    </span>
+  </span>
+  <span class="nota-texto-admin">{{ avaliacaoSelecionada.nota | number:'1.1-1' }}</span>
+</div>
       </div>
       <div class="detalhes-item" *ngIf="avaliacaoSelecionada.comentario">
-        <strong>Comentário:</strong>
-        <div class="detalhes-details">"{{ avaliacaoSelecionada.comentario }}"</div>
+        <strong>Comentário a ser removido:</strong>
+        <div class="detalhes-details" style="background: #fef2f2; border-left: 3px solid #dc2626;">
+          "{{ avaliacaoSelecionada.comentario }}"
+        </div>
       </div>
       <div class="detalhes-item">
         <strong>Data:</strong>
         <span>{{ formatarData(avaliacaoSelecionada.dataAvaliacao) }}</span>
+      </div>
+      <div style="margin-top: 0.75rem; padding: 0.5rem; background: #fef3c7; border-radius: 8px;">
+        <p style="margin: 0; font-size: 0.85rem; color: #92400e;">
+          <i class="pi pi-info-circle" style="margin-right: 0.5rem;"></i>
+          A nota e a avaliação permanecerão. Apenas o comentário será removido.
+        </p>
       </div>
     </div>
     <div class="custom-modal-footer">
@@ -183,7 +205,7 @@
           <i class="pi pi-times"></i> Cancelar
         </button>
         <button class="btn-danger" (click)="confirmarExcluir()">
-          <i class="pi pi-trash"></i> Excluir
+          <i class="pi pi-trash"></i> Remover Comentário
         </button>
       </div>
     </div>

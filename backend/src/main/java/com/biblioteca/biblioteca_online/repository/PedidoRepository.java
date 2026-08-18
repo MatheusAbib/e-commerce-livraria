@@ -9,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
-    
+
     List<Pedido> findByClienteId(Long clienteId);
-    
+
     @Query("SELECT p FROM Pedido p WHERE p.cliente.id = :clienteId ORDER BY p.dataPedido DESC")
     List<Pedido> findPedidosPorClienteOrdenadosPorData(@Param("clienteId") Long clienteId);
 
@@ -23,7 +23,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
            "SUM(i.quantidade * (i.precoUnitario - i.livro.precoCusto)) as lucroTotal " +
            "FROM ItemPedido i " +
            "JOIN i.pedido p " +
-           "WHERE p.status IN ('ENTREGUE', 'EM_TRANSITO', 'TROCADO') " + 
+           "WHERE p.status IN ('ENTREGUE', 'EM_TRANSITO', 'TROCADO') " +
            "GROUP BY i.livro.titulo " +
            "ORDER BY lucroTotal DESC")
     List<Object[]> calcularLucrosPorLivro();
@@ -38,8 +38,6 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     @Query("SELECT p.id FROM Pedido p")
     List<Long> findAllIds();
-
-    Pedido findByCupomGerado(String cupomGerado);
 
     List<Pedido> findByPedidoOriginalId(Long pedidoOriginalId);
 }

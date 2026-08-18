@@ -1,6 +1,32 @@
 .estrelas-tabela {
   display: inline-flex;
-  gap: 0.1rem;
+  align-items: center;
+  gap: 0.05rem;
+}
+
+.estrela-wrapper-admin {
+  display: inline-block;
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+}
+
+.estrela-meia-admin {
+  position: relative;
+  display: inline-block;
+}
+
+.estrela-meia-admin i {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.nota-texto-admin {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1a2332;
+  margin-left: 0.3rem;
 }
 
 .estrelas-tabela i {

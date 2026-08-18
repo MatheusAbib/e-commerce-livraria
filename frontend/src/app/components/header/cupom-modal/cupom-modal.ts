@@ -38,67 +38,71 @@ export class CupomModalComponent implements OnInit {
     }
   }
 
-carregarCupons(): void {
-  this.carregando = true;
-  const user = this.authService.getUser();
-  if (!user) {
-    this.carregando = false;
-    return;
+  async carregarCupons(): Promise<void> {
+    this.carregando = true;
+    const user = this.authService.getUser();
+    if (!user) {
+      this.carregando = false;
+      return;
+    }
+
+    try {
+      const token = this.authService.getToken();
+
+      const [disponiveisRes, usadosRes] = await Promise.all([
+        fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        }),
+        fetch(`/api/cupons/cliente/${user.id}/usados`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        })
+      ]);
+
+      if (disponiveisRes.ok) {
+        this.cuponsDisponiveis = await disponiveisRes.json();
+      }
+
+      if (usadosRes.ok) {
+        this.cuponsUsados = await usadosRes.json();
+      }
+
+      this.authService.atualizarCuponsCount(this.cuponsDisponiveis.length);
+
+    } catch (error) {
+      console.error('Erro ao carregar cupons:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Erro ao carregar cupons'
+      });
+    } finally {
+      this.carregando = false;
+    }
   }
 
-  const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario') || '{}');
-  const cupons = cuponsPorUsuario[user.id] || [];
-
-  this.cuponsDisponiveis = cupons.filter((c: any) => !c.usado);
-  this.cuponsUsados = cupons.filter((c: any) => c.usado);
-
-  this.authService.atualizarCuponsCount(this.cuponsDisponiveis.length);
-
-  this.carregando = false;
-}
-
-copiarCupom(codigo: string): void {
-  console.log('Tentando copiar:', codigo);
-
-  const textarea = document.createElement('textarea');
-  textarea.value = codigo;
-  textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
-  document.body.appendChild(textarea);
-  textarea.select();
-
-  try {
-    const sucesso = document.execCommand('copy');
-    console.log('Sucesso:', sucesso);
-    if (sucesso) {
+  copiarCupom(codigo: string): void {
+    navigator.clipboard.writeText(codigo).then(() => {
       this.messageService.add({
         severity: 'success',
         summary: 'Copiado!',
         detail: `Cupom ${codigo} copiado para a área de transferência`
       });
-      this.authService.adicionarNotificacao(
-        'Cupom Copiado',
-        `Cupom ${codigo} foi copiado`,
-        'success'
-      );
-    } else {
+    }).catch(() => {
       this.messageService.add({
         severity: 'error',
         summary: 'Erro',
         detail: 'Não foi possível copiar o cupom'
       });
-    }
-  } catch (err) {
-    console.error('Erro:', err);
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Não foi possível copiar o cupom'
     });
-  } finally {
-    document.body.removeChild(textarea);
   }
-}
+
+  isExpirando(dataExpiracao: string): boolean {
+    if (!dataExpiracao) return false;
+    const agora = new Date();
+    const expiracao = new Date(dataExpiracao);
+    const diff = (expiracao.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24);
+    return diff > 0 && diff <= 3;
+  }
 
   fechar(): void {
     this.visible = false;

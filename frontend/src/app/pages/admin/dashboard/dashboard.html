@@ -230,111 +230,136 @@
         </div>
       </div>
 
-      <div class="dashboard-card">
-        <div class="dashboard-card-header">
-          <h3><i class="pi pi-tags"></i> Distribuição por Status</h3>
+<div class="dashboard-card">
+  <div class="dashboard-card-header">
+    <h3><i class="pi pi-tags"></i> Distribuição por Status</h3>
+  </div>
+  <div class="dashboard-card-body">
+    <div *ngIf="loading" class="loading-state">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Carregando...</p>
+    </div>
+    <div *ngIf="!loading && statusDistribuicao.length === 0" class="empty-state">
+      <i class="pi pi-inbox"></i>
+      <p>Nenhum dado encontrado</p>
+    </div>
+    <div *ngIf="!loading && statusDistribuicao.length > 0">
+      <div *ngFor="let item of statusDistribuicao" class="status-item">
+        <div class="status-info">
+          <span class="status-label" [class]="getStatusClass(item.status)">
+            <i [class]="getStatusIcon(item.status)"></i>
+            {{ getStatusLabel(item.status) }}
+          </span>
+          <span class="status-count">{{ item.total }}</span>
         </div>
-        <div class="dashboard-card-body">
-          <div *ngIf="loading" class="loading-state">
-            <i class="pi pi-spin pi-spinner"></i>
-            <p>Carregando...</p>
-          </div>
-          <div *ngIf="!loading && statusDistribuicao.length === 0" class="empty-state">
-            <i class="pi pi-inbox"></i>
-            <p>Nenhum dado encontrado</p>
-          </div>
-          <div *ngIf="!loading && statusDistribuicao.length > 0">
-            <div *ngFor="let item of statusDistribuicao" class="status-item">
-              <span class="status-label">{{ getStatusLabel(item.status) }}</span>
-              <div class="status-bar">
-                <div class="status-bar-fill" [style.width.%]="item.percentual"></div>
-              </div>
-              <span class="status-count">{{ item.total }}</span>
-            </div>
+        <div class="status-bar">
+          <div class="status-bar-fill"
+               [style.width.%]="item.percentual"
+               [class]="getStatusClass(item.status)">
           </div>
         </div>
+        <span class="status-percentual">{{ item.percentual | number:'1.0-0' }}%</span>
       </div>
+    </div>
+  </div>
+</div>
     </div>
 
     <div class="dashboard-grid avaliacoes-grid">
-      <div class="dashboard-card">
-        <div class="dashboard-card-header">
-          <h3><i class="pi pi-trophy" style="color: #f59e0b;"></i> Ranking por Avaliação</h3>
+<div class="dashboard-card">
+  <div class="dashboard-card-header">
+    <h3><i class="pi pi-trophy" style="color: #f59e0b;"></i> Ranking por Avaliação</h3>
+  </div>
+  <div class="dashboard-card-body">
+    <div *ngIf="loadingAvaliacoes" class="loading-state">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Carregando...</p>
+    </div>
+    <div *ngIf="!loadingAvaliacoes && rankingLivros.length === 0" class="empty-state">
+      <i class="pi pi-inbox"></i>
+      <p>Nenhuma avaliação encontrada</p>
+    </div>
+    <div *ngIf="!loadingAvaliacoes && rankingLivros.length > 0">
+      <div *ngFor="let item of rankingLivrosPaginados; let i = index" class="ranking-item">
+        <div class="ranking-posicao">
+          <span class="posicao-numero" [class.top1]="i === 0" [class.top2]="i === 1" [class.top3]="i === 2">
+            #{{ i + 1 }}
+          </span>
         </div>
-        <div class="dashboard-card-body">
-          <div *ngIf="loadingAvaliacoes" class="loading-state">
-            <i class="pi pi-spin pi-spinner"></i>
-            <p>Carregando...</p>
-          </div>
-          <div *ngIf="!loadingAvaliacoes && rankingLivros.length === 0" class="empty-state">
-            <i class="pi pi-inbox"></i>
-            <p>Nenhuma avaliação encontrada</p>
-          </div>
-          <div *ngIf="!loadingAvaliacoes && rankingLivros.length > 0">
-            <div *ngFor="let item of rankingLivrosPaginados; let i = index" class="ranking-item">
-              <div class="ranking-posicao">
-                <span class="posicao-numero" [class.top1]="i === 0" [class.top2]="i === 1" [class.top3]="i === 2">
-                  #{{ i + 1 }}
-                </span>
-              </div>
-              <div class="ranking-info">
-                <span class="ranking-livro">{{ item.titulo }}</span>
-                <div class="ranking-estrelas">
-                  <i *ngFor="let star of [1,2,3,4,5]"
-                     class="pi pi-star-fill"
-[class.estrela-cheia]="star <= arredondarNota(item.media)"
-[class.estrela-vazia]="star > arredondarNota(item.media)">
-                  </i>
-                  <span class="ranking-nota">{{ item.media | number:'1.1-1' }}</span>
-                </div>
-              </div>
-              <span class="ranking-total">{{ item.total }} avaliações</span>
-            </div>
-            <p-paginator
-              [first]="firstRanking"
-              [rows]="rowsRanking"
-              [totalRecords]="totalRecordsRanking"
-              (onPageChange)="onPageChangeRanking($event)"
-              [rowsPerPageOptions]="[5, 10, 20]"
-              styleClass="ranking-paginator">
-            </p-paginator>
-          </div>
-        </div>
-      </div>
-
-      <div class="dashboard-card">
-        <div class="dashboard-card-header">
-          <h3><i class="pi pi-chart-pie" style="color: #8b5cf6;"></i> Distribuição das Notas</h3>
-        </div>
-        <div class="dashboard-card-body">
-          <div *ngIf="loadingAvaliacoes" class="loading-state">
-            <i class="pi pi-spin pi-spinner"></i>
-            <p>Carregando...</p>
-          </div>
-          <div *ngIf="!loadingAvaliacoes && distribuicaoNotas.length === 0" class="empty-state">
-            <i class="pi pi-inbox"></i>
-            <p>Nenhuma avaliação encontrada</p>
-          </div>
-          <div *ngIf="!loadingAvaliacoes && distribuicaoNotas.length > 0">
-            <div *ngFor="let item of distribuicaoNotas" class="status-item">
-              <span class="status-label">
-                <span *ngFor="let star of [1,2,3,4,5]"
-                      class="estrela-pequena"
-                      [class.estrela-cheia]="star <= item.nota">
-                  ★
-                </span>
+        <div class="ranking-info">
+          <span class="ranking-livro">{{ item.titulo }}</span>
+          <div class="ranking-estrelas">
+            <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-ranking">
+              <i *ngIf="getTipoEstrelaRanking(item.media, star) === 'cheia'"
+                 class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.8rem;"></i>
+              <i *ngIf="getTipoEstrelaRanking(item.media, star) === 'vazia'"
+                 class="pi pi-star" style="color: #d1d5db; font-size: 0.8rem;"></i>
+              <span *ngIf="getTipoEstrelaRanking(item.media, star) === 'meia'"
+                    class="estrela-meia-ranking" style="width: 0.8rem; height: 0.8rem; display: inline-block; position: relative;">
+                <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.8rem; clip-path: inset(0 50% 0 0); position: absolute; top: 0; left: 0;"></i>
+                <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 0.8rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
               </span>
-              <div class="status-bar">
-                <div class="status-bar-fill"
-                     [style.width.%]="item.percentual"
-                     [style.background]="getCorNota(item.nota)">
-                </div>
-              </div>
-              <span class="status-count">{{ item.total }}</span>
-            </div>
+            </span>
+            <span class="ranking-nota">{{ item.media | number:'1.1-1' }}</span>
           </div>
         </div>
+        <span class="ranking-total">{{ item.total }} avaliações</span>
       </div>
+      <p-paginator
+        [first]="firstRanking"
+        [rows]="rowsRanking"
+        [totalRecords]="totalRecordsRanking"
+        (onPageChange)="onPageChangeRanking($event)"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        styleClass="ranking-paginator">
+      </p-paginator>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-card">
+  <div class="dashboard-card-header">
+    <h3><i class="pi pi-chart-pie" style="color: #8b5cf6;"></i> Distribuição das Notas</h3>
+  </div>
+  <div class="dashboard-card-body">
+    <div *ngIf="loadingAvaliacoes" class="loading-state">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Carregando...</p>
+    </div>
+    <div *ngIf="!loadingAvaliacoes && distribuicaoNotas.length === 0" class="empty-state">
+      <i class="pi pi-inbox"></i>
+      <p>Nenhuma avaliação encontrada</p>
+    </div>
+    <div *ngIf="!loadingAvaliacoes && distribuicaoNotas.length > 0">
+      <div *ngFor="let item of distribuicaoNotas" class="status-item">
+        <div class="status-info">
+          <span class="status-label notas-label">
+            <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-distribuicao">
+              <i *ngIf="getTipoEstrelaDistribuicao(item.nota, star) === 'cheia'"
+                 class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.7rem;"></i>
+              <i *ngIf="getTipoEstrelaDistribuicao(item.nota, star) === 'vazia'"
+                 class="pi pi-star" style="color: #d1d5db; font-size: 0.7rem;"></i>
+              <span *ngIf="getTipoEstrelaDistribuicao(item.nota, star) === 'meia'"
+                    class="estrela-meia-distribuicao" style="width: 0.7rem; height: 0.7rem; display: inline-block; position: relative;">
+                <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.7rem; clip-path: inset(0 50% 0 0); position: absolute; top: 0; left: 0;"></i>
+                <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 0.7rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
+              </span>
+            </span>
+            <span class="nota-texto-distribuicao">{{ item.nota | number:'1.1-1' }}</span>
+          </span>
+          <span class="status-count">{{ item.total }}</span>
+        </div>
+        <div class="status-bar">
+          <div class="status-bar-fill"
+               [style.width.%]="item.percentual"
+               [style.background]="getCorNota(item.nota)">
+          </div>
+        </div>
+        <span class="status-percentual">{{ item.percentual | number:'1.0-0' }}%</span>
+      </div>
+    </div>
+  </div>
+</div>
     </div>
   </main>
 </div>

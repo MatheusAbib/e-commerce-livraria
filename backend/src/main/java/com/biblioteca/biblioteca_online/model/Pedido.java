@@ -2,6 +2,7 @@ package com.biblioteca.biblioteca_online.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ public class Pedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
     @JsonIgnoreProperties(value = {"enderecos", "cartoes", "pedidos"}, allowSetters = true)
@@ -39,10 +40,6 @@ public class Pedido {
 
     @Column(name = "pedido_original_id")
     private Long pedidoOriginalId;
-
-    @JsonIgnoreProperties("pedido")
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CupomAplicado> cuponsAplicados = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "endereco_id", nullable = true)
@@ -68,15 +65,6 @@ public class Pedido {
     @Column(name = "motivo_devolucao", columnDefinition = "TEXT")
     private String motivoDevolucao;
 
-    @Column(name = "cupom_gerado")
-    private String cupomGerado;
-
-    @Column(name = "cupom_porcentagem")
-    private BigDecimal cupomPorcentagem;
-
-    @Column(name = "cupom_disponivel")
-    private Boolean cupomDisponivel = false;
-
     @Column(name = "codigo_rastreamento_envio")
     private String codigoRastreamentoEnvio;
 
@@ -87,11 +75,11 @@ public class Pedido {
     private Boolean reembolsoConfirmado = false;
 
     @Column(name = "data_entrega")
-    private LocalDateTime dataEntrega;
+    private LocalDate dataEntrega;
 
-@OneToMany(mappedBy = "pedidoDevolucao", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-@JsonIgnoreProperties("pedidoDevolucao")
-private List<DevolucaoFoto> fotosDevolucao = new ArrayList<>();
+    @OneToMany(mappedBy = "pedidoDevolucao", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("pedidoDevolucao")
+    private List<DevolucaoFoto> fotosDevolucao = new ArrayList<>();
 
     public void adicionarItem(Livro livro, Integer quantidade) {
         for (ItemPedido itemExistente : this.itens) {
@@ -111,15 +99,6 @@ private List<DevolucaoFoto> fotosDevolucao = new ArrayList<>();
     public void limparItens() {
         this.itens.forEach(ItemPedido::desvincularPedido);
         this.itens.clear();
-    }
-    
-    public void adicionarCupom(String codigo, BigDecimal porcentagem, BigDecimal valorDesconto) {
-        CupomAplicado cupom = new CupomAplicado();
-        cupom.setPedido(this);
-        cupom.setCodigo(codigo);
-        cupom.setPorcentagem(porcentagem);
-        cupom.setValorDesconto(valorDesconto);
-        this.cuponsAplicados.add(cupom);
     }
 
     public String getFotoDevolucao() {
@@ -241,38 +220,6 @@ private List<DevolucaoFoto> fotosDevolucao = new ArrayList<>();
         this.motivoDevolucao = motivoDevolucao;
     }
 
-    public String getCupomGerado() {
-        return cupomGerado;
-    }
-
-    public void setCupomGerado(String cupomGerado) {
-        this.cupomGerado = cupomGerado;
-    }
-
-    public BigDecimal getCupomPorcentagem() {
-        return cupomPorcentagem;
-    }
-
-    public void setCupomPorcentagem(BigDecimal cupomPorcentagem) {
-        this.cupomPorcentagem = cupomPorcentagem;
-    }
-
-    public Boolean getCupomDisponivel() {
-        return cupomDisponivel;
-    }
-
-    public void setCupomDisponivel(Boolean cupomDisponivel) {
-        this.cupomDisponivel = cupomDisponivel;
-    }
-
-    public List<CupomAplicado> getCuponsAplicados() {
-        return cuponsAplicados;
-    }
-
-    public void setCuponsAplicados(List<CupomAplicado> cuponsAplicados) {
-        this.cuponsAplicados = cuponsAplicados;
-    }
-
     public Long getPedidoOriginalId() {
         return pedidoOriginalId;
     }
@@ -305,11 +252,11 @@ private List<DevolucaoFoto> fotosDevolucao = new ArrayList<>();
         this.reembolsoConfirmado = reembolsoConfirmado;
     }
 
-    public LocalDateTime getDataEntrega() {
+    public LocalDate getDataEntrega() {
         return dataEntrega;
     }
 
-    public void setDataEntrega(LocalDateTime dataEntrega) {
+    public void setDataEntrega(LocalDate dataEntrega) {
         this.dataEntrega = dataEntrega;
     }
 

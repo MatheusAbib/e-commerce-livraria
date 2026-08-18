@@ -17,37 +17,45 @@ export class AdminSidebarComponent implements OnInit {
 
   usuario: any = {};
   totalChatNaoLidas: number = 0;
-
+  menuAberto: boolean = false;
 
   constructor(
     private router: Router,
     private authService: AuthService
   ) {}
 
-ngOnInit(): void {
-  this.carregarUsuario();
-  this.carregarTotalChatNaoLidas();
-  setInterval(() => {
+  ngOnInit(): void {
+    this.carregarUsuario();
     this.carregarTotalChatNaoLidas();
-  }, 3000);
-}
-
-async carregarTotalChatNaoLidas(): Promise<void> {
-  try {
-    const token = this.authService.getToken();
-    const response = await fetch('/api/chat/admin/total-nao-lidas', {
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
-    });
-    if (response.ok) {
-      const data = await response.json();
-      this.totalChatNaoLidas = data.total || 0;
-    }
-  } catch (error) {
-    console.error('Erro ao carregar total de chats não lidos:', error);
+    setInterval(() => {
+      this.carregarTotalChatNaoLidas();
+    }, 3000);
   }
-}
+
+  toggleMenu(): void {
+    this.menuAberto = !this.menuAberto;
+  }
+
+  fecharMenu(): void {
+    this.menuAberto = false;
+  }
+
+  async carregarTotalChatNaoLidas(): Promise<void> {
+    try {
+      const token = this.authService.getToken();
+      const response = await fetch('/api/chat/admin/total-nao-lidas', {
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        this.totalChatNaoLidas = data.total || 0;
+      }
+    } catch (error) {
+      console.error('Erro ao carregar total de chats não lidos:', error);
+    }
+  }
 
   carregarUsuario(): void {
     const user = this.authService.getUser();
@@ -65,12 +73,14 @@ async carregarTotalChatNaoLidas(): Promise<void> {
   }
 
   abrirPerfil(): void {
+    this.fecharMenu();
     if (this.adminModals) {
       this.adminModals.abrirPerfil();
     }
   }
 
   abrirLogout(): void {
+    this.fecharMenu();
     if (this.adminModals) {
       this.adminModals.abrirLogout();
     }

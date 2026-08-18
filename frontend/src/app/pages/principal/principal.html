@@ -339,13 +339,20 @@
             <span class="comentario-nome">{{ comentario.cliente?.nome || 'Cliente' }}</span>
             <span class="comentario-data">{{ formatarDataComentario(comentario.dataAvaliacao) }}</span>
           </div>
-          <div class="comentario-estrelas">
-            <i *ngFor="let star of [1,2,3,4,5]"
-               class="pi pi-star-fill"
-               [class.estrela-cheia]="star <= comentario.nota"
-               [class.estrela-vazia]="star > comentario.nota">
-            </i>
-          </div>
+            <div class="comentario-estrelas">
+              <span *ngFor="let star of [0,1,2,3,4]" class="estrela-wrapper-comentario">
+                <i *ngIf="getTipoEstrelaComentario(comentario.nota, star) === 'cheia'"
+                  class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.8rem;"></i>
+                <i *ngIf="getTipoEstrelaComentario(comentario.nota, star) === 'vazia'"
+                  class="pi pi-star" style="color: #d1d5db; font-size: 0.8rem;"></i>
+                <span *ngIf="getTipoEstrelaComentario(comentario.nota, star) === 'meia'"
+                      class="estrela-meia-comentario" style="width: 0.8rem; height: 0.8rem; display: inline-block; position: relative;">
+                  <i class="pi pi-star-fill" style="color: #fbbf24; font-size: 0.8rem; clip-path: inset(0 50% 0 0); position: absolute; top: 0; left: 0;"></i>
+                  <i class="pi pi-star-fill" style="color: #d1d5db; font-size: 0.8rem; clip-path: inset(0 0 0 50%); position: absolute; top: 0; left: 0;"></i>
+                </span>
+              </span>
+              <span class="nota-texto-comentario">{{ formatarNota(comentario.nota) }}</span>
+            </div>
           <p class="comentario-texto" *ngIf="comentario.comentario">
             "{{ comentario.comentario }}"
           </p>

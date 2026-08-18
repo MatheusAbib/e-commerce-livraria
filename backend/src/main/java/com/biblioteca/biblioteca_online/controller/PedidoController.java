@@ -2,7 +2,6 @@ package com.biblioteca.biblioteca_online.controller;
 
 import com.biblioteca.biblioteca_online.dto.AtualizarStatusDTO;
 import com.biblioteca.biblioteca_online.dto.CriarPedidoDTO;
-import com.biblioteca.biblioteca_online.dto.CupomAplicadoDTO;
 import com.biblioteca.biblioteca_online.dto.DevolucaoParcialDTO;
 import com.biblioteca.biblioteca_online.dto.PagamentoDTO;
 
@@ -17,6 +16,7 @@ import com.biblioteca.biblioteca_online.model.Log;
 import com.biblioteca.biblioteca_online.service.PedidoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.biblioteca.biblioteca_online.service.LogService;
+import com.biblioteca.biblioteca_online.service.CupomService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,15 +25,13 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.biblioteca.biblioteca_online.repository.DevolucaoFotoRepository;
 import java.io.File;
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +47,10 @@ public class PedidoController {
     private final LogService logService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public PedidoController(PedidoService pedidoService, 
+    @Autowired
+    private CupomService cupomService;
+
+    public PedidoController(PedidoService pedidoService,
                            LogService logService,
                            SimpMessagingTemplate messagingTemplate) {
         this.pedidoService = pedidoService;
@@ -72,94 +73,90 @@ public class PedidoController {
     @Autowired
     private DevolucaoFotoRepository devolucaoFotoRepository;
 
-    @PostMapping
-    public ResponseEntity<?> criarPedido(@RequestBody CriarPedidoDTO pedidoDTO) {
-        try {
-            Long cartaoId = null;
-            List<Long> cartoesAdicionais = null;
+  @PostMapping
+public ResponseEntity<?> criarPedido(@RequestBody CriarPedidoDTO pedidoDTO) {
+    try {
+        Long cartaoId = null;
+        List<Long> cartoesAdicionais = null;
 
-            if (pedidoDTO.getPagamentos() != null && !pedidoDTO.getPagamentos().isEmpty()) {
-                cartaoId = pedidoDTO.getPagamentos().get(0).getCartaoId();
-                cartoesAdicionais = pedidoDTO.getPagamentos().stream()
-                    .skip(1)
-                    .map(PagamentoDTO::getCartaoId)
-                    .toList();
-            }
-
-            String primeiroCupom = null;
-            if (pedidoDTO.getCupons() != null && !pedidoDTO.getCupons().isEmpty()) {
-                primeiroCupom = pedidoDTO.getCupons().get(0).getCodigo();
-            }
-
-            Pedido pedido = pedidoService.criarPedido(
-                pedidoDTO.getClienteId(),
-                pedidoDTO.getItens(),
-                pedidoDTO.getEnderecoId(),
-                cartaoId,
-                cartoesAdicionais,
-                pedidoDTO.getValorDesconto(),
-                primeiroCupom,
-                pedidoDTO.getValorSubtotal()
-            );
-
-            if (pedidoDTO.getCupons() != null && !pedidoDTO.getCupons().isEmpty()) {
-                for (CupomAplicadoDTO cupomDTO : pedidoDTO.getCupons()) {
-        BigDecimal descontoPorCupom = pedidoDTO.getValorSubtotal()
-            .multiply(cupomDTO.getPorcentagem())
-            .divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
-                    pedido.adicionarCupom(cupomDTO.getCodigo(), cupomDTO.getPorcentagem(), descontoPorCupom);
-                }
-                pedido = pedidoService.salvar(pedido);
-            }
-
-            return ResponseEntity.ok(pedido);
-        } catch (Exception e) {
-            e.printStackTrace(); 
-            return ResponseEntity.badRequest().body(
-                Map.of("mensagem", e.getMessage(), "status", "erro")
-            );
+        if (pedidoDTO.getPagamentos() != null && !pedidoDTO.getPagamentos().isEmpty()) {
+            cartaoId = pedidoDTO.getPagamentos().get(0).getCartaoId();
+            cartoesAdicionais = pedidoDTO.getPagamentos().stream()
+                .skip(1)
+                .map(PagamentoDTO::getCartaoId)
+                .toList();
         }
+
+          String primeiroCupom = null;
+
+        Pedido pedido = pedidoService.criarPedido(
+            pedidoDTO.getClienteId(),
+            pedidoDTO.getItens(),
+            pedidoDTO.getEnderecoId(),
+            cartaoId,
+            cartoesAdicionais,
+            pedidoDTO.getValorDesconto(),
+            primeiroCupom,
+            pedidoDTO.getValorSubtotal()
+        );
+
+        return ResponseEntity.ok(pedido);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.badRequest().body(
+            Map.of("mensagem", e.getMessage(), "status", "erro")
+        );
     }
+}
 
-@PutMapping("/{id}/status")
-public ResponseEntity<Pedido> atualizarStatus(
-    @PathVariable Long id,
-    @RequestBody AtualizarStatusDTO statusDTO) {
-    
-    Pedido pedido = pedidoService.atualizarStatus(
-        id,
-        statusDTO.getNovoStatus(),
-        statusDTO.getMotivoDevolucao(),
-        statusDTO.getCodigoRastreamentoEnvio(),
-        statusDTO.getCodigoRastreamentoDevolucao()
-    );
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Pedido> atualizarStatus(
+        @PathVariable Long id,
+        @RequestBody AtualizarStatusDTO statusDTO) {
 
-    if (statusDTO.getNovoStatus() == StatusPedido.DEVOLVIDO && statusDTO.getCupom() != null) {
-        if (statusDTO.getCupom().getGerarCupom() != null && statusDTO.getCupom().getGerarCupom()) {
-            String codigoCupom = "DEV-" + System.currentTimeMillis() + "-" + id;
-            pedido.setCupomGerado(codigoCupom);
-            pedido.setCupomPorcentagem(statusDTO.getCupom().getPorcentagem());
-            pedido.setCupomDisponivel(true);
+        Pedido pedido = pedidoService.atualizarStatus(
+            id,
+            statusDTO.getNovoStatus(),
+            statusDTO.getMotivoDevolucao(),
+            statusDTO.getCodigoRastreamentoEnvio(),
+            statusDTO.getCodigoRastreamentoDevolucao()
+        );
+
+        if (statusDTO.getNovoStatus() == StatusPedido.ENTREGUE) {
+            pedido.setDataEntrega(LocalDate.now());
             pedido = pedidoService.salvar(pedido);
         }
+
+        if (statusDTO.getNovoStatus() == StatusPedido.DEVOLVIDO && statusDTO.getCupom() != null) {
+            if (statusDTO.getCupom().getGerarCupom() != null && statusDTO.getCupom().getGerarCupom()) {
+                String codigoCupom = "DEV-" + System.currentTimeMillis() + "-" + id;
+                BigDecimal porcentagem = statusDTO.getCupom().getPorcentagem();
+
+                cupomService.gerarCupomDevolucao(
+                    pedido.getId(),
+                    pedido.getCliente().getId(),
+                    codigoCupom,
+                    porcentagem
+                );
+            }
+        }
+
+        messagingTemplate.convertAndSend("/topic/pedidos", pedido);
+
+        try {
+            Log log = new Log();
+            log.setUserId(pedido.getCliente().getId());
+            log.setUserName(pedido.getCliente().getNome());
+            log.setAction("status_pedido");
+            log.setDetails("Status do pedido #" + id + " alterado para " + statusDTO.getNovoStatus().name());
+            log.setLevel("info");
+            logService.salvarLog(log);
+        } catch (Exception e) {
+            System.err.println("Erro ao registrar log de status: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(pedido);
     }
-
-    messagingTemplate.convertAndSend("/topic/pedidos", pedido);
-
-    try {
-        Log log = new Log();
-        log.setUserId(pedido.getCliente().getId());
-        log.setUserName(pedido.getCliente().getNome());
-        log.setAction("status_pedido");
-        log.setDetails("Status do pedido #" + id + " alterado para " + statusDTO.getNovoStatus().name());
-        log.setLevel("info");
-        logService.salvarLog(log);
-    } catch (Exception e) {
-        System.err.println("Erro ao registrar log de status: " + e.getMessage());
-    }
-
-    return ResponseEntity.ok(pedido);
-}
 
     @GetMapping("/{id}")
     public ResponseEntity<Pedido> buscarPedido(@PathVariable Long id) {
@@ -193,7 +190,7 @@ public ResponseEntity<Pedido> atualizarStatus(
             }
 
             Pedido pedido = pedidoOpt.get();
-            
+
             if (pedido.getStatus() != StatusPedido.CANCELADO) {
                 System.out.println("Pedido não está cancelado! Status: " + pedido.getStatus());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -201,7 +198,7 @@ public ResponseEntity<Pedido> atualizarStatus(
             }
 
             pedidoRepository.deleteById(id);
-            
+
             System.out.println("Pedido excluído com sucesso: " + id);
             return ResponseEntity.ok(Map.of("mensagem", "Pedido excluído com sucesso"));
 
@@ -257,79 +254,79 @@ public ResponseEntity<Pedido> atualizarStatus(
         return ResponseEntity.ok(historico);
     }
 
-@PostMapping("/{id}/devolucao")
-public ResponseEntity<?> solicitarDevolucao(
-    @PathVariable Long id,
-    @RequestParam("motivo") String motivo,
-    @RequestParam("itens") String itensJson,
-    @RequestParam(value = "fotos", required = false) List<MultipartFile> fotos) {
+    @PostMapping("/{id}/devolucao")
+    public ResponseEntity<?> solicitarDevolucao(
+        @PathVariable Long id,
+        @RequestParam("motivo") String motivo,
+        @RequestParam("itens") String itensJson,
+        @RequestParam(value = "fotos", required = false) List<MultipartFile> fotos) {
 
-    try {
-        ObjectMapper mapper = new ObjectMapper();
-        List<DevolucaoParcialDTO.ItemDevolucaoDTO> itensDTO = 
-            mapper.readValue(itensJson, new TypeReference<List<DevolucaoParcialDTO.ItemDevolucaoDTO>>() {});
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<DevolucaoParcialDTO.ItemDevolucaoDTO> itensDTO =
+                mapper.readValue(itensJson, new TypeReference<List<DevolucaoParcialDTO.ItemDevolucaoDTO>>() {});
 
-        Pedido pedidoOriginal = pedidoService.buscarPorId(id);
-        
-        if (pedidoOriginal.getStatus() != StatusPedido.ENTREGUE) {
-            return ResponseEntity.badRequest().body(
-                Map.of("mensagem", "Só é possível devolver pedidos entregues")
+            Pedido pedidoOriginal = pedidoService.buscarPorId(id);
+
+            if (pedidoOriginal.getStatus() != StatusPedido.ENTREGUE) {
+                return ResponseEntity.badRequest().body(
+                    Map.of("mensagem", "Só é possível devolver pedidos entregues")
+                );
+            }
+
+            List<ItemDevolucao> itensDevolucao = new ArrayList<>();
+            for (DevolucaoParcialDTO.ItemDevolucaoDTO itemDTO : itensDTO) {
+                ItemDevolucao item = new ItemDevolucao();
+                item.setItemPedidoId(itemDTO.getItemPedidoId());
+                item.setQuantidade(itemDTO.getQuantidade());
+                itensDevolucao.add(item);
+            }
+
+            pedidoService.solicitarDevolucao(id, motivo, itensDevolucao);
+
+            Pedido pedidoDevolucao = pedidoService.criarPedidoDevolucao(
+                id,
+                motivo,
+                itensDevolucao
             );
-        }
 
-        List<ItemDevolucao> itensDevolucao = new ArrayList<>();
-        for (DevolucaoParcialDTO.ItemDevolucaoDTO itemDTO : itensDTO) {
-            ItemDevolucao item = new ItemDevolucao();
-            item.setItemPedidoId(itemDTO.getItemPedidoId());
-            item.setQuantidade(itemDTO.getQuantidade());
-            itensDevolucao.add(item);
-        }
+            if (fotos != null && !fotos.isEmpty()) {
+                for (MultipartFile foto : fotos) {
+                    if (foto != null && !foto.isEmpty()) {
+                        String nomeArquivo = System.currentTimeMillis() + "_" + foto.getOriginalFilename();
 
-        pedidoService.solicitarDevolucao(id, motivo, itensDevolucao);
-        
-        Pedido pedidoDevolucao = pedidoService.criarPedidoDevolucao(
-            id, 
-            motivo, 
-            itensDevolucao
-        );
+                        String uploadDir = System.getProperty("user.dir") + "/uploads/devolucoes/";
+                        File directory = new File(uploadDir);
+                        if (!directory.exists()) {
+                            directory.mkdirs();
+                        }
 
-        if (fotos != null && !fotos.isEmpty()) {
-            for (MultipartFile foto : fotos) {
-                if (foto != null && !foto.isEmpty()) {
-                    String nomeArquivo = System.currentTimeMillis() + "_" + foto.getOriginalFilename();
-                    
-                    String uploadDir = System.getProperty("user.dir") + "/uploads/devolucoes/";
-                    File directory = new File(uploadDir);
-                    if (!directory.exists()) {
-                        directory.mkdirs();
+                        String caminhoCompleto = uploadDir + nomeArquivo;
+                        File arquivo = new File(caminhoCompleto);
+
+                        foto.transferTo(arquivo);
+
+                        DevolucaoFoto devolucaoFoto = new DevolucaoFoto();
+                        devolucaoFoto.setPedidoDevolucao(pedidoDevolucao);
+                        devolucaoFoto.setNomeArquivo(nomeArquivo);
+                        devolucaoFoto.setCaminho("uploads/devolucoes/" + nomeArquivo);
+                        devolucaoFotoRepository.save(devolucaoFoto);
                     }
-                    
-                    String caminhoCompleto = uploadDir + nomeArquivo;
-                    File arquivo = new File(caminhoCompleto);
-                    
-                    foto.transferTo(arquivo);
-                    
-                    DevolucaoFoto devolucaoFoto = new DevolucaoFoto();
-                    devolucaoFoto.setPedidoDevolucao(pedidoDevolucao);
-                    devolucaoFoto.setNomeArquivo(nomeArquivo);
-                    devolucaoFoto.setCaminho("uploads/devolucoes/" + nomeArquivo); 
-                    devolucaoFotoRepository.save(devolucaoFoto);
                 }
             }
+
+            messagingTemplate.convertAndSend("/topic/pedidos", pedidoDevolucao);
+            messagingTemplate.convertAndSend("/topic/pedidos", pedidoOriginal);
+
+            return ResponseEntity.ok(Map.of(
+                "mensagem", "Devolução solicitada com sucesso",
+                "pedidoDevolucao", pedidoDevolucao
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(
+                Map.of("mensagem", e.getMessage())
+            );
         }
-
-        messagingTemplate.convertAndSend("/topic/pedidos", pedidoDevolucao);
-        messagingTemplate.convertAndSend("/topic/pedidos", pedidoOriginal);
-
-        return ResponseEntity.ok(Map.of(
-            "mensagem", "Devolução solicitada com sucesso",
-            "pedidoDevolucao", pedidoDevolucao
-        ));
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.badRequest().body(
-            Map.of("mensagem", e.getMessage())
-        );
     }
-}
 }

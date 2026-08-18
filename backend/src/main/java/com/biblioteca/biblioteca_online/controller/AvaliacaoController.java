@@ -28,19 +28,19 @@ public class AvaliacaoController {
         @RequestParam Long clienteId) {
         try {
             Avaliacao avaliacao = avaliacaoService.criarAvaliacao(dto, clienteId);
-            
+
             try {
                 Log log = new Log();
                 log.setUserId(clienteId);
                 log.setAction("avaliacao");
-                log.setDetails("Avaliação criada para o livro ID " + dto.getLivroId() + 
+                log.setDetails("Avaliação criada para o livro ID " + dto.getLivroId() +
                               " - Nota: " + dto.getNota());
                 log.setLevel("info");
                 logService.salvarLog(log);
             } catch (Exception e) {
                 System.err.println("Erro ao registrar log: " + e.getMessage());
             }
-            
+
             return ResponseEntity.ok(avaliacao);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("mensagem", e.getMessage()));
@@ -98,4 +98,29 @@ public ResponseEntity<?> atualizarAvaliacao(
     public ResponseEntity<List<Avaliacao>> listarTodasAvaliacoes() {
         return ResponseEntity.ok(avaliacaoService.listarTodas());
     }
+
+@PutMapping("/{id}/remover-comentario")
+public ResponseEntity<?> removerComentario(@PathVariable Long id) {
+    try {
+        Avaliacao avaliacao = avaliacaoService.removerComentario(id);
+
+        try {
+            String mensagem = "Seu comentário sobre o livro \"" +
+                             avaliacao.getLivro().getTitulo() +
+                             "\" foi removido pelo administrador.";
+            logService.adicionarNotificacaoParaCliente(
+                avaliacao.getCliente().getId(),
+                "Comentário Removido",
+                mensagem,
+                "warning"
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar notificação: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(avaliacao);
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(Map.of("mensagem", e.getMessage()));
+    }
+}
 }

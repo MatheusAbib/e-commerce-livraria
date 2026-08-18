@@ -1,48 +1,55 @@
-<aside class="admin-sidebar">
+<aside class="admin-sidebar" [class.mobile-open]="menuAberto">
   <div class="sidebar-header">
     <div class="sidebar-logo">
       <i class="pi pi-book"></i>
       <span>Admin</span>
     </div>
+    <button class="menu-toggle-admin" (click)="toggleMenu()" [class.active]="menuAberto">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </div>
 
-  <nav class="sidebar-nav">
-    <a routerLink="/admin/dashboard" routerLinkActive="active" class="sidebar-link">
+  <div class="sidebar-overlay" (click)="fecharMenu()"></div>
+
+  <nav class="sidebar-nav" [class.mobile-open]="menuAberto">
+    <a routerLink="/admin/dashboard" routerLinkActive="active" class="sidebar-link" (click)="fecharMenu()">
       <i class="pi pi-chart-line"></i>
       <span>Dashboard</span>
     </a>
-    <a routerLink="/admin/pedidos" routerLinkActive="active" class="sidebar-link">
+    <a routerLink="/admin/pedidos" routerLinkActive="active" class="sidebar-link" (click)="fecharMenu()">
       <i class="pi pi-shopping-bag"></i>
       <span>Pedidos</span>
     </a>
-    <a routerLink="/admin/livros" routerLinkActive="active" class="sidebar-link">
+    <a routerLink="/admin/livros" routerLinkActive="active" class="sidebar-link" (click)="fecharMenu()">
       <i class="pi pi-book"></i>
       <span>Livros</span>
     </a>
-    <a routerLink="/admin/Usuarios" routerLinkActive="active" class="sidebar-link">
+    <a routerLink="/admin/Usuarios" routerLinkActive="active" class="sidebar-link" (click)="fecharMenu()">
       <i class="pi pi-users"></i>
       <span>Usuarios</span>
     </a>
-    <a routerLink="/admin/logCompleto" routerLinkActive="active" class="sidebar-link">
+    <a routerLink="/admin/logCompleto" routerLinkActive="active" class="sidebar-link" (click)="fecharMenu()">
       <i class="pi pi-history"></i>
       <span>Logs</span>
     </a>
-    <a routerLink="/admin/ranking" routerLinkActive="active" class="sidebar-link">
+    <a routerLink="/admin/ranking" routerLinkActive="active" class="sidebar-link" (click)="fecharMenu()">
       <i class="pi pi-trophy"></i>
       <span>Ranking</span>
     </a>
-    <a routerLink="/admin/avaliacoes" routerLinkActive="active" class="sidebar-link">
+    <a routerLink="/admin/avaliacoes" routerLinkActive="active" class="sidebar-link" (click)="fecharMenu()">
       <i class="pi pi-star"></i>
-    <span>Avaliações</span>
-  </a>
-<a routerLink="/admin/chats" routerLinkActive="active" class="sidebar-link">
-  <i class="pi pi-comment"></i>
-  <span>Chats</span>
-  <span *ngIf="totalChatNaoLidas > 0" class="sidebar-badge">{{ totalChatNaoLidas }}</span>
-</a>
+      <span>Avaliações</span>
+    </a>
+    <a routerLink="/admin/chats" routerLinkActive="active" class="sidebar-link" (click)="fecharMenu()">
+      <i class="pi pi-comment"></i>
+      <span>Chats</span>
+      <span *ngIf="totalChatNaoLidas > 0" class="sidebar-badge">{{ totalChatNaoLidas }}</span>
+    </a>
   </nav>
 
-  <div class="sidebar-footer">
+  <div class="sidebar-footer" [class.mobile-open]="menuAberto">
     <div class="sidebar-user" (click)="abrirPerfil()">
       <div class="user-avatar">
         {{ usuario?.nome?.charAt(0)?.toUpperCase() || 'A' }}

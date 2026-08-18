@@ -10,6 +10,21 @@
   z-index: 1000;
 }
 
+.auth-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  background: #dbeafe;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem auto;
+}
+
+.auth-icon i {
+  color: #2a5298;
+}
+
 .custom-modal.active {
   display: flex;
 }

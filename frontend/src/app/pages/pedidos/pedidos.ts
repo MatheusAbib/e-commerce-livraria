@@ -72,8 +72,8 @@ export class PedidosComponent implements OnInit, OnDestroy {
   displayConfirmarEntrega: boolean = false;
   pedidoEntrega: any = null;
 
-fotosDevolucao: File[] = [];
-fotosDevolucaoPreview: string[] = [];
+  fotosDevolucao: File[] = [];
+  fotosDevolucaoPreview: string[] = [];
 
   displayAvaliacaoModal: boolean = false;
   pedidoAvaliacao: any = null;
@@ -83,50 +83,111 @@ fotosDevolucaoPreview: string[] = [];
     comentario: ''
   };
   notaSelecionada: number = 0;
+  codigoRastreamentoValido: boolean = false;
+  displayFotosModal: boolean = false;
+  fotosDevolucaoList: string[] = [];
+  fotoIndexAtual: number = 0;
+  fotoAtual: string = '';
+
 
   private intervalId: any = null;
 
-constructor(
-  private messageService: MessageService,
-  private authService: AuthService,
-  private router: Router,
-  private route: ActivatedRoute,
-  private chatService: ChatService
-) {}
+  constructor(
+    private messageService: MessageService,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private chatService: ChatService
+  ) {}
+
+  ngOnInit(): void {
+    this.carregarPedidos();
+    this.intervalId = setInterval(() => this.carregarPedidosSilenciosamente(), 5000);
+
+    this.route.queryParams.subscribe((params: any) => {
+      const pedidoId = params['pedidoId'];
+      const abrirChat = params['abrirChat'] === 'true';
+      if (pedidoId && abrirChat) {
+        setTimeout(() => {
+          const pedido = this.pedidos.find(p => p.id == pedidoId);
+          if (pedido) {
+            this.abrirChatVendedor(pedido.id);
+            this.router.navigate([], { queryParams: {}, replaceUrl: true });
+          }
+        }, 1000);
+      }
+    });
+  }
 
 
-ngOnInit(): void {
-  this.carregarPedidos();
-  this.intervalId = setInterval(() => this.carregarPedidosSilenciosamente(), 5000);
-
-  this.route.queryParams.subscribe((params: any) => {
-    const pedidoId = params['pedidoId'];
-    const abrirChat = params['abrirChat'] === 'true';
-    if (pedidoId && abrirChat) {
-      setTimeout(() => {
-        const pedido = this.pedidos.find(p => p.id == pedidoId);
-        if (pedido) {
-          this.abrirChatVendedor(pedido.id);
-          this.router.navigate([], { queryParams: {}, replaceUrl: true });
-        }
-      }, 1000);
-    }
-  });
-
-  this.chatService.abrirChat$.subscribe(({ pedidoId }) => {
-    const pedido = this.pedidos.find(p => p.id === pedidoId);
-    if (pedido) {
-      this.abrirChatVendedor(pedido.id);
-    }
-  });
+  abrirModalFotos(fotos: string[], index: number): void {
+  this.fotosDevolucaoList = fotos.map((f: any) => f.caminho || f);
+  this.fotoIndexAtual = index;
+  this.fotoAtual = this.fotosDevolucaoList[index];
+  this.displayFotosModal = true;
 }
 
-abrirChatVendedor(pedidoId: number): void {
-  const pedido = this.pedidos.find(p => p.id === pedidoId);
-  if (pedido) {
-    this.chatService.abrirChat(pedidoId, pedido);
+fecharModalFotos(): void {
+  this.displayFotosModal = false;
+  this.fotosDevolucaoList = [];
+  this.fotoAtual = '';
+  this.fotoIndexAtual = 0;
+}
+
+fotoAnterior(): void {
+  if (this.fotoIndexAtual > 0) {
+    this.fotoIndexAtual--;
+    this.fotoAtual = this.fotosDevolucaoList[this.fotoIndexAtual];
   }
 }
+
+fotoProxima(): void {
+  if (this.fotoIndexAtual < this.fotosDevolucaoList.length - 1) {
+    this.fotoIndexAtual++;
+    this.fotoAtual = this.fotosDevolucaoList[this.fotoIndexAtual];
+  }
+}
+
+selecionarFoto(index: number): void {
+  this.fotoIndexAtual = index;
+  this.fotoAtual = this.fotosDevolucaoList[index];
+}
+
+
+validarCodigoRastreamentoInput(codigo: string): void {
+  const regex = /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/;
+  const codigoUpper = codigo?.toUpperCase() || '';
+  this.codigoRastreamentoValido = regex.test(codigoUpper);
+  if (this.codigoRastreamentoValido) {
+    this.codigoRastreamento = codigoUpper;
+  }
+}
+
+  abrirChatVendedor(pedidoId: number): void {
+    const pedido = this.pedidos.find(p => p.id === pedidoId);
+    if (pedido) {
+      this.chatService.abrirChat(pedidoId, pedido);
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Aviso',
+        detail: 'Carregando informações do pedido...'
+      });
+      setTimeout(() => {
+        const pedidoRecarregado = this.pedidos.find(p => p.id === pedidoId);
+        if (pedidoRecarregado) {
+          this.chatService.abrirChat(pedidoId, pedidoRecarregado);
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Não foi possível abrir o chat. Tente novamente.'
+          });
+        }
+      }, 500);
+    }
+  }
+
   ngOnDestroy(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId);
@@ -140,271 +201,270 @@ abrirChatVendedor(pedidoId: number): void {
   }
 
   editarAvaliacao(index: number): void {
-  const avaliacao = this.avaliacoes[index];
-  avaliacao.avaliado = false;
-}
+    const avaliacao = this.avaliacoes[index];
+    avaliacao.avaliado = false;
+  }
 
-abrirFotoDevolucao(caminho: string): void {
-  window.open('http://localhost:8081/' + caminho, '_blank');
-}
+  abrirFotoDevolucao(caminho: string): void {
+    window.open('http://localhost:8081/' + caminho, '_blank');
+  }
 
-async abrirAvaliacao(pedido: any): Promise<void> {
-  this.pedidoAvaliacao = pedido;
-  this.avaliacoes = [];
-  this.displayAvaliacaoModal = true;
+  async abrirAvaliacao(pedido: any): Promise<void> {
+    this.pedidoAvaliacao = pedido;
+    this.avaliacoes = [];
+    this.displayAvaliacaoModal = true;
 
-  try {
-    const user = this.authService.getUser();
-    if (!user) return;
+    try {
+      const user = this.authService.getUser();
+      if (!user) return;
 
-    const token = this.authService.getToken();
+      const token = this.authService.getToken();
 
-    const avaliacoesResponse = await fetch(
-      `/api/avaliacoes/cliente/${user.id}`,
-      {
-        headers: {
-          'Authorization': 'Bearer ' + token
+      const avaliacoesResponse = await fetch(
+        `/api/avaliacoes/cliente/${user.id}`,
+        {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
         }
-      }
-    );
-
-    let avaliacoesExistentes: any[] = [];
-    if (avaliacoesResponse.ok) {
-      avaliacoesExistentes = await avaliacoesResponse.json();
-    }
-
-    for (const item of pedido.itens) {
-      const avaliacaoExistente = avaliacoesExistentes.find(
-        (a: any) => a.livro.id === item.livro.id && a.pedido.id === pedido.id
       );
 
-      this.avaliacoes.push({
-        itemPedidoId: item.id,
-        livroId: item.livro.id,
-        titulo: item.livro.titulo,
-        imagemUrl: item.livro.imagemUrl,
-        nota: avaliacaoExistente?.nota || 0,
-        comentario: avaliacaoExistente?.comentario || '',
-        avaliado: !!avaliacaoExistente,
-        avaliacaoId: avaliacaoExistente?.id || null
-      });
+      let avaliacoesExistentes: any[] = [];
+      if (avaliacoesResponse.ok) {
+        avaliacoesExistentes = await avaliacoesResponse.json();
+      }
+
+      for (const item of pedido.itens) {
+        const avaliacaoExistente = avaliacoesExistentes.find(
+          (a: any) => a.livro.id === item.livro.id && a.pedido.id === pedido.id
+        );
+
+        this.avaliacoes.push({
+          itemPedidoId: item.id,
+          livroId: item.livro.id,
+          titulo: item.livro.titulo,
+          imagemUrl: item.livro.imagemUrl,
+          nota: avaliacaoExistente?.nota || 0,
+          comentario: avaliacaoExistente?.comentario || '',
+          avaliado: !!avaliacaoExistente,
+          avaliacaoId: avaliacaoExistente?.id || null
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar avaliações:', error);
     }
-  } catch (error) {
-    console.error('Erro ao carregar avaliações:', error);
-  }
-}
-
-fecharAvaliacao(): void {
-  this.displayAvaliacaoModal = false;
-  this.pedidoAvaliacao = null;
-}
-
-selecionarNota(index: number, valor: number): void {
-  this.avaliacoes[index].nota = valor;
-}
-
-async salvarAvaliacao(index: number): Promise<void> {
-  const avaliacao = this.avaliacoes[index];
-
-  if (avaliacao.nota === 0) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Selecione uma nota para avaliar'
-    });
-    return;
   }
 
-  try {
-    const user = this.authService.getUser();
-    if (!user) {
+  fecharAvaliacao(): void {
+    this.displayAvaliacaoModal = false;
+    this.pedidoAvaliacao = null;
+  }
+
+  selecionarNota(index: number, valor: number): void {
+    this.avaliacoes[index].nota = valor;
+  }
+
+  async salvarAvaliacao(index: number): Promise<void> {
+    const avaliacao = this.avaliacoes[index];
+
+    if (avaliacao.nota === 0) {
       this.messageService.add({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Usuário não encontrado. Faça login novamente.'
+        detail: 'Selecione uma nota para avaliar'
       });
       return;
     }
 
-    const token = this.authService.getToken();
+    try {
+      const user = this.authService.getUser();
+      if (!user) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Usuário não encontrado. Faça login novamente.'
+        });
+        return;
+      }
 
-    const body = {
-      livroId: avaliacao.livroId,
-      nota: avaliacao.nota,
-      comentario: avaliacao.comentario || '',
-      pedidoId: this.pedidoAvaliacao.id
-    };
+      const token = this.authService.getToken();
 
-    const isEdit = avaliacao.avaliacaoId !== null && avaliacao.avaliacaoId !== undefined;
+      const body = {
+        livroId: avaliacao.livroId,
+        nota: avaliacao.nota,
+        comentario: avaliacao.comentario || '',
+        pedidoId: this.pedidoAvaliacao.id
+      };
 
-    const url = isEdit
-      ? `/api/avaliacoes/${avaliacao.avaliacaoId}?clienteId=${user.id}`
-      : `/api/avaliacoes?clienteId=${user.id}`;
+      const isEdit = avaliacao.avaliacaoId !== null && avaliacao.avaliacaoId !== undefined;
 
-    const method = isEdit ? 'PUT' : 'POST';
+      const url = isEdit
+        ? `/api/avaliacoes/${avaliacao.avaliacaoId}?clienteId=${user.id}`
+        : `/api/avaliacoes?clienteId=${user.id}`;
 
-    const response = await fetch(url, {
-      method: method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-      body: JSON.stringify(body)
-    });
+      const method = isEdit ? 'PUT' : 'POST';
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.mensagem || 'Erro ao salvar avaliação');
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.mensagem || 'Erro ao salvar avaliação');
+      }
+
+      const data = await response.json();
+
+      avaliacao.avaliado = true;
+      avaliacao.avaliacaoId = data.id || avaliacao.avaliacaoId;
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: `Avaliação do livro "${avaliacao.titulo}" ${isEdit ? 'atualizada' : 'salva'} com sucesso!`
+      });
+
+      this.authService.adicionarNotificacao(
+        'Avaliação',
+        `Você ${isEdit ? 'atualizou' : 'avaliou'} "${avaliacao.titulo}" com ${avaliacao.nota} estrelas`,
+        'success'
+      );
+
+      await this.carregarPedidos();
+
+    } catch (error: any) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: error.message
+      });
+    }
+  }
+
+  alternarEstrela(index: number, estrelaIndex: number): void {
+    const avaliacao = this.avaliacoes[index];
+    const notaAtual = avaliacao.nota;
+
+    if (notaAtual === estrelaIndex + 0.5) {
+      avaliacao.nota = estrelaIndex;
+      return;
     }
 
-    const data = await response.json();
+    if (notaAtual === estrelaIndex + 1) {
+      avaliacao.nota = estrelaIndex + 0.5;
+      return;
+    }
 
-    avaliacao.avaliado = true;
-    avaliacao.avaliacaoId = data.id || avaliacao.avaliacaoId;
+    if (notaAtual <= estrelaIndex) {
+      avaliacao.nota = estrelaIndex + 1;
+      return;
+    }
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: `Avaliação do livro "${avaliacao.titulo}" ${isEdit ? 'atualizada' : 'salva'} com sucesso!`
-    });
-
-    this.authService.adicionarNotificacao(
-      'Avaliação',
-      `Você ${isEdit ? 'atualizou' : 'avaliou'} "${avaliacao.titulo}" com ${avaliacao.nota} estrelas`,
-      'success'
-    );
-
-    await this.carregarPedidos();
-
-  } catch (error: any) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: error.message
-    });
-  }
-}
-
-
-alternarEstrela(index: number, estrelaIndex: number): void {
-  const avaliacao = this.avaliacoes[index];
-  const notaAtual = avaliacao.nota;
-
-  if (notaAtual === estrelaIndex + 0.5) {
-    avaliacao.nota = estrelaIndex;
-    return;
+    if (notaAtual > estrelaIndex + 1) {
+      avaliacao.nota = estrelaIndex + 0.5;
+    }
   }
 
-  if (notaAtual === estrelaIndex + 1) {
-    avaliacao.nota = estrelaIndex + 0.5;
-    return;
+  getTipoEstrela(avaliacao: any, estrelaIndex: number): string {
+    const nota = avaliacao.nota;
+
+    if (nota >= estrelaIndex + 1) {
+      return 'cheia';
+    } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
+      return 'meia';
+    } else {
+      return 'vazia';
+    }
   }
 
-  if (notaAtual <= estrelaIndex) {
-    avaliacao.nota = estrelaIndex + 1;
-    return;
-  }
+  async verificarSeJaAvaliou(pedidoId: number, livroId: number): Promise<boolean> {
+    try {
+      const user = this.authService.getUser();
+      if (!user) {
+        return false;
+      }
 
-  if (notaAtual > estrelaIndex + 1) {
-    avaliacao.nota = estrelaIndex + 0.5;
-  }
-}
+      const token = this.authService.getToken();
 
-getTipoEstrela(avaliacao: any, estrelaIndex: number): string {
-  const nota = avaliacao.nota;
+      const response = await fetch(
+        `/api/avaliacoes/verificar?clienteId=${user.id}&pedidoId=${pedidoId}&livroId=${livroId}`,
+        {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        }
+      );
 
-  if (nota >= estrelaIndex + 1) {
-    return 'cheia';
-  } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
-    return 'meia';
-  } else {
-    return 'vazia';
-  }
-}
-
-async verificarSeJaAvaliou(pedidoId: number, livroId: number): Promise<boolean> {
-  try {
-    const user = this.authService.getUser();
-    if (!user) {
+      if (response.ok) {
+        const data = await response.json();
+        return data.jaAvaliou;
+      }
+      return false;
+    } catch (error) {
       return false;
     }
+  }
+
+  getTipoEstrelaAvaliacao(nota: number, estrelaIndex: number): string {
+    if (!nota) return 'vazia';
+    if (nota >= estrelaIndex + 1) {
+      return 'cheia';
+    } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
+      return 'meia';
+    } else {
+      return 'vazia';
+    }
+  }
+
+  async carregarAvaliacoesDosPedidos(): Promise<void> {
+    const user = this.authService.getUser();
+    if (!user) return;
 
     const token = this.authService.getToken();
+    let avaliacoesExistentes: any[] = [];
 
-    const response = await fetch(
-      `/api/avaliacoes/verificar?clienteId=${user.id}&pedidoId=${pedidoId}&livroId=${livroId}`,
-      {
-        headers: {
-          'Authorization': 'Bearer ' + token
+    try {
+      const response = await fetch(
+        `/api/avaliacoes/cliente/${user.id}`,
+        {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        }
+      );
+      if (response.ok) {
+        avaliacoesExistentes = await response.json();
+      }
+    } catch (error) {
+      console.error('Erro ao buscar avaliações:', error);
+    }
+
+    for (const pedido of this.pedidos) {
+      let pedidoTemAvaliacao = false;
+
+      if (pedido.status === 'ENTREGUE') {
+        for (const item of pedido.itens) {
+          const avaliacao = avaliacoesExistentes.find(
+            (a: any) => a.livro.id === item.livro.id && a.pedido.id === pedido.id
+          );
+
+          item.jaAvaliou = !!avaliacao;
+
+          if (avaliacao) {
+            item.notaAvaliacao = avaliacao.nota;
+            item.comentarioAvaliacao = avaliacao.comentario;
+            pedidoTemAvaliacao = true;
+          }
         }
       }
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      return data.jaAvaliou;
+      pedido.temAvaliacao = pedidoTemAvaliacao;
     }
-    return false;
-  } catch (error) {
-    return false;
   }
-}
-
-getTipoEstrelaAvaliacao(nota: number, estrelaIndex: number): string {
-  if (!nota) return 'vazia';
-  if (nota >= estrelaIndex + 1) {
-    return 'cheia';
-  } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
-    return 'meia';
-  } else {
-    return 'vazia';
-  }
-}
-
-async carregarAvaliacoesDosPedidos(): Promise<void> {
-  const user = this.authService.getUser();
-  if (!user) return;
-
-  const token = this.authService.getToken();
-  let avaliacoesExistentes: any[] = [];
-
-  try {
-    const response = await fetch(
-      `/api/avaliacoes/cliente/${user.id}`,
-      {
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      }
-    );
-    if (response.ok) {
-      avaliacoesExistentes = await response.json();
-    }
-  } catch (error) {
-    console.error('Erro ao buscar avaliações:', error);
-  }
-
-  for (const pedido of this.pedidos) {
-    let pedidoTemAvaliacao = false;
-
-    if (pedido.status === 'ENTREGUE') {
-      for (const item of pedido.itens) {
-        const avaliacao = avaliacoesExistentes.find(
-          (a: any) => a.livro.id === item.livro.id && a.pedido.id === pedido.id
-        );
-
-        item.jaAvaliou = !!avaliacao;
-
-        if (avaliacao) {
-          item.notaAvaliacao = avaliacao.nota;
-          item.comentarioAvaliacao = avaliacao.comentario;
-          pedidoTemAvaliacao = true;
-        }
-      }
-    }
-    pedido.temAvaliacao = pedidoTemAvaliacao;
-  }
-}
 
 async carregarPedidos(): Promise<void> {
   this.loading = true;
@@ -427,6 +487,66 @@ async carregarPedidos(): Promise<void> {
 
     this.pedidos = await response.json();
 
+    const [disponiveisRes, usadosRes] = await Promise.all([
+      fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }),
+      fetch(`/api/cupons/cliente/${user.id}/usados`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+    ]);
+
+    let todosCupons: any[] = [];
+
+    if (disponiveisRes.ok) {
+      const disponiveis = await disponiveisRes.json();
+      todosCupons = [...todosCupons, ...disponiveis];
+    }
+
+    if (usadosRes.ok) {
+      const usados = await usadosRes.json();
+      todosCupons = [...todosCupons, ...usados];
+    }
+
+    for (const pedido of this.pedidos) {
+      if (pedido.status === 'DEVOLVIDO') {
+        const cupom = todosCupons.find((c: any) => c.pedidoId === pedido.id);
+        if (cupom) {
+          pedido.cupomGerado = cupom.codigo;
+          pedido.cupomPorcentagem = cupom.porcentagem;
+          pedido.cupomDisponivel = !cupom.usado;
+          pedido.cupomDataUso = cupom.dataUso;
+        }
+      }
+
+      const devolucoes = this.pedidos.filter(p => p.pedidoOriginalId === pedido.id);
+      const itensDevolvidos: any = {};
+      for (const devolucao of devolucoes) {
+        if (devolucao.status === 'DEVOLUCAO' ||
+            devolucao.status === 'AUTORIZADO_DEVOLUCAO' ||
+            devolucao.status === 'ENVIADO_DEVOLUCAO' ||
+            devolucao.status === 'DEVOLVIDO') {
+          for (const item of devolucao.itens) {
+            const livroId = item.livro.id;
+            if (!itensDevolvidos[livroId]) {
+              itensDevolvidos[livroId] = 0;
+            }
+            itensDevolvidos[livroId] += item.quantidade;
+          }
+        }
+      }
+
+      let temItemDisponivel = false;
+      for (const item of pedido.itens) {
+        const quantidadeDevolvida = itensDevolvidos[item.livro.id] || 0;
+        if (item.quantidade - quantidadeDevolvida > 0) {
+          temItemDisponivel = true;
+          break;
+        }
+      }
+      pedido.temItemDisponivelParaDevolucao = temItemDisponivel;
+    }
+
     this.pedidos.forEach((p: any) => {
       if (p.reembolsoConfirmado === undefined) {
         p.reembolsoConfirmado = false;
@@ -434,11 +554,8 @@ async carregarPedidos(): Promise<void> {
       p.temAvaliacao = false;
     });
 
-    this.salvarCuponsDoPedido();
     this.recalcularStatusDevolucao();
-
     await this.carregarAvaliacoesDosPedidos();
-
     this.filtrarPorStatus(this.statusAtivo);
   } catch (error) {
     console.error('Erro:', error);
@@ -449,82 +566,44 @@ async carregarPedidos(): Promise<void> {
   }
 }
 
-onFotosDevolucaoSelected(event: any): void {
-  const files = event.target.files;
-  const maxFiles = 3;
+  onFotosDevolucaoSelected(event: any): void {
+    const files = event.target.files;
+    const maxFiles = 3;
 
-  if (this.fotosDevolucao.length + files.length > maxFiles) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: `Máximo de ${maxFiles} fotos permitidas`
-    });
-    return;
-  }
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    if (file.size > 5 * 1024 * 1024) {
+    if (this.fotosDevolucao.length + files.length > maxFiles) {
       this.messageService.add({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Cada imagem deve ter no máximo 5MB'
+        detail: `Máximo de ${maxFiles} fotos permitidas`
       });
-      continue;
+      return;
     }
-    this.fotosDevolucao.push(file);
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.fotosDevolucaoPreview.push(e.target.result);
-    };
-    reader.readAsDataURL(file);
-  }
 
-  event.target.value = '';
-}
-
-removerFotoDevolucao(index: number): void {
-  this.fotosDevolucao.splice(index, 1);
-  this.fotosDevolucaoPreview.splice(index, 1);
-}
-
-salvarCuponsDoPedido(): void {
-  const user = this.authService.getUser();
-  if (!user) return;
-
-  const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario') || '{}');
-  const cuponsUsuario = cuponsPorUsuario[user.id] || [];
-  let houveNovoCupom = false;
-
-  for (const pedido of this.pedidos) {
-    if (pedido.status === 'DEVOLVIDO' && pedido.cupomGerado && pedido.cupomDisponivel) {
-      const cupomExistente = cuponsUsuario.find((c: any) => c.codigo === pedido.cupomGerado);
-      if (!cupomExistente) {
-        const dataExpiracao = new Date();
-        dataExpiracao.setDate(dataExpiracao.getDate() + 30);
-
-        cuponsUsuario.push({
-          id: Date.now(),
-          codigo: pedido.cupomGerado,
-          porcentagem: pedido.cupomPorcentagem || 15,
-          dataGeracao: new Date().toISOString(),
-          dataExpiracao: dataExpiracao.toISOString(),
-          usado: false,
-          origem: 'devolucao',
-          pedidoId: pedido.id,
-          zerarFrete: false
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size > 5 * 1024 * 1024) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Cada imagem deve ter no máximo 5MB'
         });
-        houveNovoCupom = true;
+        continue;
       }
+      this.fotosDevolucao.push(file);
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.fotosDevolucaoPreview.push(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
+
+    event.target.value = '';
   }
 
-  if (houveNovoCupom) {
-    cuponsPorUsuario[user.id] = cuponsUsuario;
-    localStorage.setItem('cuponsPorUsuario', JSON.stringify(cuponsPorUsuario));
-    this.authService.atualizarCuponsCount(cuponsUsuario.filter((c: any) => !c.usado).length);
+  removerFotoDevolucao(index: number): void {
+    this.fotosDevolucao.splice(index, 1);
+    this.fotosDevolucaoPreview.splice(index, 1);
   }
-}
 
 async carregarPedidosSilenciosamente(): Promise<void> {
   try {
@@ -541,39 +620,91 @@ async carregarPedidosSilenciosamente(): Promise<void> {
     if (response.ok) {
       const novosPedidos = await response.json();
 
-      const pedidosAtuaisStr = JSON.stringify(this.pedidos);
-      const novosPedidosStr = JSON.stringify(novosPedidos);
+      this.pedidos = novosPedidos;
 
-      if (pedidosAtuaisStr !== novosPedidosStr) {
-        this.pedidos = novosPedidos;
+      const [disponiveisRes, usadosRes] = await Promise.all([
+        fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        }),
+        fetch(`/api/cupons/cliente/${user.id}/usados`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        })
+      ]);
 
-        this.pedidos.forEach((p: any) => {
-          if (p.reembolsoConfirmado === undefined) {
-            p.reembolsoConfirmado = false;
-          }
-          p.temAvaliacao = false;
-        });
+      let todosCupons: any[] = [];
 
-        this.salvarCuponsDoPedido();
-        this.recalcularStatusDevolucao();
-
-        await this.carregarAvaliacoesDosPedidos();
-
-        this.filtrarPorStatus(this.statusAtivo);
+      if (disponiveisRes.ok) {
+        const disponiveis = await disponiveisRes.json();
+        todosCupons = [...todosCupons, ...disponiveis];
       }
+
+      if (usadosRes.ok) {
+        const usados = await usadosRes.json();
+        todosCupons = [...todosCupons, ...usados];
+      }
+
+      for (const pedido of this.pedidos) {
+        if (pedido.status === 'DEVOLVIDO') {
+          const cupom = todosCupons.find((c: any) => c.pedidoId === pedido.id);
+          if (cupom) {
+            pedido.cupomGerado = cupom.codigo;
+            pedido.cupomPorcentagem = cupom.porcentagem;
+            pedido.cupomDisponivel = !cupom.usado;
+            pedido.cupomDataUso = cupom.dataUso;
+          }
+        }
+
+        const devolucoes = this.pedidos.filter(p => p.pedidoOriginalId === pedido.id);
+        const itensDevolvidos: any = {};
+        for (const devolucao of devolucoes) {
+          if (devolucao.status === 'DEVOLUCAO' ||
+              devolucao.status === 'AUTORIZADO_DEVOLUCAO' ||
+              devolucao.status === 'ENVIADO_DEVOLUCAO' ||
+              devolucao.status === 'DEVOLVIDO') {
+            for (const item of devolucao.itens) {
+              const livroId = item.livro.id;
+              if (!itensDevolvidos[livroId]) {
+                itensDevolvidos[livroId] = 0;
+              }
+              itensDevolvidos[livroId] += item.quantidade;
+            }
+          }
+        }
+
+        let temItemDisponivel = false;
+        for (const item of pedido.itens) {
+          const quantidadeDevolvida = itensDevolvidos[item.livro.id] || 0;
+          if (item.quantidade - quantidadeDevolvida > 0) {
+            temItemDisponivel = true;
+            break;
+          }
+        }
+        pedido.temItemDisponivelParaDevolucao = temItemDisponivel;
+      }
+
+      this.pedidos.forEach((p: any) => {
+        if (p.reembolsoConfirmado === undefined) {
+          p.reembolsoConfirmado = false;
+        }
+        p.temAvaliacao = false;
+      });
+
+      this.recalcularStatusDevolucao();
+      await this.carregarAvaliacoesDosPedidos();
+      this.filtrarPorStatus(this.statusAtivo);
     }
   } catch (error) {
     console.error('Erro ao monitorar pedidos:', error);
   }
 }
 
-  verificarPrazoDevolucao(dataEntrega: string): boolean {
-    if (!dataEntrega) return true;
-    const entrega = new Date(dataEntrega);
-    const hoje = new Date();
-    const diff = (hoje.getTime() - entrega.getTime()) / (1000 * 60 * 60 * 24);
-    return diff > 7;
-  }
+verificarPrazoDevolucao(dataEntrega: string): boolean {
+  if (!dataEntrega) return true;
+  const entrega = new Date(dataEntrega);
+  const hoje = new Date();
+  const diff = (hoje.getTime() - entrega.getTime()) / (1000 * 60 * 60 * 24);
+  return diff > 7;
+}
 
   calcularDiasRestantes(dataEntrega: string): number {
     if (!dataEntrega) return 0;
@@ -584,34 +715,43 @@ async carregarPedidosSilenciosamente(): Promise<void> {
     return restantes;
   }
 
-  recalcularStatusDevolucao(): void {
-    for (const pedido of this.pedidos) {
-      for (const item of pedido.itens) {
-        item.statusDevolucao = null;
-        item.quantidadeDevolvida = 0;
-      }
+recalcularStatusDevolucao(): void {
+  for (const pedido of this.pedidos) {
+    for (const item of pedido.itens) {
+      item.statusDevolucao = null;
+      item.quantidadeDevolvida = 0;
     }
+  }
 
-    const devolucoes = this.pedidos.filter((p: any) => p.pedidoOriginalId);
-    for (const devolucao of devolucoes) {
-      const pedidoOriginal = this.pedidos.find((p: any) => p.id === devolucao.pedidoOriginalId);
-      if (pedidoOriginal) {
-        for (const itemDev of devolucao.itens) {
-          const itemOriginal = pedidoOriginal.itens.find((i: any) => i.livro.id === itemDev.livro.id);
-          if (itemOriginal) {
-            itemOriginal.quantidadeDevolvida = (itemOriginal.quantidadeDevolvida || 0) + itemDev.quantidade;
-            if (devolucao.status === 'DEVOLUCAO' || devolucao.status === 'DEVOLVIDO') {
-              if (itemOriginal.quantidadeDevolvida < itemOriginal.quantidade) {
-                itemOriginal.statusDevolucao = 'DEVOLUCAO_PARCIAL';
-              } else {
-                itemOriginal.statusDevolucao = devolucao.status === 'DEVOLVIDO' ? 'DEVOLVIDO' : 'DEVOLUCAO';
-              }
+  const devolucoes = this.pedidos.filter((p: any) => p.pedidoOriginalId);
+  for (const devolucao of devolucoes) {
+    const pedidoOriginal = this.pedidos.find((p: any) => p.id === devolucao.pedidoOriginalId);
+    if (pedidoOriginal) {
+      for (const itemDev of devolucao.itens) {
+        const itemOriginal = pedidoOriginal.itens.find((i: any) => i.livro.id === itemDev.livro.id);
+        if (itemOriginal) {
+          itemOriginal.quantidadeDevolvida = (itemOriginal.quantidadeDevolvida || 0) + itemDev.quantidade;
+
+          if (devolucao.status === 'DEVOLUCAO' ||
+              devolucao.status === 'AUTORIZADO_DEVOLUCAO' ||
+              devolucao.status === 'ENVIADO_DEVOLUCAO') {
+            if (itemOriginal.quantidadeDevolvida < itemOriginal.quantidade) {
+              itemOriginal.statusDevolucao = 'DEVOLUCAO_PARCIAL';
+            } else {
+              itemOriginal.statusDevolucao = 'DEVOLUCAO';
+            }
+          } else if (devolucao.status === 'DEVOLVIDO') {
+            if (itemOriginal.quantidadeDevolvida < itemOriginal.quantidade) {
+              itemOriginal.statusDevolucao = 'DEVOLUCAO_PARCIAL';
+            } else {
+              itemOriginal.statusDevolucao = 'DEVOLVIDO';
             }
           }
         }
       }
     }
   }
+}
 
   abrirInstrucoesEnvio(pedidoId: number): void {
     this.pedidoEnvioId = pedidoId;
@@ -624,32 +764,37 @@ async carregarPedidosSilenciosamente(): Promise<void> {
     this.displayInstrucoesEnvio = false;
   }
 
-  salvarRastreamento(): void {
-    if (!this.codigoRastreamento) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Aviso',
-        detail: 'Digite o código de rastreamento'
-      });
-      return;
-    }
-
-    if (!this.validarCodigoRastreamento()) {
-      return;
-    }
-
-    this.rastreamentoSalvo = true;
+salvarRastreamento(): void {
+  if (!this.codigoRastreamento) {
     this.messageService.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Código de rastreamento salvo!'
+      severity: 'warn',
+      summary: 'Aviso',
+      detail: 'Digite o código de rastreamento'
     });
-    this.authService.adicionarNotificacao(
-      'Rastreamento',
-      `Código de rastreamento: ${this.codigoRastreamento}`,
-      'info'
-    );
+    return;
   }
+
+  if (!this.codigoRastreamentoValido) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Código inválido. Formato: AA123456789BR (2 letras + 9 números + 2 letras)'
+    });
+    return;
+  }
+
+  this.rastreamentoSalvo = true;
+  this.messageService.add({
+    severity: 'success',
+    summary: 'Sucesso',
+    detail: 'Código de rastreamento salvo!'
+  });
+  this.authService.adicionarNotificacao(
+    'Rastreamento',
+    `Código de rastreamento: ${this.codigoRastreamento}`,
+    'info'
+  );
+}
 
   filtrarPorStatus(status: string): void {
     this.statusAtivo = status;
@@ -732,8 +877,7 @@ async carregarPedidosSilenciosamente(): Promise<void> {
       const body: any = { novoStatus };
 
       if (codigoRastreamento) {
-            body.codigoRastreamentoDevolucao = codigoRastreamento;
-
+        body.codigoRastreamentoDevolucao = codigoRastreamento;
       }
 
       const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
@@ -797,8 +941,6 @@ async carregarPedidosSilenciosamente(): Promise<void> {
       this.authService.adicionarNotificacao('Erro', error.message, 'error');
     }
   }
-
-
 
   validarCodigoRastreamento(): boolean {
     const regex = /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/;
@@ -896,194 +1038,195 @@ async carregarPedidosSilenciosamente(): Promise<void> {
     }
   }
 
-async confirmarDevolucao(): Promise<void> {
-  if (!this.motivoDevolucao.trim()) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Informe o motivo da devolução'});
-    return;
+  async confirmarDevolucao(): Promise<void> {
+    if (!this.motivoDevolucao.trim()) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Informe o motivo da devolução'});
+      return;
+    }
+
+    const itens = this.itensDevolucao
+      .filter(item => item.selecionado)
+      .map(item => {
+        const quantidade = Math.min(item.quantidadeDevolver, item.quantidadeDisponivel);
+        return {
+          itemPedidoId: item.id,
+          quantidade: quantidade
+        };
+      });
+
+    if (itens.length === 0) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Selecione pelo menos um item'});
+      return;
+    }
+
+    for (let i = 0; i < itens.length; i++) {
+      const itemSelecionado = this.itensDevolucao.filter(item => item.selecionado)[i];
+      if (itens[i].quantidade > itemSelecionado.quantidadeDisponivel) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Quantidade de devolução excede o disponível'
+        });
+        return;
+      }
+    }
+
+    try {
+      const token = this.authService.getToken();
+
+      const formData = new FormData();
+      formData.append('motivo', this.motivoDevolucao);
+      formData.append('itens', JSON.stringify(itens));
+
+      if (this.fotosDevolucao.length > 0) {
+        for (const foto of this.fotosDevolucao) {
+          formData.append('fotos', foto);
+        }
+      }
+
+      const response = await fetch(`/api/pedidos/${this.pedidoDevolucaoId}/devolucao`, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.mensagem || 'Erro ao solicitar devolução');
+      }
+
+      const data = await response.json();
+      const pedidoLabel = `Pedido #${this.pedidoDevolucaoId}`;
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: `Devolução do ${pedidoLabel} solicitada!`
+      });
+      this.authService.adicionarNotificacao('Devolução', `Devolução do ${pedidoLabel} solicitada com sucesso`, 'success');
+      this.displayDevolucaoModal = false;
+      this.fotosDevolucao = [];
+      this.fotosDevolucaoPreview = [];
+      await this.carregarPedidos();
+    } catch (error: any) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:error.message});
+      this.authService.adicionarNotificacao('Erro', error.message, 'error');
+    }
   }
 
-  const itens = this.itensDevolucao
-    .filter(item => item.selecionado)
-    .map(item => {
-      const quantidade = Math.min(item.quantidadeDevolver, item.quantidadeDisponivel);
-      return {
-        itemPedidoId: item.id,
-        quantidade: quantidade
-      };
-    });
-
-  if (itens.length === 0) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Selecione pelo menos um item'});
-    return;
+  abrirConfirmarEntrega(pedidoId: number): void {
+    const pedido = this.pedidos.find(p => p.id === pedidoId);
+    if (!pedido) return;
+    this.pedidoEntrega = pedido;
+    this.displayConfirmarEntrega = true;
   }
 
-  for (let i = 0; i < itens.length; i++) {
-    const itemSelecionado = this.itensDevolucao.filter(item => item.selecionado)[i];
-    if (itens[i].quantidade > itemSelecionado.quantidadeDisponivel) {
+  fecharConfirmarEntrega(): void {
+    this.displayConfirmarEntrega = false;
+    this.pedidoEntrega = null;
+  }
+
+  confirmarReembolso(pedidoId: number): void {
+    const pedido = this.pedidos.find(p => p.id === pedidoId);
+    if (!pedido) return;
+    this.pedidoReembolso = pedido;
+    this.displayConfirmarReembolso = true;
+  }
+
+  async confirmarReembolsoFinal(): Promise<void> {
+    if (!this.pedidoReembolso) return;
+
+    try {
+      const token = this.authService.getToken();
+      const response = await fetch(`/api/pedidos/${this.pedidoReembolso.id}/confirmar-reembolso`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao confirmar reembolso');
+      }
+
+      const pedidoAtualizado = await response.json();
+
+      const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
+      if (index !== -1) {
+        this.pedidos[index] = pedidoAtualizado;
+      }
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Reembolso confirmado',
+        detail: 'Reembolso confirmado para o pedido #' + this.pedidoReembolso.id
+      });
+      this.authService.adicionarNotificacao(
+        'Reembolso',
+        'Reembolso confirmado para o pedido #' + this.pedidoReembolso.id,
+        'success'
+      );
+
+      this.displayConfirmarReembolso = false;
+      this.pedidoReembolso = null;
+      this.filtrarPorStatus(this.statusAtivo);
+    } catch (error: any) {
       this.messageService.add({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Quantidade de devolução excede o disponível'
+        detail: error.message || 'Falha ao confirmar reembolso'
       });
-      return;
     }
   }
 
-  try {
-    const token = this.authService.getToken();
+  async confirmarEntregaFinal(): Promise<void> {
+    if (!this.pedidoEntrega) return;
 
-    const formData = new FormData();
-    formData.append('motivo', this.motivoDevolucao);
-    formData.append('itens', JSON.stringify(itens));
+    try {
+      const token = this.authService.getToken();
+      const response = await fetch(`/api/pedidos/${this.pedidoEntrega.id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ novoStatus: 'ENTREGUE' })
+      });
 
-    if (this.fotosDevolucao.length > 0) {
-      for (const foto of this.fotosDevolucao) {
-        formData.append('fotos', foto);
+      if (!response.ok) {
+        throw new Error('Erro ao confirmar entrega');
       }
-    }
 
-    const response = await fetch(`/api/pedidos/${this.pedidoDevolucaoId}/devolucao`, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + token
-      },
-      body: formData
-    });
+      const pedidoAtualizado = await response.json();
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.mensagem || 'Erro ao solicitar devolução');
-    }
-
-    const data = await response.json();
-    const pedidoLabel = `Pedido #${this.pedidoDevolucaoId}`;
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: `Devolução do ${pedidoLabel} solicitada!`
-    });
-    this.authService.adicionarNotificacao('Devolução', `Devolução do ${pedidoLabel} solicitada com sucesso`, 'success');
-    this.displayDevolucaoModal = false;
-    this.fotosDevolucao = [];
-    this.fotosDevolucaoPreview = [];
-    await this.carregarPedidos();
-  } catch (error: any) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:error.message});
-    this.authService.adicionarNotificacao('Erro', error.message, 'error');
-  }
-}
-  abrirConfirmarEntrega(pedidoId: number): void {
-  const pedido = this.pedidos.find(p => p.id === pedidoId);
-  if (!pedido) return;
-  this.pedidoEntrega = pedido;
-  this.displayConfirmarEntrega = true;
-}
-
-fecharConfirmarEntrega(): void {
-  this.displayConfirmarEntrega = false;
-  this.pedidoEntrega = null;
-}
-
-confirmarReembolso(pedidoId: number): void {
-  const pedido = this.pedidos.find(p => p.id === pedidoId);
-  if (!pedido) return;
-  this.pedidoReembolso = pedido;
-  this.displayConfirmarReembolso = true;
-}
-
-async confirmarReembolsoFinal(): Promise<void> {
-  if (!this.pedidoReembolso) return;
-
-  try {
-    const token = this.authService.getToken();
-    const response = await fetch(`/api/pedidos/${this.pedidoReembolso.id}/confirmar-reembolso`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+      const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
+      if (index !== -1) {
+        this.pedidos[index] = pedidoAtualizado;
       }
-    });
 
-    if (!response.ok) {
-      throw new Error('Erro ao confirmar reembolso');
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Entrega confirmada',
+        detail: 'Pedido #' + this.pedidoEntrega.id + ' marcado como entregue!'
+      });
+      this.authService.adicionarNotificacao(
+        'Entrega',
+        'Pedido #' + this.pedidoEntrega.id + ' foi entregue com sucesso',
+        'success'
+      );
+
+      this.fecharConfirmarEntrega();
+      this.filtrarPorStatus(this.statusAtivo);
+    } catch (error: any) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: error.message || 'Falha ao confirmar entrega'
+      });
     }
-
-    const pedidoAtualizado = await response.json();
-
-    const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
-    if (index !== -1) {
-      this.pedidos[index] = pedidoAtualizado;
-    }
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Reembolso confirmado',
-      detail: 'Reembolso confirmado para o pedido #' + this.pedidoReembolso.id
-    });
-    this.authService.adicionarNotificacao(
-      'Reembolso',
-      'Reembolso confirmado para o pedido #' + this.pedidoReembolso.id,
-      'success'
-    );
-
-    this.displayConfirmarReembolso = false;
-    this.pedidoReembolso = null;
-    this.filtrarPorStatus(this.statusAtivo);
-  } catch (error: any) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: error.message || 'Falha ao confirmar reembolso'
-    });
   }
-}
-
-async confirmarEntregaFinal(): Promise<void> {
-  if (!this.pedidoEntrega) return;
-
-  try {
-    const token = this.authService.getToken();
-    const response = await fetch(`/api/pedidos/${this.pedidoEntrega.id}/status`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-      body: JSON.stringify({ novoStatus: 'ENTREGUE' })
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao confirmar entrega');
-    }
-
-    const pedidoAtualizado = await response.json();
-
-    const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
-    if (index !== -1) {
-      this.pedidos[index] = pedidoAtualizado;
-    }
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Entrega confirmada',
-      detail: 'Pedido #' + this.pedidoEntrega.id + ' marcado como entregue!'
-    });
-    this.authService.adicionarNotificacao(
-      'Entrega',
-      'Pedido #' + this.pedidoEntrega.id + ' foi entregue com sucesso',
-      'success'
-    );
-
-    this.fecharConfirmarEntrega();
-    this.filtrarPorStatus(this.statusAtivo);
-  } catch (error: any) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: error.message || 'Falha ao confirmar entrega'
-    });
-  }
-}
 
   getActionIcon(action: string): string {
     const icons: any = {

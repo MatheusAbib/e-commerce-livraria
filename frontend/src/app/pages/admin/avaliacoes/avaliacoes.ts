@@ -137,45 +137,88 @@ export class AdminAvaliacoesComponent implements OnInit {
     this.displayExcluirModal = true;
   }
 
-  async confirmarExcluir(): Promise<void> {
-    if (!this.avaliacaoSelecionada) return;
+async confirmarExcluir(): Promise<void> {
+  if (!this.avaliacaoSelecionada) return;
 
-    try {
-      const token = this.authService.getToken();
-      const response = await fetch(`/api/avaliacoes/${this.avaliacaoSelecionada.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
+  try {
+    const token = this.authService.getToken();
+    const response = await fetch(`/api/avaliacoes/${this.avaliacaoSelecionada.id}/remover-comentario`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    if (response.ok) {
+      const avaliacaoAtualizada = await response.json();
+
+      const index = this.avaliacoes.findIndex(a => a.id === avaliacaoAtualizada.id);
+      if (index !== -1) {
+        this.avaliacoes[index] = avaliacaoAtualizada;
+      }
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Comentário removido com sucesso'
       });
 
-      if (response.ok) {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Avaliação removida com sucesso'
+      const user = this.authService.getUser();
+      if (user) {
+        const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario') || '{}');
+        const notificacoes = notificacoesPorUsuario[user.id] || [];
+
+        notificacoes.push({
+          id: Date.now(),
+          titulo: 'Comentário Removido',
+          mensagem: `Seu comentário sobre o livro "${avaliacaoAtualizada.livro?.titulo || 'Livro'}" foi removido pelo administrador.`,
+          tipo: 'warning',
+          lida: false,
+          data: new Date().toISOString()
         });
 
-        this.avaliacoes = this.avaliacoes.filter(a => a.id !== this.avaliacaoSelecionada.id);
-        this.aplicarFiltros();
-        this.displayExcluirModal = false;
-        this.avaliacaoSelecionada = null;
-      } else {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Erro ao remover avaliação'
-        });
+        notificacoesPorUsuario[user.id] = notificacoes;
+        localStorage.setItem('notificacoesPorUsuario', JSON.stringify(notificacoesPorUsuario));
+
+        this.authService.adicionarNotificacao(
+          'Comentário Removido',
+          `Seu comentário sobre o livro "${avaliacaoAtualizada.livro?.titulo || 'Livro'}" foi removido pelo administrador.`,
+          'warning'
+        );
       }
-    } catch (error) {
-      console.error('Erro:', error);
+
+      this.aplicarFiltros();
+      this.displayExcluirModal = false;
+      this.avaliacaoSelecionada = null;
+    } else {
+      const error = await response.json();
       this.messageService.add({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Erro ao remover avaliação'
+        detail: error.mensagem || 'Erro ao remover comentário'
       });
     }
+  } catch (error) {
+    console.error('Erro:', error);
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Erro ao remover comentário'
+    });
   }
+}
+
+getTipoEstrelaAdmin(nota: number, estrelaIndex: number): string {
+  if (!nota) return 'vazia';
+  if (nota >= estrelaIndex + 1) {
+    return 'cheia';
+  } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
+    return 'meia';
+  } else {
+    return 'vazia';
+  }
+}
 
   formatarData(data: string): string {
     if (!data) return '-';

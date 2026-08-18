@@ -86,60 +86,57 @@ export class HeaderComponent implements OnInit {
     private chatService: ChatService
   ) {}
 
-  ngOnInit(): void {
-    this.carrinhoService.carrinhoItens$.subscribe(total => {
-      this.carrinhoItens = total;
+ngOnInit(): void {
+  this.carrinhoService.carrinhoItens$.subscribe(total => {
+    this.carrinhoItens = total;
+    this.cdr.detectChanges();
+  });
+
+  this.authService.favoritosCount$.subscribe(count => {
+    this.favoritosCount = count;
+    this.cdr.detectChanges();
+  });
+
+  this.authService.cuponsCount$.subscribe(count => {
+    this.cuponsDisponiveisCount = count;
+    this.cdr.detectChanges();
+  });
+
+  this.authService.usuario$.subscribe(usuario => {
+    if (usuario && this.usuario && usuario.id === this.usuario.id) {
+      this.usuario.nome = usuario.nome;
       this.cdr.detectChanges();
-    });
-
-    this.authService.favoritosCount$.subscribe(count => {
-      this.favoritosCount = count;
-      this.cdr.detectChanges();
-    });
-
-
-    this.authService.cuponsCount$.subscribe(count => {
-      this.cuponsDisponiveisCount = count;
-      this.cdr.detectChanges();
-    });
-
-    this.authService.usuario$.subscribe(usuario => {
-      if (usuario && this.usuario && usuario.id === this.usuario.id) {
-        this.usuario.nome = usuario.nome;
-        this.cdr.detectChanges();
-      }
-    });
-
-    this.authService.notificacoes$.subscribe(notificacoes => {
-      if (this.usuario) {
-        this.notificacoes = notificacoes;
-        this.notificacoesNaoLidas = this.notificacoes.filter((n: any) => !n.lida).length;
-        this.cdr.detectChanges();
-      }
-    });
-
-    if (this.authService.isAuthenticated()) {
-      const user = this.authService.getUser();
-      if (user) {
-        this.atualizarUI(user);
-      }
-    } else {
-      const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
-      if (user && user.id) {
-        this.atualizarUI(user);
-      }
     }
+  });
 
-    this.carregarContadorChats();
+  this.authService.notificacoes$.subscribe(notificacoes => {
+    if (this.usuario) {
+      this.notificacoes = notificacoes;
+      this.notificacoesNaoLidas = this.notificacoes.filter((n: any) => !n.lida).length;
+      this.cdr.detectChanges();
+    }
+  });
 
-    setInterval(() => {
-      this.carregarContadorChats();
-    }, 2000);
-
-    this.chatService.abrirChat$.subscribe(() => {
-      this.carregarContadorChats();
-    });
+  if (this.authService.isAuthenticated()) {
+    const user = this.authService.getUser();
+    if (user) {
+      this.atualizarUI(user);
+    }
+  } else {
+    const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
+    if (user && user.id) {
+      this.atualizarUI(user);
+    }
   }
+
+  this.carregarContadorChats();
+  this.carregarContadorCupons();
+
+  setInterval(() => {
+    this.carregarContadorChats();
+    this.carregarContadorCupons();
+  }, 2000);
+}
 
   toggleMenu(): void {
   this.menuAberto = !this.menuAberto;
@@ -149,9 +146,10 @@ fecharMenu(): void {
   this.menuAberto = false;
 }
 
-  abrirChatsModal(): void {
-    this.displayChatsModal = true;
-  }
+abrirChatsModal(): void {
+  this.chatService.limparUltimoPedido();
+  this.displayChatsModal = true;
+}
 
 async carregarContadorChats(): Promise<void> {
   const user = this.authService.getUser();
@@ -184,7 +182,7 @@ async carregarContadorChats(): Promise<void> {
             mensagem = `O vendedor encerrou o atendimento do pedido #${chat.pedidoId}`;
           } else {
             titulo = 'Atendimento reativado';
-            mensagem = `O vendedor reativou o atendimento do pedido #${chat.pedidoId}`;
+            mensagem = `Reativado a conversa do pedido #${chat.pedidoId}`;
           }
 
           this.messageService.add({
@@ -237,9 +235,12 @@ async carregarContadorChats(): Promise<void> {
   }
 }
 
-  abrirChatDrawer(event: {pedidoId: number, pedido: any}): void {
-    this.authService.notificarAbrirChat(event.pedidoId);
-  }
+abrirChatDrawer(event: {pedidoId: number, pedido: any}): void {
+  this.chatService.limparUltimoPedido();
+  setTimeout(() => {
+    this.chatService.abrirChat(event.pedidoId, event.pedido);
+  }, 100);
+}
 
   atualizarUI(usuario: any): void {
     if (usuario && usuario.id) {
@@ -285,20 +286,32 @@ async carregarContadorChats(): Promise<void> {
     this.carregarContadorCupons();
   }
 
-  carregarContadorCupons(): void {
-    const user = this.authService.getUser();
-    if (!user) {
-      this.cuponsDisponiveisCount = 0;
-      this.authService.atualizarCuponsCount(0);
-      return;
-    }
-
-    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario') || '{}');
-    const cupons = cuponsPorUsuario[user.id] || [];
-    this.cuponsDisponiveisCount = cupons.filter((c: any) => !c.usado).length;
-    this.authService.atualizarCuponsCount(this.cuponsDisponiveisCount);
-    this.cdr.detectChanges();
+async carregarContadorCupons(): Promise<void> {
+  const user = this.authService.getUser();
+  if (!user) {
+    this.cuponsDisponiveisCount = 0;
+    this.authService.atualizarCuponsCount(0);
+    return;
   }
+
+  try {
+    const token = this.authService.getToken();
+    const response = await fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    if (response.ok) {
+      const cupons = await response.json();
+      this.cuponsDisponiveisCount = cupons.length;
+      this.authService.atualizarCuponsCount(cupons.length);
+      this.cdr.detectChanges();
+    }
+  } catch (error) {
+    console.error('Erro ao carregar contador de cupons:', error);
+  }
+}
 
   async carregarContadorFavoritos(): Promise<void> {
     if (!this.usuario) {

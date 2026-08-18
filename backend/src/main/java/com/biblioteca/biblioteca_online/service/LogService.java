@@ -5,6 +5,7 @@ import com.biblioteca.biblioteca_online.repository.LogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,5 +28,19 @@ public class LogService {
 
     public void limparLogsAntigos() {
         logRepository.deleteAll();
+    }
+
+    public void adicionarNotificacaoParaCliente(Long clienteId, String titulo, String mensagem, String tipo) {
+        try {
+            Log log = new Log();
+            log.setUserId(clienteId);
+            log.setAction("notificacao");
+            log.setDetails(titulo + ": " + mensagem);
+            log.setLevel(tipo);
+            log.setTimestamp(LocalDateTime.now());
+            logRepository.save(log);
+        } catch (Exception e) {
+            System.err.println("Erro ao adicionar notificação: " + e.getMessage());
+        }
     }
 }

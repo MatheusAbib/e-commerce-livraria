@@ -1003,12 +1003,36 @@
   color: #94a3b8;
 }
 
-.comentario-estrelas {
-  display: flex;
-  gap: 0.05rem;
-  margin-bottom: 0.25rem;
+.estrela-wrapper-comentario {
+  display: inline-block;
+  position: relative;
+  width: 0.8rem;
+  height: 0.8rem;
 }
 
+.estrela-meia-comentario {
+  position: relative;
+  display: inline-block;
+}
+
+.estrela-meia-comentario i {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.comentario-estrelas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.05rem;
+}
+
+.nota-texto-comentario {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #1a2332;
+  margin-left: 0.25rem;
+}
 .comentario-estrelas i {
   font-size: 0.8rem;
 }

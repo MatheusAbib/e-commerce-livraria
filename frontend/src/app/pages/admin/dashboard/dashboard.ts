@@ -210,14 +210,42 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.atualizarRankingPaginado();
   }
 
-  getCorNota(nota: number): string {
-    if (nota >= 4.5) return '#22c55e';
-    if (nota >= 4) return '#84cc16';
-    if (nota >= 3) return '#fbbf24';
-    if (nota >= 2) return '#fb923c';
-    return '#ef4444';
+getTipoEstrelaRanking(nota: number, estrelaIndex: number): string {
+  if (!nota) return 'vazia';
+  if (nota >= estrelaIndex + 1) {
+    return 'cheia';
+  } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
+    return 'meia';
+  } else {
+    return 'vazia';
   }
+}
 
+getTipoEstrelaDistribuicao(nota: number, estrelaIndex: number): string {
+  if (!nota) return 'vazia';
+  if (nota >= estrelaIndex + 1) {
+    return 'cheia';
+  } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
+    return 'meia';
+  } else {
+    return 'vazia';
+  }
+}
+
+getCorNota(nota: number): string {
+  const cores: any = {
+    1: '#dc2626',
+    2: '#f59e0b',
+    3: '#fbbf24',
+    4: '#22c55e',
+    5: '#059669'
+  };
+  return cores[nota] || '#94a3b8';
+}
+
+arredondarNota(nota: number): number {
+  return Math.round(nota);
+}
   async carregarLucros(): Promise<void> {
     try {
       const data = await this.adminService.getLucros().toPromise();
@@ -297,18 +325,48 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     return (Number(valor) / this.maxLucro) * 100;
   }
 
-  getStatusLabel(status: string): string {
-    const labels: any = {
-      'EM_PROCESSAMENTO': 'Em Processamento',
-      'EM_TRANSITO': 'Em Trânsito',
-      'ENTREGUE': 'Entregue',
-      'DEVOLUCAO': 'Devolução',
-      'DEVOLVIDO': 'Devolvido',
-      'TROCADO': 'Trocado',
-      'CANCELADO': 'Cancelado'
-    };
-    return labels[status] || status;
-  }
+getStatusLabel(status: string): string {
+  const labels: any = {
+    'ENTREGUE': 'Entregue',
+    'EM_PROCESSAMENTO': 'Em Processamento',
+    'EM_TRANSITO': 'Em Trânsito',
+    'CANCELADO': 'Cancelado',
+    'DEVOLUCAO': 'Devolução Solicitada',
+    'AUTORIZADO_DEVOLUCAO': 'Devolução Autorizada',
+    'ENVIADO_DEVOLUCAO': 'Devolução Enviada',
+    'DEVOLVIDO': 'Devolvido'
+  };
+  return labels[status] || status;
+}
+
+getStatusClass(status: string): string {
+  const classes: any = {
+    'ENTREGUE': 'status-entregue',
+    'EM_PROCESSAMENTO': 'status-pendente',
+    'EM_TRANSITO': 'status-envio',
+    'CANCELADO': 'status-cancelado',
+    'DEVOLUCAO': 'status-devolucao',
+    'AUTORIZADO_DEVOLUCAO': 'status-devolucao-autorizada',
+    'ENVIADO_DEVOLUCAO': 'status-devolucao-enviada',
+    'DEVOLVIDO': 'status-devolvido'
+  };
+  return classes[status] || 'status-pendente';
+}
+
+getStatusIcon(status: string): string {
+  const icons: any = {
+    'ENTREGUE': 'pi pi-check-circle',
+    'EM_PROCESSAMENTO': 'pi pi-clock',
+    'EM_TRANSITO': 'pi pi-truck',
+    'CANCELADO': 'pi pi-times-circle',
+    'DEVOLUCAO': 'pi pi-undo',
+    'AUTORIZADO_DEVOLUCAO': 'pi pi-check',
+    'ENVIADO_DEVOLUCAO': 'pi pi-send',
+    'DEVOLVIDO': 'pi pi-check-circle'
+  };
+  return icons[status] || 'pi pi-circle';
+}
+
 
   atualizarStats(data: any[]): void {
     if (data && data.length > 0) {
@@ -485,9 +543,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     window.print();
   }
 
-  arredondarNota(nota: number): number {
-  return Math.round(nota);
-}
 
   exportarExcel(): void {
     const dados = [

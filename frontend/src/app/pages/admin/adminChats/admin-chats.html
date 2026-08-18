@@ -103,25 +103,74 @@
         </div>
 
         <div *ngIf="chatAdminPedido" class="chat-container-admin">
-          <div class="chat-header-admin-page">
-            <div class="chat-header-info-admin">
-              <div>
-                <span class="chat-cliente-nome">{{ chatAdminPedido.cliente?.nome || chatAdminPedido.clienteNome }}</span>
-                <span class="chat-pedido-ref">Pedido #{{ chatAdminPedido.id }}</span>
+            <div class="chat-header-admin-page">
+              <div class="chat-header-info-admin">
+                <div>
+                  <span class="chat-cliente-nome">{{ chatAdminPedido.cliente?.nome || chatAdminPedido.clienteNome }}</span>
+                  <span class="chat-pedido-ref">Pedido #{{ chatAdminPedido.id }}</span>
+                </div>
+                <span class="chat-status" [class.status-ativo]="chatAdminAtivo">
+                  {{ chatAdminAtivo ? 'Ativo' : 'Encerrado' }}
+                </span>
               </div>
-              <span class="chat-status" [class.status-ativo]="chatAdminAtivo">
-                {{ chatAdminAtivo ? 'Ativo' : 'Encerrado' }}
-              </span>
+              <div class="chat-header-actions">
+                <button class="btn-danger" (click)="encerrarAtendimentoAdmin()" *ngIf="chatAdminAtivo">
+                  <i class="pi pi-times-circle"></i> Encerrar
+                </button>
+                <button class="btn-fechar-chat" (click)="fecharChatAdmin()">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
             </div>
-            <div class="chat-header-actions">
-              <button class="btn-danger" (click)="encerrarAtendimentoAdmin()" *ngIf="chatAdminAtivo">
-                <i class="pi pi-times-circle"></i> Encerrar
-              </button>
-              <button class="btn-fechar-chat" (click)="fecharChatAdmin()">
-                <i class="pi pi-times"></i>
-              </button>
-            </div>
+
+<div class="pedido-info-admin" *ngIf="pedidoDetalhes">
+  <div class="pedido-card-admin">
+    <div class="pedido-card-header">
+      <div class="pedido-card-id">
+        <i class="pi pi-box"></i>
+        <span>Pedido #{{ pedidoDetalhes.id }}</span>
+      </div>
+      <span class="pedido-status-admin" [class]="getStatusClass(pedidoDetalhes.status)">
+        <i class="pi" [class.pi-clock]="pedidoDetalhes.status === 'EM_PROCESSAMENTO'"
+           [class.pi-truck]="pedidoDetalhes.status === 'EM_TRANSITO'"
+           [class.pi-check-circle]="pedidoDetalhes.status === 'ENTREGUE'"
+           [class.pi-undo]="pedidoDetalhes.status === 'DEVOLUCAO' || pedidoDetalhes.status === 'AUTORIZADO_DEVOLUCAO' || pedidoDetalhes.status === 'ENVIADO_DEVOLUCAO'"
+           [class.pi-check]="pedidoDetalhes.status === 'DEVOLVIDO'"
+           [class.pi-times-circle]="pedidoDetalhes.status === 'CANCELADO'"></i>
+        {{ getStatusLabel(pedidoDetalhes.status) }}
+      </span>
+    </div>
+    <div class="pedido-card-body">
+      <div class="pedido-itens-admin">
+        <div *ngFor="let item of pedidoDetalhes.itens" class="pedido-item-admin">
+          <div class="item-info">
+            <span class="item-nome">{{ item.livro?.titulo }}</span>
+            <span class="item-qtd">x{{ item.quantidade }}</span>
           </div>
+          <span class="item-preco">R$ {{ (item.precoUnitario || 0) | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="pedido-card-footer">
+        <div class="pedido-subtotal">
+          <span>Subtotal</span>
+          <span>R$ {{ (pedidoDetalhes.valorSubtotal || 0) | number:'1.2-2' }}</span>
+        </div>
+        <div class="pedido-frete" *ngIf="pedidoDetalhes.valorFrete > 0">
+          <span>Frete</span>
+          <span>R$ {{ (pedidoDetalhes.valorFrete || 0) | number:'1.2-2' }}</span>
+        </div>
+        <div class="pedido-desconto" *ngIf="pedidoDetalhes.valorDesconto > 0">
+          <span>Desconto</span>
+          <span>- R$ {{ (pedidoDetalhes.valorDesconto || 0) | number:'1.2-2' }}</span>
+        </div>
+        <div class="pedido-total-admin">
+          <strong>Total</strong>
+          <strong>R$ {{ (pedidoDetalhes.valorTotal || 0) | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
           <div class="chat-messages-admin-page" #chatAdminMessagesPage>
             <div *ngIf="mensagensChatAdmin.length === 0" class="chat-empty-admin-page">

@@ -130,45 +130,70 @@ ngOnInit(): void {
     });
   }
 
-  async carregarCarrinho(): Promise<void> {
-    this.loading = true;
-    const carrinhoBruto = this.obterCarrinhoUsuario();
+async carregarCarrinho(): Promise<void> {
+  this.loading = true;
+  const carrinhoBruto = this.obterCarrinhoUsuario();
 
-    if (carrinhoBruto.length === 0) {
-      this.carrinho = [];
-      this.loading = false;
-      this.cdr.detectChanges();
-      this.iniciarTemporizador();
-      return;
-    }
-
-    try {
-      const itensDetalhados = await Promise.all(
-        carrinhoBruto.map(async (item) => {
-          try {
-            const response = await fetch('http://localhost:8081/api/livros/' + item.id);
-            if (!response.ok) throw new Error('Erro ao buscar produto ' + item.id);
-            const produto = await response.json();
-            return { ...item, produto };
-          } catch {
-            return null;
-          }
-        })
-      );
-
-      this.carrinho = itensDetalhados.filter(item => item !== null);
-      if (this.carrinho.length !== carrinhoBruto.length) {
-        this.salvarCarrinhoUsuario(this.carrinho.map(item => ({ id: item.id, quantidade: item.quantidade })));
-      }
-      this.calcularTotais();
-      this.iniciarTemporizador();
-    } catch (error) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao carregar produtos'});
-    } finally {
-      this.loading = false;
-      this.cdr.detectChanges();
-    }
+  if (carrinhoBruto.length === 0) {
+    this.carrinho = [];
+    this.loading = false;
+    this.cdr.detectChanges();
+    this.iniciarTemporizador();
+    return;
   }
+
+  // === LIMPAR ITENS EXPIRADOS ===
+  const agora = new Date();
+  const carrinhoFiltrado = carrinhoBruto.filter((item: any) => {
+    if (!item.dataAdicao) {
+      item.dataAdicao = new Date().toISOString();
+      return true;
+    }
+    const dataAdicao = new Date(item.dataAdicao);
+    const diff = (agora.getTime() - dataAdicao.getTime()) / (1000 * 60);
+    return diff < 30;
+  });
+
+  if (carrinhoFiltrado.length !== carrinhoBruto.length) {
+    this.salvarCarrinhoUsuario(carrinhoFiltrado);
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Carrinho atualizado',
+      detail: 'Itens antigos foram removidos por expiração.'
+    });
+  }
+
+  try {
+    const itensDetalhados = await Promise.all(
+      carrinhoFiltrado.map(async (item) => {
+        try {
+          const response = await fetch('http://localhost:8081/api/livros/' + item.id);
+          if (!response.ok) throw new Error('Erro ao buscar produto ' + item.id);
+          const produto = await response.json();
+          return { ...item, produto };
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    this.carrinho = itensDetalhados.filter(item => item !== null);
+    if (this.carrinho.length !== carrinhoFiltrado.length) {
+      this.salvarCarrinhoUsuario(this.carrinho.map(item => ({
+        id: item.id,
+        quantidade: item.quantidade,
+        dataAdicao: item.dataAdicao || new Date().toISOString()
+      })));
+    }
+    this.calcularTotais();
+    this.iniciarTemporizador();
+  } catch (error) {
+    this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao carregar produtos'});
+  } finally {
+    this.loading = false;
+    this.cdr.detectChanges();
+  }
+}
 
   toggleSelectCartao(): void {
     this.mostrarSelectCartao = !this.mostrarSelectCartao;
@@ -479,7 +504,7 @@ carregarTimerLocalStorage(): void {
     this.displayConfirmacao = false;
   }
 
-aplicarCupom(): void {
+async aplicarCupom(): Promise<void> {
   if (!this.codigoCupom.trim()) {
     this.messageService.add({severity:'warn', summary:'Aviso', detail:'Digite um código de cupom'});
     return;
@@ -498,40 +523,82 @@ aplicarCupom(): void {
     return;
   }
 
-  const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario') || '{}');
-  const cuponsUsuario = cuponsPorUsuario[user.id] || [];
+  try {
+    const token = this.authService.getToken();
 
-  const cupom = cuponsUsuario.find((c: any) =>
-    c.codigo === this.codigoCupom && !c.usado
-  );
+    const response = await fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
 
-  if (!cupom) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Cupom inválido ou já utilizado'});
-    return;
+    if (!response.ok) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao verificar cupom'});
+      return;
+    }
+
+    const cuponsDisponiveis = await response.json();
+    const cupom = cuponsDisponiveis.find((c: any) => c.codigo === this.codigoCupom);
+
+    if (!cupom) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Cupom inválido ou já utilizado'});
+      this.codigoCupom = '';
+      return;
+    }
+
+    const dataExpiracao = new Date(cupom.dataExpiracao);
+    if (dataExpiracao < new Date()) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Cupom expirado'});
+      this.codigoCupom = '';
+      return;
+    }
+
+    this.cuponsAplicados.push({
+      codigo: cupom.codigo,
+      porcentagem: cupom.porcentagem,
+      valorDesconto: 0,
+      zerarFrete: cupom.zerarFrete || false,
+      id: cupom.pedidoId,
+      dataExpiracao: cupom.dataExpiracao
+    });
+
+    this.codigoCupom = '';
+    this.calcularTotais();
+
+    this.messageService.add({
+      severity:'success',
+      summary:'Cupom aplicado!',
+      detail:`Desconto de ${cupom.porcentagem}% aplicado!`
+    });
+
+  } catch (error) {
+    console.error('Erro ao aplicar cupom:', error);
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Erro ao aplicar cupom'
+    });
   }
+}
 
-  const dataExpiracao = new Date(cupom.dataExpiracao);
-  if (dataExpiracao < new Date()) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Cupom expirado'});
-    return;
+async marcarCupomComoUsado(codigo: string): Promise<void> {
+  try {
+    const user = this.authService.getUser();
+    if (!user) {
+      console.warn('Usuário não autenticado para marcar cupom como usado');
+      return;
+    }
+    const token = this.authService.getToken();
+
+    await fetch(`/api/cupons/${codigo}/usar?clienteId=${user.id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao marcar cupom como usado:', error);
   }
-
-  this.cuponsAplicados.push({
-    codigo: cupom.codigo,
-    porcentagem: cupom.porcentagem,
-    valorDesconto: 0,
-    zerarFrete: cupom.zerarFrete || false,
-    id: cupom.id
-  });
-
-  this.codigoCupom = '';
-  this.calcularTotais();
-
-  this.messageService.add({
-    severity:'success',
-    summary:'Cupom aplicado!',
-    detail:`Desconto de ${cupom.porcentagem}% aplicado!`
-  });
 }
 
   removerCupom(index: number): void {
@@ -693,7 +760,7 @@ validarValoresCartoes(): void {
 }
 
 async finalizarCompra(): Promise<void> {
-    console.log('=== DEBUG FINALIZAR COMPRA ===');
+  console.log('=== DEBUG FINALIZAR COMPRA ===');
   console.log('Subtotal:', this.subtotal);
   console.log('Frete:', this.frete);
   console.log('Desconto:', this.desconto);
@@ -770,35 +837,33 @@ async finalizarCompra(): Promise<void> {
       headers['Authorization'] = 'Bearer ' + token;
     }
 
-const body = {
-  clienteId: this.usuario.id,
-  enderecoId: this.enderecoSelecionado.id,
-  pagamentos: this.cartoesSelecionados.map(c => ({
-    cartaoId: c.id,
-    valor: c.valor
-  })),
-  itens: this.carrinho.map(item => ({
-    livroId: item.id,
-    quantidade: item.quantidade,
-    precoUnitario: item.produto.precoVenda
-  })),
-  valorSubtotal: this.subtotal,
-  valorDesconto: this.desconto,
-  cupons: this.cuponsAplicados.map(c => ({
-    codigo: c.codigo,
-    porcentagem: c.porcentagem
-  }))
+    const body = {
+      clienteId: this.usuario.id,
+      enderecoId: this.enderecoSelecionado.id,
+      pagamentos: this.cartoesSelecionados.map(c => ({
+        cartaoId: c.id,
+        valor: c.valor
+      })),
+      itens: this.carrinho.map(item => ({
+        livroId: item.id,
+        quantidade: item.quantidade,
+        precoUnitario: item.produto.precoVenda
+      })),
+      valorSubtotal: this.subtotal,
+      valorDesconto: this.desconto,
+      cupons: this.cuponsAplicados.map(c => ({
+        codigo: c.codigo,
+        porcentagem: c.porcentagem
+      }))
+    };
 
-};
+    console.log('BODY ENVIADO:', JSON.stringify(body));
 
-
-console.log('BODY ENVIADO:', JSON.stringify(body));
-
-const response = await fetch('http://localhost:8081/api/pedidos', {
-  method: 'POST',
-  headers: headers,
-  body: JSON.stringify(body)
-});
+    const response = await fetch('http://localhost:8081/api/pedidos', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(body)
+    });
 
     if (!response.ok) {
       const errorData = await response.text();
@@ -807,32 +872,27 @@ const response = await fetch('http://localhost:8081/api/pedidos', {
 
     const pedidoCriado = await response.json();
 
-if (this.cuponsAplicados.length > 0) {
-  const user = this.authService.getUser();
-  if (user) {
-    const cuponsPorUsuario = JSON.parse(localStorage.getItem('cuponsPorUsuario') || '{}');
-    const cuponsUsuario = cuponsPorUsuario[user.id] || [];
+    if (this.cuponsAplicados.length > 0) {
+      const user = this.authService.getUser();
+      if (user) {
+        const token = this.authService.getToken();
 
-    for (const cupomAplicado of this.cuponsAplicados) {
-      const cupom = cuponsUsuario.find((c: any) => c.id === cupomAplicado.id);
-      if (cupom) {
-        cupom.usado = true;
-        cupom.valorUsado = cupomAplicado.valorDesconto;
-
-        await fetch(`/api/cupons/${cupom.codigo}/usar`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
+        for (const cupomAplicado of this.cuponsAplicados) {
+          try {
+            await fetch(`/api/cupons/${cupomAplicado.codigo}/usar?clienteId=${user.id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              }
+            });
+          } catch (error) {
+            console.error('Erro ao marcar cupom como usado:', error);
           }
-        });
+        }
       }
     }
 
-    cuponsPorUsuario[user.id] = cuponsUsuario;
-    localStorage.setItem('cuponsPorUsuario', JSON.stringify(cuponsPorUsuario));
-  }
-}
     this.messageService.add({severity:'success', summary:'Sucesso', detail:'Pedido realizado!'});
     this.authService.adicionarNotificacao('Pedido', 'Pedido realizado com sucesso!', 'success');
     this.authService.adicionarNotificacao('Pedido', 'Seu pedido de numero ' + pedidoCriado.id + ' está em processamento!', 'success');

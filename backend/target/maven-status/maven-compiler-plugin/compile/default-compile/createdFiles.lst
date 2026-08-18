@@ -1,6 +1,5 @@
 com\biblioteca\biblioteca_online\controller\LivroController$ReporEstoqueRequest.class
 com\biblioteca\biblioteca_online\controller\CupomController.class
-com\biblioteca\biblioteca_online\dto\CupomAplicadoDTO.class
 com\biblioteca\biblioteca_online\model\Cartao.class
 com\biblioteca\biblioteca_online\service\ChatService.class
 com\biblioteca\biblioteca_online\repository\AvaliacaoRepository.class
@@ -21,6 +20,7 @@ com\biblioteca\biblioteca_online\service\RelatorioService.class
 com\biblioteca\biblioteca_online\dto\CriarAvaliacaoDTO.class
 com\biblioteca\biblioteca_online\service\JwtService.class
 com\biblioteca\biblioteca_online\model\ItemDevolucao.class
+com\biblioteca\biblioteca_online\service\CupomService.class
 com\biblioteca\biblioteca_online\controller\AvaliacaoController.class
 com\biblioteca\biblioteca_online\controller\ChatController.class
 com\biblioteca\biblioteca_online\dto\AvaliacaoResumoDTO.class
@@ -31,6 +31,7 @@ com\biblioteca\biblioteca_online\repository\LogRepository.class
 com\biblioteca\biblioteca_online\service\AvaliacaoService.class
 com\biblioteca\biblioteca_online\service\FileStorageService.class
 com\biblioteca\biblioteca_online\service\LogService.class
+com\biblioteca\biblioteca_online\dto\CupomClienteDTO.class
 com\biblioteca\biblioteca_online\dto\CupomDevolucaoDTO.class
 com\biblioteca\biblioteca_online\repository\EnderecoRepository.class
 com\biblioteca\biblioteca_online\service\LivroService.class
@@ -41,6 +42,7 @@ com\biblioteca\biblioteca_online\repository\DevolucaoFotoRepository.class
 com\biblioteca\biblioteca_online\controller\VendasController.class
 com\biblioteca\biblioteca_online\AdminInitializer.class
 com\biblioteca\biblioteca_online\BibliotecaOnlineApplication.class
+com\biblioteca\biblioteca_online\repository\CupomRepository.class
 com\biblioteca\biblioteca_online\dto\LoginRequest.class
 com\biblioteca\biblioteca_online\model\Cliente.class
 com\biblioteca\biblioteca_online\dto\ClienteRankingDTO.class
@@ -53,7 +55,6 @@ com\biblioteca\biblioteca_online\model\TipoEndereco.class
 com\biblioteca\biblioteca_online\controller\EnderecoController.class
 com\biblioteca\biblioteca_online\controller\IconeController.class
 com\biblioteca\biblioteca_online\service\ClienteService.class
-com\biblioteca\biblioteca_online\model\CupomAplicado.class
 com\biblioteca\biblioteca_online\service\CartaoService.class
 com\biblioteca\biblioteca_online\dto\CriarPedidoDTO.class
 com\biblioteca\biblioteca_online\controller\CartaoController.class
@@ -69,6 +70,7 @@ com\biblioteca\biblioteca_online\model\Log.class
 com\biblioteca\biblioteca_online\dto\PagamentoDTO.class
 com\biblioteca\biblioteca_online\model\ItemPedido.class
 com\biblioteca\biblioteca_online\dto\DevolucaoParcialDTO$ItemDevolucaoDTO.class
+com\biblioteca\biblioteca_online\model\Cupom.class
 com\biblioteca\biblioteca_online\dto\SenhaDTO.class
 com\biblioteca\biblioteca_online\service\CustomUserDetailsService.class
 com\biblioteca\biblioteca_online\dto\AtualizarStatusDTO.class

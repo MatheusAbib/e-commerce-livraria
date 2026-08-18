@@ -5,6 +5,7 @@ import { HeaderComponent } from './components/header/header';
 import { FooterComponent } from './components/footer/footer';
 import { AdminModalsComponent } from './components/admin-modals/admin-modals';
 import { AuthService } from './services/auth';
+import { ChatService } from './services/chat.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { GlobalChatComponent } from "./app/global-chat.component";
@@ -37,7 +38,8 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     public router: Router,
     private authService: AuthService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private chatService: ChatService
   ) {
     this.router.events.subscribe((event: RouterEvent) => {
       if (event instanceof NavigationStart) {
@@ -86,6 +88,14 @@ export class AppComponent implements OnInit, OnDestroy {
         this.pedidosAnteriores = [];
       }
     });
+
+    this.authService.abrirChat$.subscribe((pedidoId: number) => {
+      const pedido = this.pedidosAnteriores.find(p => p.id === pedidoId);
+      this.chatService.limparUltimoPedido();
+      setTimeout(() => {
+        this.chatService.abrirChat(pedidoId, pedido || null);
+      }, 50);
+    });
   }
 
   ngOnDestroy(): void {
@@ -126,17 +136,39 @@ export class AppComponent implements OnInit, OnDestroy {
         for (const pedido of pedidos) {
           const pedidoAntigo = this.pedidosAnteriores.find(p => p.id === pedido.id);
           if (pedidoAntigo && pedidoAntigo.status !== pedido.status) {
-            const statusLabel = this.getStatusLabel(pedido.status);
-            this.authService.adicionarNotificacao(
-              'Pedido Atualizado',
-              `Pedido #${pedido.id} agora esta ${statusLabel}`,
-              'info'
-            );
+            const mensagem = this.getMensagemStatus(pedido);
+            const titulo = this.getTituloStatus(pedido.status);
+
+            this.authService.adicionarNotificacao(titulo, mensagem, 'info');
+
             this.messageService.add({
               severity: 'info',
-              summary: 'Pedido Atualizado',
-              detail: `Pedido #${pedido.id} esta agora: ${statusLabel}`
+              summary: titulo,
+              detail: mensagem
             });
+
+            if (pedido.status === 'DEVOLVIDO') {
+              setTimeout(async () => {
+                const cupomResponse = await fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+                  headers: {
+                    'Authorization': 'Bearer ' + token
+                  }
+                });
+                if (cupomResponse.ok) {
+                  const cupons = await cupomResponse.json();
+                  const cupomNovo = cupons.find((c: any) => c.pedidoId === pedido.id);
+                  if (cupomNovo) {
+                    const mensagemCupom = `Cupom ${cupomNovo.codigo} de ${cupomNovo.porcentagem}% de desconto disponível!`;
+                    this.authService.adicionarNotificacao('Novo Cupom!', mensagemCupom, 'success');
+                    this.messageService.add({
+                      severity: 'success',
+                      summary: 'Novo Cupom!',
+                      detail: mensagemCupom
+                    });
+                  }
+                }
+              }, 1000);
+            }
           }
         }
 
@@ -147,14 +179,55 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  private getTituloStatus(status: string): string {
+    const titulos: any = {
+      'EM_PROCESSAMENTO': 'Pedido Confirmado',
+      'EM_TRANSITO': 'Pedido Enviado',
+      'ENTREGUE': 'Pedido Entregue',
+      'DEVOLUCAO': 'Devolução Solicitada',
+      'AUTORIZADO_DEVOLUCAO': 'Devolução Autorizada',
+      'ENVIADO_DEVOLUCAO': 'Devolução Enviada',
+      'DEVOLVIDO': 'Devolução Finalizada',
+      'CANCELADO': 'Pedido Cancelado'
+    };
+    return titulos[status] || 'Pedido Atualizado';
+  }
+
+  private getMensagemStatus(pedido: any): string {
+    const status = pedido.status;
+    const id = pedido.id;
+
+    switch (status) {
+      case 'EM_PROCESSAMENTO':
+        return `Pedido #${id} confirmado. Estamos preparando seu pedido para envio.`;
+      case 'EM_TRANSITO':
+        return `Pedido #${id} foi enviado. Rastreie o pedido com o código enviado.`;
+      case 'ENTREGUE':
+        return `Pedido #${id} foi entregue com sucesso.`;
+      case 'DEVOLUCAO':
+        return `Devolução do pedido #${id} solicitada. Aguarde a análise do vendedor.`;
+      case 'AUTORIZADO_DEVOLUCAO':
+        return `Devolução do pedido #${id} autorizada. Envie o pacote conforme as instruções.`;
+      case 'ENVIADO_DEVOLUCAO':
+        return `Devolução do pedido #${id} enviada. Aguarde a confirmação do recebimento.`;
+      case 'DEVOLVIDO':
+        return `Devolução do pedido #${id} finalizada. O reembolso será processado em breve.`;
+      case 'CANCELADO':
+        return `Pedido #${id} foi cancelado com sucesso.`;
+      default:
+        return `Pedido #${id} foi atualizado.`;
+    }
+  }
+
   private getStatusLabel(status: string): string {
     const labels: any = {
       'EM_PROCESSAMENTO': 'Em Processamento',
-      'EM_TRANSITO': 'Em Transito',
+      'EM_TRANSITO': 'Em Trânsito',
       'ENTREGUE': 'Entregue',
-      'DEVOLUCAO': 'Devolucao',
+      'DEVOLUCAO': 'Devolução Solicitada',
+      'AUTORIZADO_DEVOLUCAO': 'Devolução Autorizada',
+      'ENVIADO_DEVOLUCAO': 'Devolução Enviada',
       'DEVOLVIDO': 'Devolvido',
-      'TROCADO': 'Trocado',
       'CANCELADO': 'Cancelado'
     };
     return labels[status] || status;

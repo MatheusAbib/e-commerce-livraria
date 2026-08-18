@@ -73,13 +73,14 @@
   height: 48px;
   border-radius: 50%;
   display: flex;
+  background: #e0e7ff;
   align-items: center;
   justify-content: center;
   margin: 0 auto 0.75rem;
 }
 
 .auth-icon i {
-  font-size: 1.3rem;
+  color: #4338ca;
 }
 
 .custom-modal-body {

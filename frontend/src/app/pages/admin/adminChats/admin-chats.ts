@@ -35,6 +35,8 @@ export class AdminChatsComponent implements OnInit, OnDestroy {
   chatAdminInterval: any = null;
   filtrando: boolean = false;
 
+  pedidoDetalhes: any = null;
+
 
 constructor(
   private messageService: MessageService,
@@ -178,26 +180,72 @@ async limparFiltro(): Promise<void> {
   }
 }
 
-  async abrirChatAdminPorId(pedidoId: number): Promise<void> {
-    const pedidoInfo = this.conversas[pedidoId];
-    if (!pedidoInfo) return;
+async abrirChatAdminPorId(pedidoId: number): Promise<void> {
+  const pedidoInfo = this.conversas[pedidoId];
+  if (!pedidoInfo) return;
 
-    this.chatAdminPedido = {
-      id: pedidoId,
-      clienteNome: pedidoInfo.clienteNome,
-      cliente: { nome: pedidoInfo.clienteNome }
-    };
+  this.chatAdminPedido = {
+    id: pedidoId,
+    clienteNome: pedidoInfo.clienteNome,
+    cliente: { nome: pedidoInfo.clienteNome }
+  };
 
-    await this.carregarMensagensChatAdmin(pedidoId);
-    await this.verificarAtendimentoAdmin(pedidoId);
+  await this.carregarDetalhesPedido(pedidoId);
+  await this.carregarMensagensChatAdmin(pedidoId);
+  await this.verificarAtendimentoAdmin(pedidoId);
 
-    if (this.chatAdminInterval) {
-      clearInterval(this.chatAdminInterval);
-    }
-    this.chatAdminInterval = setInterval(() => {
-      this.carregarMensagensChatAdminSilenciosamente(pedidoId);
-    }, 2000);
+  if (this.chatAdminInterval) {
+    clearInterval(this.chatAdminInterval);
   }
+  this.chatAdminInterval = setInterval(() => {
+    this.carregarMensagensChatAdminSilenciosamente(pedidoId);
+  }, 2000);
+}
+
+async carregarDetalhesPedido(pedidoId: number): Promise<void> {
+  try {
+    const token = this.authService.getToken();
+    const response = await fetch(`/api/pedidos/${pedidoId}`, {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+    if (response.ok) {
+      this.pedidoDetalhes = await response.json();
+    }
+  } catch (error) {
+    console.error('Erro ao carregar detalhes do pedido:', error);
+  }
+}
+
+
+getStatusLabel(status: string): string {
+  const labels: any = {
+    'EM_PROCESSAMENTO': 'Em Processamento',
+    'EM_TRANSITO': 'Em Trânsito',
+    'ENTREGUE': 'Entregue',
+    'DEVOLUCAO': 'Devolução Solicitada',
+    'AUTORIZADO_DEVOLUCAO': 'Devolução Autorizada',
+    'ENVIADO_DEVOLUCAO': 'Devolução Enviada',
+    'DEVOLVIDO': 'Devolvido',
+    'CANCELADO': 'Cancelado'
+  };
+  return labels[status] || status;
+}
+
+getStatusClass(status: string): string {
+  const classes: any = {
+    'EM_PROCESSAMENTO': 'status-pendente',
+    'EM_TRANSITO': 'status-envio',
+    'ENTREGUE': 'status-entregue',
+    'DEVOLUCAO': 'status-devolucao',
+    'AUTORIZADO_DEVOLUCAO': 'status-devolucao-autorizada',
+    'ENVIADO_DEVOLUCAO': 'status-devolucao-enviada',
+    'DEVOLVIDO': 'status-devolvido',
+    'CANCELADO': 'status-cancelado'
+  };
+  return classes[status] || 'status-pendente';
+}
 
   async carregarMensagensChatAdmin(pedidoId: number): Promise<void> {
     try {

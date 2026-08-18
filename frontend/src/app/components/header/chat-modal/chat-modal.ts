@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth';
 import { ChatService } from '../../../services/chat.service';
 
-
 @Component({
   selector: 'app-chat-modal',
   standalone: true,
@@ -23,10 +22,10 @@ export class ChatModalComponent {
   loadingChats: boolean = false;
   totalChatsNaoLidas: number = 0;
 
-constructor(
-  private authService: AuthService,
-  private chatService: ChatService
-) {}
+  constructor(
+    private authService: AuthService,
+    private chatService: ChatService
+  ) {}
 
   ngOnChanges(): void {
     if (this.visible) {
@@ -66,9 +65,15 @@ constructor(
   }
 
 selecionarChat(pedidoId: number): void {
+  this.chatService.limparUltimoPedido();
+
   const pedido = this.chatsAtivos.find((c: any) => c.pedidoId === pedidoId) ||
                  this.chatsEncerrados.find((c: any) => c.pedidoId === pedidoId);
+
   this.fechar();
-  this.chatService.abrirChat(pedidoId, pedido);
+
+  setTimeout(() => {
+    this.chatService.abrirChat(pedidoId, pedido);
+  }, 100);
 }
 }

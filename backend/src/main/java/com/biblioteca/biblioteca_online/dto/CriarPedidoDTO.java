@@ -1,17 +1,15 @@
 package com.biblioteca.biblioteca_online.dto;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CriarPedidoDTO {
     private Long clienteId;
     private List<ItemPedidoDTO> itens;
     private Long enderecoId;
-    private Long cartaoId; 
-    private List<CupomAplicadoDTO> cupons = new ArrayList<>();
+    private Long cartaoId;
     private BigDecimal valorDesconto;
-    private BigDecimal valorSubtotal; 
+    private BigDecimal valorSubtotal;
     private List<PagamentoDTO> pagamentos;
 
     public Long getClienteId() {
@@ -40,13 +38,6 @@ public class CriarPedidoDTO {
     }
     public void setCartaoId(Long cartaoId) {
         this.cartaoId = cartaoId;
-    }
-
-    public List<CupomAplicadoDTO> getCupons() {
-        return cupons;
-    }
-    public void setCupons(List<CupomAplicadoDTO> cupons) {
-        this.cupons = cupons;
     }
 
     public BigDecimal getValorDesconto() {

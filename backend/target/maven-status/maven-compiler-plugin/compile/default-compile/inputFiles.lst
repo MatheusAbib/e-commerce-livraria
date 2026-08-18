@@ -21,7 +21,7 @@ C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\bibl
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\dto\ClienteRankingDTO.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\dto\CriarAvaliacaoDTO.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\dto\CriarPedidoDTO.java
-C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\dto\CupomAplicadoDTO.java
+C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\dto\CupomClienteDTO.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\dto\CupomDevolucaoDTO.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\dto\DevolucaoParcialDTO.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\dto\ItemPedidoDTO.java
@@ -31,7 +31,7 @@ C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\bibl
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\model\Avaliacao.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\model\Cartao.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\model\Cliente.java
-C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\model\CupomAplicado.java
+C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\model\Cupom.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\model\DevolucaoFoto.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\model\DevolucaoRequest.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\model\Endereco.java
@@ -46,6 +46,7 @@ C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\bibl
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\repository\AvaliacaoRepository.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\repository\CartaoRepository.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\repository\ClienteRepository.java
+C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\repository\CupomRepository.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\repository\DevolucaoFotoRepository.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\repository\EnderecoRepository.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\repository\IconeRepository.java
@@ -58,6 +59,7 @@ C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\bibl
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\service\ChatExpirationService.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\service\ChatService.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\service\ClienteService.java
+C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\service\CupomService.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\service\CustomUserDetailsService.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\service\EnderecoService.java
 C:\Users\97857\Desktop\projects\Livraria-Completa\backend\src\main\java\com\biblioteca\biblioteca_online\service\FileStorageService.java

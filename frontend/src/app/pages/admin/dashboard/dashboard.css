@@ -1,8 +1,8 @@
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .avaliacoes-stats {
@@ -82,8 +82,6 @@
   display: flex;
   gap: 0.5rem;
 }
-
-
 
 .chart-wrapper {
   margin-bottom: 1.5rem;
@@ -217,11 +215,10 @@
 }
 
 .status-item {
-  display: grid;
-  grid-template-columns: 1.2fr 2fr 0.4fr;
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -229,39 +226,128 @@
   border-bottom: none;
 }
 
+.status-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 160px;
+  flex: 0 0 160px;
+}
+
 .status-label {
-  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
   font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+
+.status-label i {
+  font-size: 0.7rem;
+}
+
+.status-label.status-entregue {
+  color: #059669;
+}
+
+.status-label.status-pendente {
+  color: #d97706;
+}
+
+.status-label.status-envio {
+  color: #3b82f6;
+}
+
+.status-label.status-cancelado {
+  color: #dc2626;
+}
+
+.status-label.status-devolucao {
+  color: #d97706;
+}
+
+.status-label.status-devolucao-autorizada {
+  color: #4338ca;
+}
+
+.status-label.status-devolucao-enviada {
+  color: #be185d;
+}
+
+.status-label.status-devolvido {
+  color: #4b5563;
+}
+
+.status-count {
+  font-weight: 600;
+  font-size: 0.8rem;
   color: #1a2332;
+  min-width: 24px;
+  text-align: right;
 }
 
 .status-bar {
-  width: 100%;
-  height: 6px;
-  background: #e8ecf0;
-  border-radius: 3px;
+  flex: 1;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
   overflow: hidden;
+  min-width: 40px;
 }
 
 .status-bar-fill {
   height: 100%;
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 0.6s ease;
 }
 
-.status-count {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #4a5a6a;
+.status-bar-fill.status-entregue {
+  background: #059669;
+}
+
+.status-bar-fill.status-pendente {
+  background: #d97706;
+}
+
+.status-bar-fill.status-envio {
+  background: #3b82f6;
+}
+
+.status-bar-fill.status-cancelado {
+  background: #dc2626;
+}
+
+.status-bar-fill.status-devolucao {
+  background: #d97706;
+}
+
+.status-bar-fill.status-devolucao-autorizada {
+  background: #4338ca;
+}
+
+.status-bar-fill.status-devolucao-enviada {
+  background: #be185d;
+}
+
+.status-bar-fill.status-devolvido {
+  background: #4b5563;
+}
+
+.status-percentual {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  min-width: 36px;
   text-align: right;
+  flex-shrink: 0;
 }
 
 .ranking-item {
-  display: grid;
-  grid-template-columns: 40px 1fr auto;
+  display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem 0;
+  padding: 0.4rem 0;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -270,71 +356,113 @@
 }
 
 .ranking-posicao {
-  text-align: center;
+  flex-shrink: 0;
 }
 
 .posicao-numero {
-  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.7rem;
   font-weight: 700;
   color: #94a3b8;
+  background: #f1f5f9;
 }
 
 .posicao-numero.top1 {
-  color: #f59e0b;
-  font-size: 1rem;
+  background: #fbbf24;
+  color: #1a2332;
 }
 
 .posicao-numero.top2 {
-  color: #94a3b8;
-  font-size: 0.95rem;
+  background: #94a3b8;
+  color: white;
 }
 
 .posicao-numero.top3 {
-  color: #cd7f32;
-  font-size: 0.95rem;
+  background: #d97706;
+  color: white;
 }
 
 .ranking-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .ranking-livro {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: #1a2332;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 .ranking-estrelas {
   display: flex;
   align-items: center;
-  gap: 0.1rem;
+  gap: 0.05rem;
+  margin-top: 0.1rem;
 }
 
-.ranking-estrelas i {
-  font-size: 0.7rem;
-  color: #d1d5db;
+.estrela-wrapper-distribuicao {
+  display: inline-block;
+  position: relative;
+  width: 0.7rem;
+  height: 0.7rem;
 }
 
-.ranking-estrelas i.estrela-cheia {
-  color: #fbbf24;
+.estrela-meia-distribuicao {
+  position: relative;
+  display: inline-block;
 }
 
-.ranking-estrelas i.estrela-vazia {
-  color: #d1d5db;
+.estrela-meia-distribuicao i {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.nota-texto-distribuicao {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #1a2332;
+  margin-left: 0.2rem;
+}
+
+.estrela-wrapper-ranking {
+  display: inline-block;
+  position: relative;
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.estrela-meia-ranking {
+  position: relative;
+  display: inline-block;
+}
+
+.estrela-meia-ranking i {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .ranking-nota {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: #4a5a6a;
-  margin-left: 0.3rem;
+  color: #1a2332;
+  margin-left: 0.25rem;
 }
 
 .ranking-total {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #94a3b8;
+  flex-shrink: 0;
 }
 
 .ranking-paginator {
@@ -352,10 +480,72 @@
   color: #fbbf24;
 }
 
+.notas-label {
+  display: flex;
+  align-items: center;
+  gap: 0.05rem;
+  min-width: 100px;
+}
+
 .paginator-container {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid #e8ecf0;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.loading-state i {
+  font-size: 2rem;
+  color: #2a5298;
+}
+
+.loading-state p {
+  color: #6b7a8f;
+  margin: 0.5rem 0 0 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.empty-state i {
+  font-size: 2.5rem;
+  color: #cbd5e1;
+}
+
+.empty-state p {
+  color: #94a3b8;
+  margin: 0.5rem 0 0 0;
+}
+
+.chart-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+}
+
+.chart-state i {
+  font-size: 3rem;
+  color: #cbd5e1;
+}
+
+.chart-state h3 {
+  font-size: 1.1rem;
+  color: #1a2332;
+  margin: 0.5rem 0 0.25rem 0;
+}
+
+.chart-state p {
+  color: #94a3b8;
+  margin: 0 0 1rem 0;
 }
 
 @media (max-width: 1200px) {
@@ -372,7 +562,7 @@
 
 @media (max-width: 768px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .chart-container {
@@ -387,8 +577,27 @@
     display: none;
   }
 
-  .status-item {
-    grid-template-columns: 1fr 2fr 0.5fr;
+  .status-info {
+    min-width: 130px;
+    flex: 0 0 130px;
+  }
+
+  .status-label {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.3rem;
+  }
+
+  .status-count {
+    font-size: 0.7rem;
+  }
+
+  .status-bar {
+    min-width: 30px;
+  }
+
+  .status-percentual {
+    font-size: 0.6rem;
+    min-width: 30px;
   }
 
   .dashboard-card-header {
@@ -402,21 +611,212 @@
   }
 
   .export-buttons {
-    flex-direction: column;
     width: 100%;
   }
 
   .ranking-item {
-    grid-template-columns: 30px 1fr;
+    flex-wrap: wrap;
   }
 
   .ranking-total {
-    display: none;
+    margin-left: 38px;
+  }
+
+  .notas-label {
+    min-width: 70px;
+  }
+
+  .estrela-pequena {
+    font-size: 0.55rem;
   }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stat-icon i {
+    font-size: 1.2rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .chart-container {
+    height: 200px;
+    padding: 0.75rem;
+  }
+
+  .dashboard-card-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .dashboard-card-header h3 {
+    font-size: 0.85rem;
+  }
+
+  .dashboard-card-body {
+    padding: 0.75rem 1rem;
+    max-height: 300px;
+  }
+
+  .status-info {
+    min-width: 100px;
+    flex: 0 0 100px;
+  }
+
+  .status-label {
+    font-size: 0.6rem;
+    padding: 0.1rem 0.3rem;
+  }
+
+  .status-label i {
+    font-size: 0.55rem;
+  }
+
+  .status-count {
+    font-size: 0.65rem;
+    min-width: 18px;
+  }
+
+  .status-bar {
+    height: 6px;
+    min-width: 20px;
+  }
+
+  .status-percentual {
+    font-size: 0.55rem;
+    min-width: 26px;
+  }
+
+  .lucro-item {
+    grid-template-columns: 1fr 2fr 0.5fr;
+    font-size: 0.75rem;
+  }
+
+  .lucro-nome {
+    font-size: 0.7rem;
+  }
+
+  .lucro-valor {
+    font-size: 0.7rem;
+  }
+
+  .posicao-numero {
+    width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+  }
+
+  .ranking-livro {
+    font-size: 0.7rem;
+  }
+
+  .ranking-estrelas i {
+    font-size: 0.6rem;
+  }
+
+  .ranking-nota {
+    font-size: 0.6rem;
+  }
+
+  .ranking-total {
+    font-size: 0.6rem;
+    margin-left: 32px;
+  }
+
+  .notas-label {
+    min-width: 60px;
+  }
+
+  .estrela-pequena {
+    font-size: 0.5rem;
+  }
+
+  .estrela-wrapper-ranking {
+    width: 0.6rem;
+    height: 0.6rem;
+  }
+
+  .estrela-meia-ranking {
+    width: 0.6rem;
+    height: 0.6rem;
+  }
+
+  .estrela-meia-ranking i {
+    font-size: 0.6rem !important;
+  }
+
+  .chart-state {
+    min-height: 200px;
+  }
+
+  .chart-state i {
+    font-size: 2rem;
+  }
+
+  .chart-state h3 {
+    font-size: 0.9rem;
+  }
+
+  .chart-state p {
+    font-size: 0.8rem;
+  }
+
+  .loading-state i {
+    font-size: 1.5rem;
+  }
+
+  .loading-state p {
+    font-size: 0.8rem;
+  }
+
+  .empty-state i {
+    font-size: 2rem;
+  }
+
+  .empty-state p {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .status-info {
+    min-width: 80px;
+    flex: 0 0 80px;
+  }
+
+  .status-label {
+    font-size: 0.5rem;
+    padding: 0.05rem 0.2rem;
+  }
+
+  .status-count {
+    font-size: 0.55rem;
+    min-width: 14px;
+  }
+
+  .status-percentual {
+    font-size: 0.5rem;
+    min-width: 22px;
+  }
+
+  .notas-label {
+    min-width: 50px;
+  }
+
+  .estrela-pequena {
+    font-size: 0.4rem;
   }
 }

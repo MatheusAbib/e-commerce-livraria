@@ -120,8 +120,8 @@ public Pedido criarPedido(Long clienteId, List<ItemPedidoDTO> itensDTO,
         livroRepository.atualizarEstoque(livroId, quantidade);
     }
 
-    String detalhesLog = "Pedido #" + pedidoSalvo.getId() + 
-        " - R$ " + pedido.getValorTotal() + 
+    String detalhesLog = "Pedido #" + pedidoSalvo.getId() +
+        " - R$ " + pedido.getValorTotal() +
         " - " + pedido.getItens().size() + " itens" +
         " - " + endereco.getCidade() + "/" + endereco.getEstado() +
         " - " + cartaoPrincipal.getBandeira();
@@ -142,7 +142,7 @@ public Pedido criarPedido(Long clienteId, List<ItemPedidoDTO> itensDTO,
 }
 
 @Transactional
-public Pedido atualizarStatus(Long pedidoId, StatusPedido novoStatus, String motivoDevolucao, 
+public Pedido atualizarStatus(Long pedidoId, StatusPedido novoStatus, String motivoDevolucao,
                               String codigoRastreamentoEnvio, String codigoRastreamentoDevolucao) {
     Pedido pedido = pedidoRepository.findById(pedidoId)
         .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
@@ -150,10 +150,9 @@ public Pedido atualizarStatus(Long pedidoId, StatusPedido novoStatus, String mot
     if (novoStatus == StatusPedido.DEVOLUCAO && (motivoDevolucao == null || motivoDevolucao.trim().isEmpty())) {
         throw new IllegalArgumentException("Motivo da devolução é obrigatório");
     }
-    if (novoStatus == StatusPedido.ENTREGUE) {
-    pedido.setDataEntrega(LocalDateTime.now());
+if (novoStatus == StatusPedido.ENTREGUE) {
+    pedido.setDataEntrega(java.time.LocalDate.now());
 }
-
     if (codigoRastreamentoEnvio != null && !codigoRastreamentoEnvio.isEmpty()) {
         pedido.setCodigoRastreamentoEnvio(codigoRastreamentoEnvio);
     }
@@ -180,7 +179,7 @@ public Pedido atualizarStatus(Long pedidoId, StatusPedido novoStatus, String mot
 
     pedido.setStatus(novoStatus);
 
-    if (novoStatus == StatusPedido.DEVOLUCAO || novoStatus == StatusPedido.AUTORIZADO_DEVOLUCAO || 
+    if (novoStatus == StatusPedido.DEVOLUCAO || novoStatus == StatusPedido.AUTORIZADO_DEVOLUCAO ||
         novoStatus == StatusPedido.ENVIADO_DEVOLUCAO) {
         pedido.setMotivoDevolucao(motivoDevolucao != null ? motivoDevolucao : pedido.getMotivoDevolucao());
     } else if (novoStatus != StatusPedido.DEVOLVIDO) {
@@ -229,9 +228,9 @@ return switch (status) {
     public Pedido confirmarReembolso(Long pedidoId) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
             .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
-        
+
         pedido.setReembolsoConfirmado(true);
-        
+
         try {
             Log log = new Log();
             log.setUserId(pedido.getCliente().getId());
@@ -243,7 +242,7 @@ return switch (status) {
         } catch (Exception e) {
             System.err.println("Erro ao registrar log: " + e.getMessage());
         }
-        
+
         return pedidoRepository.save(pedido);
     }
 
@@ -342,7 +341,7 @@ return switch (status) {
 public void excluirPedido(Long id) {
     System.out.println("=== EXCLUINDO PEDIDO ===");
     System.out.println("ID: " + id);
-    
+
     Pedido pedido = pedidoRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
 
@@ -354,11 +353,11 @@ public void excluirPedido(Long id) {
 
     pedido.getItens().clear();
     pedidoRepository.save(pedido);
-    
+
     System.out.println("Itens removidos, agora excluindo pedido...");
-    
+
     pedidoRepository.deleteById(id);
-    
+
     System.out.println("Pedido excluído com sucesso!");
 }
 
@@ -372,7 +371,7 @@ public void excluirPedido(Long id) {
 
     public List<Pedido> listarTodosPedidos() {
         List<Pedido> pedidos = pedidoRepository.findAllComCliente();
-        
+
         pedidos.forEach(pedido -> {
             if (pedido.getEnderecoEntrega() != null) {
                 pedido.getEnderecoEntrega().getRua();
@@ -392,7 +391,7 @@ public void excluirPedido(Long id) {
                 });
             }
         });
-        
+
         return pedidos;
     }
 
@@ -406,7 +405,7 @@ public Pedido solicitarDevolucao(Long pedidoId, String motivo, List<ItemDevoluca
     }
 
     List<Pedido> devolucoes = pedidoRepository.findByPedidoOriginalId(pedidoId);
-    
+
     for (ItemDevolucao itemDevolucao : itensDevolucao) {
         boolean itemExisteNoPedido = pedidoOriginal.getItens().stream()
             .anyMatch(item -> item.getId().equals(itemDevolucao.getItemPedidoId()));
@@ -493,8 +492,8 @@ public Pedido criarPedidoDevolucao(Long pedidoOriginalId, String motivo, List<It
         log.setUserId(pedidoOriginal.getCliente().getId());
         log.setUserName(pedidoOriginal.getCliente().getNome());
         log.setAction("Devolução Parcial");
-        log.setDetails("Pedido de devolução #" + pedidoDevolucao.getId() + 
-                      " criado para o pedido #" + pedidoOriginalId + 
+        log.setDetails("Pedido de devolução #" + pedidoDevolucao.getId() +
+                      " criado para o pedido #" + pedidoOriginalId +
                       ". Valor: R$ " + valorSubtotalDevolucao);
         log.setLevel("info");
         logService.salvarLog(log);
