@@ -46,24 +46,24 @@
       </div>
 
       <div class="filtro-item full-width">
-<div class="filtro-actions">
-  <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
-    <i class="pi"
-       [class.pi-search]="!filtrando"
-       [class.pi-spin]="filtrando"
-       [class.pi-spinner]="filtrando">
-    </i>
-    {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
-  </button>
-  <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
-    <i class="pi"
-       [class.pi-times]="!filtrando"
-       [class.pi-spin]="filtrando"
-       [class.pi-spinner]="filtrando">
-    </i>
-    {{ filtrando ? 'Limpando...' : 'Limpar' }}
-  </button>
-</div>
+        <div class="filtro-actions">
+          <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
+            <i class="pi"
+               [class.pi-search]="!filtrando"
+               [class.pi-spin]="filtrando"
+               [class.pi-spinner]="filtrando">
+            </i>
+            {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+          </button>
+          <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
+            <i class="pi"
+               [class.pi-times]="!filtrando"
+               [class.pi-spin]="filtrando"
+               [class.pi-spinner]="filtrando">
+            </i>
+            {{ filtrando ? 'Limpando...' : 'Limpar' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -81,80 +81,81 @@
     </div>
 
     <div class="table-container">
-      <p-table
-        [value]="filteredLogs"
-        [loading]="loading"
-        [paginator]="true"
-        [rows]="10"
-        [rowsPerPageOptions]="[5, 10, 20]"
-        [totalRecords]="totalRecords"
-        styleClass="p-datatable-striped p-datatable-gridlines">
+      <div *ngIf="loading" class="loading-state">
+        <i class="pi pi-spin pi-spinner"></i>
+        <p>Carregando transações...</p>
+      </div>
 
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Data/Hora</th>
-            <th>Ação</th>
-            <th>Detalhes</th>
-            <th class="text-center">Nível</th>
-            <th style="width: 60px;">Ações</th>
-          </tr>
-        </ng-template>
+      <div *ngIf="!loading && filteredLogs.length === 0" class="empty-state">
+        <i class="pi pi-inbox"></i>
+        <h3>Nenhuma transação encontrada</h3>
+        <p>Não há registros para os filtros selecionados</p>
+      </div>
 
-        <ng-template pTemplate="body" let-log>
-          <tr>
-            <td>
-              <span class="date-cell">
-                <i class="pi pi-calendar"></i>
-                {{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}
-              </span>
-            </td>
-            <td>
-              <span class="action-cell">
-                <i [class]="getActionIcon(log.action)"></i>
-                {{ getActionLabel(log.action) }}
-              </span>
-            </td>
-            <td>
-              <span class="details-cell" [title]="log.details">
-                {{ log.details ? (log.details.length > 60 ? log.details.substring(0, 60) + '...' : log.details) : '-' }}
-              </span>
-            </td>
-            <td class="text-center">
-              <span class="log-level" [class]="getLevelClass(log.level)">
-                {{ getLevelLabel(log.level) }}
-              </span>
-            </td>
-            <td class="text-center">
-              <button class="btn-ver-detalhes" (click)="abrirDetalhes(log)" title="Ver detalhes">
-                <i class="pi pi-eye"></i>
-              </button>
-            </td>
-          </tr>
-        </ng-template>
+      <div *ngIf="!loading && filteredLogs.length > 0">
+        <p-table
+          [value]="filteredLogs"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [totalRecords]="totalRecords"
+          styleClass="p-datatable-striped p-datatable-gridlines">
 
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="5">
-              <div class="empty-state">
-                <i class="pi pi-inbox"></i>
-                <h3>Nenhuma transação encontrada</h3>
-                <p>Não há registros para os filtros selecionados</p>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Data/Hora</th>
+              <th>Ação</th>
+              <th>Detalhes</th>
+              <th class="text-center">Nível</th>
+              <th style="width: 60px;">Ações</th>
+            </tr>
+          </ng-template>
 
-        <ng-template pTemplate="loadingbody">
-          <tr>
-            <td colspan="5">
-              <div class="loading-state">
-                <i class="pi pi-spin pi-spinner"></i>
-                <p>Carregando suas transações...</p>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
+          <ng-template pTemplate="body" let-log>
+            <tr>
+              <td>
+                <span class="date-cell">
+                  <i class="pi pi-calendar"></i>
+                  {{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}
+                </span>
+              </td>
+              <td>
+                <span class="action-cell">
+                  <i [class]="getActionIcon(log.action)"></i>
+                  {{ getActionLabel(log.action) }}
+                </span>
+              </td>
+              <td>
+                <span class="details-cell" [title]="log.details">
+                  {{ log.details ? (log.details.length > 60 ? log.details.substring(0, 60) + '...' : log.details) : '-' }}
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="log-level" [class]="getLevelClass(log.level)">
+                  {{ getLevelLabel(log.level) }}
+                </span>
+              </td>
+              <td class="text-center">
+                <button class="btn-ver-detalhes" (click)="abrirDetalhes(log)" title="Ver detalhes">
+                  <i class="pi pi-eye"></i>
+                </button>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="pi pi-inbox"></i>
+                  <h3>Nenhuma transação encontrada</h3>
+                  <p>Não há registros para os filtros selecionados</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
     </div>
   </div>
 </div>

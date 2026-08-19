@@ -38,7 +38,7 @@
         <div class="filtro-item full-width">
           <div class="filtro-actions">
             <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
-              <i class="pi" [class.pi-filter]="!filtrando" [class.pi-spin]="filtrando" [class.pi-spinner]="filtrando"></i>
+              <i class="pi" [class.pi-search]="!filtrando" [class.pi-spin]="filtrando" [class.pi-spinner]="filtrando"></i>
               {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
             </button>
             <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">

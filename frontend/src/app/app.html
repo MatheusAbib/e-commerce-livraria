@@ -16,9 +16,12 @@
 
 <div *ngIf="loading" class="loading-overlay">
   <div class="loading-spinner">
-    <i class="pi pi-spin pi-spinner"></i>
+    <div class="loader-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+    </div>
     <span>Carregando...</span>
   </div>
 </div>
-
 <p-toast position="top-right"></p-toast>

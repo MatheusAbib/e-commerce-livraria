@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
@@ -27,6 +27,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   loading: boolean = true;
   loadingAvaliacoes: boolean = true;
+  temDados: boolean = false;
 
   stats = {
     totalLivros: 0,
@@ -78,7 +79,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   constructor(
     private adminService: AdminService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -91,12 +93,15 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.carregarAvaliacoes();
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.carregarGrafico(), 500);
-  }
+ngAfterViewInit(): void {
+  setTimeout(() => {
+    this.carregarGrafico();
+  }, 800);
+}
 
   async carregarDados(): Promise<void> {
     this.loading = true;
+    this.cdr.detectChanges();
     try {
       await Promise.all([
         this.carregarLucros(),
@@ -107,11 +112,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       console.error('Erro ao carregar dados:', error);
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
   async carregarAvaliacoes(): Promise<void> {
     this.loadingAvaliacoes = true;
+    this.cdr.detectChanges();
     try {
       const token = this.authService.getToken();
       const response = await fetch('/api/avaliacoes/todas', {
@@ -128,6 +135,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       console.error('Erro ao carregar avaliações:', error);
     } finally {
       this.loadingAvaliacoes = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -208,44 +216,46 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.firstRanking = event.first;
     this.rowsRanking = event.rows;
     this.atualizarRankingPaginado();
+    this.cdr.detectChanges();
   }
 
-getTipoEstrelaRanking(nota: number, estrelaIndex: number): string {
-  if (!nota) return 'vazia';
-  if (nota >= estrelaIndex + 1) {
-    return 'cheia';
-  } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
-    return 'meia';
-  } else {
-    return 'vazia';
+  getTipoEstrelaRanking(nota: number, estrelaIndex: number): string {
+    if (!nota) return 'vazia';
+    if (nota >= estrelaIndex + 1) {
+      return 'cheia';
+    } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
+      return 'meia';
+    } else {
+      return 'vazia';
+    }
   }
-}
 
-getTipoEstrelaDistribuicao(nota: number, estrelaIndex: number): string {
-  if (!nota) return 'vazia';
-  if (nota >= estrelaIndex + 1) {
-    return 'cheia';
-  } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
-    return 'meia';
-  } else {
-    return 'vazia';
+  getTipoEstrelaDistribuicao(nota: number, estrelaIndex: number): string {
+    if (!nota) return 'vazia';
+    if (nota >= estrelaIndex + 1) {
+      return 'cheia';
+    } else if (nota > estrelaIndex && nota < estrelaIndex + 1) {
+      return 'meia';
+    } else {
+      return 'vazia';
+    }
   }
-}
 
-getCorNota(nota: number): string {
-  const cores: any = {
-    1: '#dc2626',
-    2: '#f59e0b',
-    3: '#fbbf24',
-    4: '#22c55e',
-    5: '#059669'
-  };
-  return cores[nota] || '#94a3b8';
-}
+  getCorNota(nota: number): string {
+    const cores: any = {
+      1: '#dc2626',
+      2: '#f59e0b',
+      3: '#fbbf24',
+      4: '#22c55e',
+      5: '#059669'
+    };
+    return cores[nota] || '#94a3b8';
+  }
 
-arredondarNota(nota: number): number {
-  return Math.round(nota);
-}
+  arredondarNota(nota: number): number {
+    return Math.round(nota);
+  }
+
   async carregarLucros(): Promise<void> {
     try {
       const data = await this.adminService.getLucros().toPromise();
@@ -272,6 +282,7 @@ arredondarNota(nota: number): number {
     this.firstLucro = event.first;
     this.rowsLucro = event.rows;
     this.atualizarPaginacaoLucros();
+    this.cdr.detectChanges();
   }
 
   onFiltroLivroChange(): void {
@@ -325,48 +336,47 @@ arredondarNota(nota: number): number {
     return (Number(valor) / this.maxLucro) * 100;
   }
 
-getStatusLabel(status: string): string {
-  const labels: any = {
-    'ENTREGUE': 'Entregue',
-    'EM_PROCESSAMENTO': 'Em Processamento',
-    'EM_TRANSITO': 'Em Trânsito',
-    'CANCELADO': 'Cancelado',
-    'DEVOLUCAO': 'Devolução Solicitada',
-    'AUTORIZADO_DEVOLUCAO': 'Devolução Autorizada',
-    'ENVIADO_DEVOLUCAO': 'Devolução Enviada',
-    'DEVOLVIDO': 'Devolvido'
-  };
-  return labels[status] || status;
-}
+  getStatusLabel(status: string): string {
+    const labels: any = {
+      'ENTREGUE': 'Entregue',
+      'EM_PROCESSAMENTO': 'Em Processamento',
+      'EM_TRANSITO': 'Em Trânsito',
+      'CANCELADO': 'Cancelado',
+      'DEVOLUCAO': 'Devolução Solicitada',
+      'AUTORIZADO_DEVOLUCAO': 'Devolução Autorizada',
+      'ENVIADO_DEVOLUCAO': 'Devolução Enviada',
+      'DEVOLVIDO': 'Devolvido'
+    };
+    return labels[status] || status;
+  }
 
-getStatusClass(status: string): string {
-  const classes: any = {
-    'ENTREGUE': 'status-entregue',
-    'EM_PROCESSAMENTO': 'status-pendente',
-    'EM_TRANSITO': 'status-envio',
-    'CANCELADO': 'status-cancelado',
-    'DEVOLUCAO': 'status-devolucao',
-    'AUTORIZADO_DEVOLUCAO': 'status-devolucao-autorizada',
-    'ENVIADO_DEVOLUCAO': 'status-devolucao-enviada',
-    'DEVOLVIDO': 'status-devolvido'
-  };
-  return classes[status] || 'status-pendente';
-}
+  getStatusClass(status: string): string {
+    const classes: any = {
+      'ENTREGUE': 'status-entregue',
+      'EM_PROCESSAMENTO': 'status-pendente',
+      'EM_TRANSITO': 'status-envio',
+      'CANCELADO': 'status-cancelado',
+      'DEVOLUCAO': 'status-devolucao',
+      'AUTORIZADO_DEVOLUCAO': 'status-devolucao-autorizada',
+      'ENVIADO_DEVOLUCAO': 'status-devolucao-enviada',
+      'DEVOLVIDO': 'status-devolvido'
+    };
+    return classes[status] || 'status-pendente';
+  }
 
-getStatusIcon(status: string): string {
-  const icons: any = {
-    'ENTREGUE': 'pi pi-check-circle',
-    'EM_PROCESSAMENTO': 'pi pi-clock',
-    'EM_TRANSITO': 'pi pi-truck',
-    'CANCELADO': 'pi pi-times-circle',
-    'DEVOLUCAO': 'pi pi-undo',
-    'AUTORIZADO_DEVOLUCAO': 'pi pi-check',
-    'ENVIADO_DEVOLUCAO': 'pi pi-send',
-    'DEVOLVIDO': 'pi pi-check-circle'
-  };
-  return icons[status] || 'pi pi-circle';
-}
-
+  getStatusIcon(status: string): string {
+    const icons: any = {
+      'ENTREGUE': 'pi pi-check-circle',
+      'EM_PROCESSAMENTO': 'pi pi-clock',
+      'EM_TRANSITO': 'pi pi-truck',
+      'CANCELADO': 'pi pi-times-circle',
+      'DEVOLUCAO': 'pi pi-undo',
+      'AUTORIZADO_DEVOLUCAO': 'pi pi-check',
+      'ENVIADO_DEVOLUCAO': 'pi pi-send',
+      'DEVOLVIDO': 'pi pi-check-circle'
+    };
+    return icons[status] || 'pi pi-circle';
+  }
 
   atualizarStats(data: any[]): void {
     if (data && data.length > 0) {
@@ -380,43 +390,150 @@ getStatusIcon(status: string): string {
     }
   }
 
-  async carregarGrafico(): Promise<void> {
-    try {
-      const pedidos = await this.adminService.getVendas().toPromise();
-      this.processarDadosGrafico(pedidos || []);
-    } catch (error) {
-      console.error('Erro ao carregar gráfico:', error);
-    }
+async carregarGrafico(): Promise<void> {
+  try {
+    const pedidos = await this.adminService.getVendas().toPromise();
+    console.log('Total de pedidos do backend:', pedidos?.length || 0);
+    this.processarDadosGrafico(pedidos || []);
+  } catch (error) {
+    console.error('Erro ao carregar gráfico:', error);
+    this.temDados = false;
+    this.cdr.detectChanges();
+  }
+}
+
+processarDadosGrafico(pedidos: any[]): void {
+  const period = this.filtros.periodo;
+  const status = this.filtros.status;
+  const livro = this.filtros.livro;
+
+  console.log('Pedidos recebidos:', pedidos.length);
+  console.log('Filtros:', { period, status, livro });
+
+  let filtered = status === 'todos' ? pedidos : pedidos.filter((p: any) => p.status === status);
+
+  if (livro) {
+    filtered = filtered.filter((pedido: any) => {
+      return pedido.itens?.some((item: any) =>
+        item.livro?.titulo === livro || item.livroId == livro
+      );
+    });
   }
 
-  processarDadosGrafico(pedidos: any[]): void {
-    const period = this.filtros.periodo;
-    const status = this.filtros.status;
-    const livro = this.filtros.livro;
+  console.log('Pedidos filtrados:', filtered.length);
 
-    let filtered = status === 'todos' ? pedidos : pedidos.filter((p: any) => p.status === status);
+  const grouped = this.agruparPorPeriodo(filtered, period);
+  const labels = Object.keys(grouped);
+  const data = Object.values(grouped).map((group: any) =>
+    group.reduce((sum: number, pedido: any) => sum + (pedido.valorTotal || 0), 0)
+  );
 
-    if (livro) {
-      filtered = filtered.filter((pedido: any) => {
-        return pedido.itens?.some((item: any) =>
-          item.livro?.titulo === livro || item.livroId == livro
-        );
-      });
-    }
+  console.log('Labels:', labels);
+  console.log('Data:', data);
 
-    const grouped = this.agruparPorPeriodo(filtered, period);
-    const labels = Object.keys(grouped);
-    const data = Object.values(grouped).map((group: any) =>
-      group.reduce((sum: number, pedido: any) => sum + (pedido.valorTotal || 0), 0)
-    );
+if (data.length === 0 || data.every((v: number) => v === 0)) {
+  this.destroyChart();
+  this.temDados = false;
+  this.loading = false;
+  this.cdr.detectChanges();
+  return;
+}
 
-    if (data.length === 0 || data.every(v => v === 0)) {
-      this.destroyChart();
+this.temDados = true;
+this.loading = false;
+this.renderChart(labels, data);
+}
+
+renderChart(labels: string[], data: number[]): void {
+  console.log('renderChart chamado com:', { labels, data });
+
+  if (!labels || labels.length === 0 || !data || data.length === 0) {
+    this.temDados = false;
+    this.cdr.detectChanges();
+    return;
+  }
+
+  setTimeout(() => {
+    const canvas = document.getElementById('salesChart') as HTMLCanvasElement;
+    console.log('Canvas encontrado:', canvas);
+
+    if (!canvas) {
+      console.error('Canvas não encontrado');
+      this.temDados = false;
+      this.cdr.detectChanges();
       return;
     }
 
-    this.renderChart(labels, data);
-  }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.error('Contexto 2D não encontrado');
+      this.temDados = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.destroyChart();
+
+    const isBar = this.filtros.chartType === 'bar';
+
+    this.chart = new Chart(ctx, {
+      type: isBar ? 'bar' : 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Vendas (R$)',
+          data: data,
+          backgroundColor: isBar ? 'rgba(42, 82, 152, 0.7)' : 'rgba(42, 82, 152, 0.2)',
+          borderColor: '#2a5298',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: !isBar,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              font: { family: 'Montserrat, sans-serif', size: 12 },
+              color: '#4a5a6a',
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context: any) {
+                return 'R$ ' + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value: any) {
+                return 'R$ ' + value.toLocaleString('pt-BR');
+              }
+            },
+            grid: { color: 'rgba(0,0,0,0.06)' }
+          },
+          x: {
+            grid: { display: false }
+          }
+        }
+      }
+    });
+
+    this.temDados = true;
+    this.chart.update();
+    this.cdr.detectChanges();
+    console.log('Gráfico renderizado com sucesso');
+  }, 300);
+}
 
   agruparPorPeriodo(pedidos: any[], period: string): any {
     const groups: any = {};
@@ -441,92 +558,48 @@ getStatusIcon(status: string): string {
     return groups;
   }
 
-  renderChart(labels: string[], data: number[]): void {
-    const ctx = this.salesChartRef?.nativeElement?.getContext('2d');
-    if (!ctx) return;
-
-    this.destroyChart();
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(79, 70, 229, 0.6)');
-    gradient.addColorStop(1, 'rgba(79, 70, 229, 0.05)');
-
-    const isBar = this.filtros.chartType === 'bar';
-
-    this.chart = new Chart(ctx, {
-      type: isBar ? 'bar' : 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Vendas (R$)',
-          data: data,
-          backgroundColor: isBar ? 'rgba(79, 70, 229, 0.7)' : gradient,
-          borderColor: '#4f46e5',
-          borderWidth: 3,
-          tension: 0.4,
-          fill: !isBar,
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            labels: {
-              font: { family: 'Montserrat, sans-serif', size: 12 },
-              color: '#4a5a6a'
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context: any) {
-                return 'R$ ' + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-              }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(value: any) {
-                return 'R$ ' + value.toLocaleString('pt-BR');
-              },
-              font: { family: 'Montserrat, sans-serif' }
-            },
-            grid: { color: 'rgba(0,0,0,0.06)' }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { font: { family: 'Montserrat, sans-serif', size: 11 } }
-          }
-        }
-      }
-    });
-  }
-
-  get temDados(): boolean {
-    return this.stats.totalVendas > 0 || this.stats.lucroTotal > 0;
-  }
-
   destroyChart(): void {
     if (this.chart) {
       this.chart.destroy();
       this.chart = null;
     }
+    this.temDados = false;
   }
 
   async aplicarFiltros(): Promise<void> {
     this.filtrando = true;
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    this.carregarGrafico();
-    this.filtrando = false;
+    this.loading = true;
+    this.cdr.detectChanges();
+
+    const inicio = Date.now();
+
+    try {
+      await Promise.all([
+        this.carregarLucros(),
+        this.carregarStatusDistribuicao(),
+        this.carregarGrafico()
+      ]);
+    } catch (error) {
+      console.error('Erro ao aplicar filtros:', error);
+    }
+
+    const decorrido = Date.now() - inicio;
+    const restante = Math.max(0, 500 - decorrido);
+
+    setTimeout(() => {
+      this.loading = false;
+      this.filtrando = false;
+      this.cdr.detectChanges();
+    }, restante);
   }
 
   async limparFiltros(): Promise<void> {
     this.filtrando = true;
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    this.loading = true;
+    this.cdr.detectChanges();
+
+    const inicio = Date.now();
+
     this.filtros = {
       periodo: 'month',
       status: 'todos',
@@ -535,14 +608,30 @@ getStatusIcon(status: string): string {
       dataInicio: '',
       dataFim: ''
     };
-    this.carregarGrafico();
-    this.filtrando = false;
+
+    try {
+      await Promise.all([
+        this.carregarLucros(),
+        this.carregarStatusDistribuicao(),
+        this.carregarGrafico()
+      ]);
+    } catch (error) {
+      console.error('Erro ao limpar filtros:', error);
+    }
+
+    const decorrido = Date.now() - inicio;
+    const restante = Math.max(0, 500 - decorrido);
+
+    setTimeout(() => {
+      this.loading = false;
+      this.filtrando = false;
+      this.cdr.detectChanges();
+    }, restante);
   }
 
   exportarPDF(): void {
     window.print();
   }
-
 
   exportarExcel(): void {
     const dados = [

@@ -6,13 +6,11 @@ import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../services/auth';
-import { LoaderService } from '../../../services/loader.service';
-import { LoaderComponent } from '../../shared/loader/loader.component';
 
 @Component({
   selector: 'app-perfil-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, DialogModule, ToastModule, LoaderComponent],
+  imports: [CommonModule, FormsModule, ButtonModule, DialogModule, ToastModule],
   providers: [MessageService],
   templateUrl: './perfil-modal.html',
   styleUrls: ['./perfil-modal.css']
@@ -43,22 +41,21 @@ export class PerfilModalComponent implements OnInit {
   constructor(
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService,
-    private loaderService: LoaderService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
-    if (user) {
-      this.usuario = user;
-      this.carregarDadosPerfil();
-    }
-
     this.authService.dadosClienteAtualizados$.subscribe(() => {
       if (this.visible) {
         this.carregarDadosPerfil();
       }
     });
+  }
+
+  ngOnChanges(): void {
+    if (this.visible) {
+      this.carregarDadosPerfil();
+    }
   }
 
   fechar(): void {
@@ -67,12 +64,20 @@ export class PerfilModalComponent implements OnInit {
   }
 
   async carregarDadosPerfil(): Promise<void> {
-    if (!this.usuario) return;
+    if (!this.visible) return;
+
+    const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
+    if (!user) {
+      this.loading = false;
+      return;
+    }
+
     this.loading = true;
+    this.cdr.detectChanges();
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/clientes/${this.usuario.id}`, {
+      const response = await fetch(`http://localhost:8081/api/clientes/${user.id}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -85,13 +90,22 @@ export class PerfilModalComponent implements OnInit {
         this.usuario = dados;
         this.perfilEnderecos = dados.enderecos || [];
         this.perfilCartoes = dados.cartoes || [];
+
+        if (this.usuario) {
+          localStorage.setItem('clienteLogado', JSON.stringify(this.usuario));
+          this.authService.atualizarUsuario(this.usuario);
+        }
+
         this.cdr.detectChanges();
+      } else {
+        this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao carregar perfil'});
       }
     } catch (error) {
       console.error('Erro ao carregar perfil:', error);
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao carregar perfil'});
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 

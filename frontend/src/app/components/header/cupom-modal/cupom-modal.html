@@ -21,10 +21,16 @@
       </button>
     </div>
 
-    <div class="modal-body">
-      <div *ngIf="carregando" class="loading-state">
-        <i class="pi pi-spin pi-spinner"></i>
-        <p>Carregando cupons...</p>
+    <div class="modal-body" style="position: relative; min-height: 200px;">
+      <div *ngIf="carregando" class="loader-overlay">
+        <div class="loader-container">
+          <div class="loader-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+          </div>
+          <p class="loader-text">Carregando cupons...</p>
+        </div>
       </div>
 
       <div *ngIf="!carregando && abaAtiva === 'disponiveis' && cuponsDisponiveis.length === 0" class="empty-state">

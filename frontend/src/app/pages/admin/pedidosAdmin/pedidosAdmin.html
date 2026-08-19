@@ -83,20 +83,20 @@
         </div>
       </div>
 
-      <div class="table-container">
-        <div *ngIf="loading" class="loading-state">
-          <i class="pi pi-spin pi-spinner"></i>
-          <p>Carregando pedidos...</p>
-        </div>
+   <div class="table-container">
+  <div *ngIf="loading" class="loading-state">
+    <i class="pi pi-spin pi-spinner"></i>
+    <p>Carregando pedidos...</p>
+  </div>
 
-        <div *ngIf="!loading && pedidosFiltrados.length === 0" class="empty-state">
-          <i class="pi pi-inbox"></i>
-          <h3>Nenhum pedido encontrado</h3>
-          <p>Não há pedidos para os filtros selecionados</p>
-        </div>
+  <div *ngIf="!loading && pedidosFiltrados.length === 0" class="empty-state">
+    <i class="pi pi-inbox"></i>
+    <h3>Nenhum pedido encontrado</h3>
+    <p>Não há pedidos para os filtros selecionados</p>
+  </div>
 
-        <div *ngIf="!loading && pedidosFiltrados.length > 0">
-          <table class="pedidos-table">
+  <div *ngIf="!loading && pedidosFiltrados.length > 0">
+    <table class="pedidos-table">
             <thead>
               <tr>
                 <th>Pedido</th>

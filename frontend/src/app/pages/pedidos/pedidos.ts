@@ -796,15 +796,43 @@ salvarRastreamento(): void {
   );
 }
 
-  filtrarPorStatus(status: string): void {
-    this.statusAtivo = status;
-    const pedidosValidos = this.pedidos.filter(p => p.status !== 'CANCELADO');
-    this.filteredPedidos = pedidosValidos.filter(p => p.status === status);
-  }
+async filtrarPorStatus(status: string): Promise<void> {
+  this.loading = true;
+  this.statusAtivo = status;
 
-  trocarStatus(status: string): void {
-    this.filtrarPorStatus(status);
+  try {
+    const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
+    if (!user) {
+      this.loading = false;
+      return;
+    }
+
+    const token = this.authService.getToken();
+    const response = await fetch(`/api/pedidos?clienteId=${user.id}&status=${status}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    if (response.ok) {
+      const pedidos = await response.json();
+
+      const pedidosExistentes = this.pedidos.filter(p => p.status !== status);
+      this.pedidos = [...pedidosExistentes, ...pedidos];
+
+      this.filteredPedidos = pedidos;
+    }
+  } catch (error) {
+    console.error('Erro ao carregar pedidos:', error);
+  } finally {
+    this.loading = false;
   }
+}
+
+trocarStatus(status: string): void {
+  this.filtrarPorStatus(status);
+}
 
   getStatusClass(status: string): string {
     const classes: any = {

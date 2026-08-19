@@ -121,24 +121,31 @@ aplicarFiltros(): void {
   clearTimeout(this.timeoutFiltro);
   this.loading = true;
 
-  this.timeoutFiltro = setTimeout(() => {
-    this.logsFiltrados = this.logs.filter(log => {
-      let match = true;
-      if (this.filtros.usuario && log.userId != this.filtros.usuario) match = false;
-      if (this.filtros.acao && log.action !== this.filtros.acao) match = false;
-      if (this.filtros.nivel && log.level !== this.filtros.nivel) match = false;
-      if (this.filtros.data) {
-        const logDate = new Date(log.timestamp).toISOString().split('T')[0];
-        if (logDate !== this.filtros.data) match = false;
-      }
-      return match;
-    });
-    this.totalRecords = this.logsFiltrados.length;
-    this.first = 0;
-    this.atualizarPaginacao();
+  const inicio = Date.now();
+
+  this.logsFiltrados = this.logs.filter(log => {
+    let match = true;
+    if (this.filtros.usuario && log.userId != this.filtros.usuario) match = false;
+    if (this.filtros.acao && log.action !== this.filtros.acao) match = false;
+    if (this.filtros.nivel && log.level !== this.filtros.nivel) match = false;
+    if (this.filtros.data) {
+      const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+      if (logDate !== this.filtros.data) match = false;
+    }
+    return match;
+  });
+
+  this.totalRecords = this.logsFiltrados.length;
+  this.first = 0;
+  this.atualizarPaginacao();
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
     this.loading = false;
     this.filtrando = false;
-  }, 1500);
+  }, restante);
 }
 
 limparFiltros(): void {
@@ -146,15 +153,21 @@ limparFiltros(): void {
   clearTimeout(this.timeoutFiltro);
   this.loading = true;
 
-  this.timeoutFiltro = setTimeout(() => {
-    this.filtros = { usuario: '', acao: '', data: '', nivel: '' };
-    this.logsFiltrados = [...this.logs];
-    this.totalRecords = this.logsFiltrados.length;
-    this.first = 0;
-    this.atualizarPaginacao();
+  const inicio = Date.now();
+
+  this.filtros = { usuario: '', acao: '', data: '', nivel: '' };
+  this.logsFiltrados = [...this.logs];
+  this.totalRecords = this.logsFiltrados.length;
+  this.first = 0;
+  this.atualizarPaginacao();
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
     this.loading = false;
     this.filtrando = false;
-  }, 1500);
+  }, restante);
 }
 
   atualizarPaginacao(): void {

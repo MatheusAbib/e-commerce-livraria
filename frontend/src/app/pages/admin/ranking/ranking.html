@@ -11,71 +11,103 @@
       </div>
     </div>
 
-    <div class="campo-busca">
-      <label for="busca-nome">
-        <i class="pi pi-search"></i> Buscar cliente por nome
-      </label>
-      <input
-        type="text"
-        id="busca-nome"
-        [(ngModel)]="busca"
-        (ngModelChange)="onBuscaChange()"
-        placeholder="Digite o nome do cliente..."
-        class="auth-input"
-      >
+    <div class="filtros-container">
+      <div class="filtro-header">
+        <h3><i class="pi pi-search"></i> Buscar Cliente</h3>
+      </div>
+      <div class="filtros-grid">
+        <div class="filtro-item">
+          <label>Nome do Cliente</label>
+          <input
+            type="text"
+            id="busca-nome"
+            [(ngModel)]="busca"
+            placeholder="Digite o nome do cliente..."
+            class="auth-input"
+          >
+        </div>
+        <div class="filtro-item full-width">
+          <div class="filtro-actions">
+            <button class="btn-filtrar" (click)="aplicarFiltro()" [disabled]="filtrando">
+              <i class="pi" [class.pi-search]="!filtrando" [class.pi-spin]="filtrando" [class.pi-spinner]="filtrando"></i>
+              {{ filtrando ? 'Buscando...' : 'Buscar' }}
+            </button>
+            <button class="btn-limpar" (click)="limparFiltro()" [disabled]="filtrando">
+              <i class="pi" [class.pi-times]="!filtrando" [class.pi-spin]="filtrando" [class.pi-spinner]="filtrando"></i>
+              {{ filtrando ? 'Limpando...' : 'Limpar' }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="loading" class="loading-state">
-      <i class="pi pi-spin pi-spinner"></i>
-      <p>Carregando ranking...</p>
-    </div>
+    <div class="table-wrapper">
+      <div class="table-header">
+        <div class="table-title">
+          <i class="pi pi-trophy"></i>
+          <span>Ranking de Clientes</span>
+        </div>
+        <div class="table-count">
+          <span class="count-badge">{{ rankingFiltrado.length }}</span>
+          <span>clientes</span>
+        </div>
+      </div>
 
-    <div *ngIf="!loading && rankingFiltrado.length === 0" class="empty-state">
-      <i class="pi pi-trophy"></i>
-      <p>Nenhum cliente encontrado.</p>
-    </div>
+      <div class="table-container">
+        <div *ngIf="loading" class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Carregando ranking...</p>
+        </div>
 
-    <div *ngIf="!loading && rankingFiltrado.length > 0" class="ranking-table-wrapper">
-      <table class="ranking-table">
-        <thead>
-          <tr>
-            <th>Posição</th>
-            <th>Cliente</th>
-            <th class="purchase-count">Pedidos</th>
-            <th class="purchase-value">Valor Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let cliente of rankingPaginado; let i = index">
-            <td class="ranking-position" [class]="getPositionClass(first + i)">
-              <i *ngIf="first + i === 0" class="pi pi-crown medal-icon"></i>
-              <i *ngIf="first + i === 1" class="pi pi-medal medal-icon"></i>
-              <i *ngIf="first + i === 2" class="pi pi-medal medal-icon"></i>
-              {{ first + i + 1 }}º
-            </td>
-            <td>
-              <div class="user-info">
-                <div class="user-avatar">{{ cliente.nome?.charAt(0)?.toUpperCase() || '?' }}</div>
-                <div>
-                  <div class="user-name">{{ cliente.nome || 'Cliente' }}</div>
-                  <div class="user-email">{{ cliente.email || 'Sem email' }}</div>
-                </div>
-              </div>
-            </td>
-            <td class="purchase-count">{{ cliente.quantidadePedidos || 0 }}</td>
-            <td class="purchase-value">R$ {{ (cliente.valorTotalGasto || 0) | number:'1.2-2' }}</td>
-          </tr>
-        </tbody>
-      </table>
+        <div *ngIf="!loading && rankingFiltrado.length === 0" class="empty-state">
+          <i class="pi pi-trophy"></i>
+          <h3>Nenhum cliente encontrado</h3>
+          <p>Não há clientes para os filtros selecionados</p>
+        </div>
 
-      <p-paginator
-        [first]="first"
-        [rows]="rows"
-        [totalRecords]="totalRecords"
-        (onPageChange)="onPageChange($event)"
-        [rowsPerPageOptions]="[10, 20, 50]"
-        styleClass="ranking-paginator">
-      </p-paginator>
+        <div *ngIf="!loading && rankingFiltrado.length > 0" class="ranking-table-wrapper">
+          <table class="ranking-table">
+            <thead>
+              <tr>
+                <th>Posição</th>
+                <th>Cliente</th>
+                <th class="purchase-count">Pedidos</th>
+                <th class="purchase-value">Valor Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cliente of rankingPaginado; let i = index">
+                <td class="ranking-position" [class]="getPositionClass(first + i)">
+                  <i *ngIf="first + i === 0" class="pi pi-crown medal-icon"></i>
+                  <i *ngIf="first + i === 1" class="pi pi-medal medal-icon"></i>
+                  <i *ngIf="first + i === 2" class="pi pi-medal medal-icon"></i>
+                  {{ first + i + 1 }}º
+                </td>
+                <td>
+                  <div class="user-info">
+                    <div class="user-avatar">{{ cliente.nome?.charAt(0)?.toUpperCase() || '?' }}</div>
+                    <div>
+                      <div class="user-name">{{ cliente.nome || 'Cliente' }}</div>
+                      <div class="user-email">{{ cliente.email || 'Sem email' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="purchase-count">{{ cliente.quantidadePedidos || 0 }}</td>
+                <td class="purchase-value">R$ {{ (cliente.valorTotalGasto || 0) | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p-paginator
+            [first]="first"
+            [rows]="rows"
+            [totalRecords]="totalRecords"
+            (onPageChange)="onPageChange($event)"
+            [rowsPerPageOptions]="[10, 20, 50]"
+            styleClass="ranking-paginator">
+          </p-paginator>
+        </div>
+      </div>
     </div>
   </main>
 </div>

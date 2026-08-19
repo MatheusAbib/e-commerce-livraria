@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -69,7 +69,8 @@ export class LivrosComponent implements OnInit {
   constructor(
     private messageService: MessageService,
     private adminService: AdminService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -77,21 +78,22 @@ export class LivrosComponent implements OnInit {
     this.carregarCategorias();
   }
 
-async carregarCategorias(): Promise<void> {
-  try {
-    const token = this.authService.getToken();
-    const response = await fetch('http://localhost:8081/api/livros/categorias', {
-      headers: {
-        'Authorization': 'Bearer ' + token
+  async carregarCategorias(): Promise<void> {
+    try {
+      const token = this.authService.getToken();
+      const response = await fetch('http://localhost:8081/api/livros/categorias', {
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      if (response.ok) {
+        this.categorias = await response.json();
       }
-    });
-    if (response.ok) {
-      this.categorias = await response.json();
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
     }
-  } catch (error) {
-    console.error('Erro ao carregar categorias:', error);
   }
-}
+
   onPageChange(event: any): void {
     this.first = event.first;
     this.rows = event.rows;
@@ -104,6 +106,7 @@ async carregarCategorias(): Promise<void> {
 
   async carregarLivros(filtros: any = {}): Promise<void> {
     this.loading = true;
+    this.cdr.detectChanges();
     try {
       const params = new URLSearchParams();
       if (filtros.titulo) params.append('titulo', filtros.titulo);
@@ -129,6 +132,7 @@ async carregarCategorias(): Promise<void> {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Falha ao carregar livros'});
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -136,15 +140,30 @@ filtrando: boolean = false;
 
 async aplicarFiltros(): Promise<void> {
   this.filtrando = true;
-  await new Promise(resolve => setTimeout(resolve, 1500));
   this.loading = true;
-  this.carregarLivros(this.filtros);
-  this.filtrando = false;
+  this.cdr.detectChanges();
+
+  const inicio = Date.now();
+
+  await this.carregarLivros(this.filtros);
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
+    this.loading = false;
+    this.filtrando = false;
+    this.cdr.detectChanges();
+  }, restante);
 }
 
 async limparFiltros(): Promise<void> {
   this.filtrando = true;
-  await new Promise(resolve => setTimeout(resolve, 1500));
+  this.loading = true;
+  this.cdr.detectChanges();
+
+  const inicio = Date.now();
+
   this.filtros = {
     titulo: '',
     autor: '',
@@ -157,29 +176,39 @@ async limparFiltros(): Promise<void> {
     estoqueMax: null,
     status: ''
   };
-  this.carregarLivros();
-  this.filtrando = false;
+
+  await this.carregarLivros();
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
+    this.loading = false;
+    this.filtrando = false;
+    this.cdr.detectChanges();
+  }, restante);
 }
 
   abrirFormulario(livro?: any): void {
     this.adminModals.abrirFormulario(livro);
     this.adminModals.setSalvarLivroCallback(() => this.salvarLivro());
   }
-async salvarLivro(): Promise<void> {
-  const livroData = this.adminModals.livroEditando;
-  const imagem = this.adminModals.livroEditando.imagem;
 
-  if (!livroData.titulo || !livroData.autor) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha os campos obrigatórios'});
-    return;
-  }
+  async salvarLivro(): Promise<void> {
+    const livroData = this.adminModals.livroEditando;
+    const imagem = this.adminModals.livroEditando.imagem;
 
-if (livroData.categoria) {
-  livroData.categoria = livroData.categoria.trim().replace(/\s+/g, ' ');
-  livroData.categoria = livroData.categoria.split(' ')
-    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
+    if (!livroData.titulo || !livroData.autor) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha os campos obrigatórios'});
+      return;
+    }
+
+    if (livroData.categoria) {
+      livroData.categoria = livroData.categoria.trim().replace(/\s+/g, ' ');
+      livroData.categoria = livroData.categoria.split(' ')
+        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    }
 
     try {
       const formData = new FormData();

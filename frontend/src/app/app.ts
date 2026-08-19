@@ -35,26 +35,31 @@ export class AppComponent implements OnInit, OnDestroy {
   isLoggedIn: boolean = false;
   isAdmin: boolean = false;
 
-  constructor(
-    public router: Router,
-    private authService: AuthService,
-    private messageService: MessageService,
-    private chatService: ChatService
-  ) {
-    this.router.events.subscribe((event: RouterEvent) => {
-      if (event instanceof NavigationStart) {
-        this.loading = true;
-      }
+constructor(
+  public router: Router,
+  private authService: AuthService,
+  private messageService: MessageService,
+  private chatService: ChatService
+) {
+  this.router.events.subscribe((event: RouterEvent) => {
+    if (event instanceof NavigationStart) {
+      this.loading = true;
+    }
 
-      if (event instanceof NavigationEnd ||
-          event instanceof NavigationCancel ||
-          event instanceof NavigationError) {
+    if (event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError) {
+      const inicio = Date.now();
+      setTimeout(() => {
+        const decorrido = Date.now() - inicio;
+        const restante = Math.max(0, 900 - decorrido);
         setTimeout(() => {
           this.loading = false;
-        }, 1000);
-      }
-    });
-  }
+        }, restante);
+      }, 0);
+    }
+  });
+}
 
   ngOnInit(): void {
     const user = this.authService.getUser();
@@ -67,27 +72,25 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.authService.loginStatus$.subscribe(logado => {
-      this.isLoggedIn = logado;
-      if (logado) {
-        const user = this.authService.getUser();
-        this.isAdmin = user?.perfil === 'ADMIN';
-        if (user?.perfil === 'ADMIN') {
-          this.loading = true;
-          setTimeout(() => {
-            this.router.navigate(['/admin/dashboard']);
-            setTimeout(() => {
-              this.loading = false;
-            }, 2000);
-          }, 300);
-        }
-        this.iniciarPolling();
-      } else {
-        this.isAdmin = false;
-        this.pararPolling();
-        this.pedidosAnteriores = [];
-      }
-    });
+this.authService.loginStatus$.subscribe(logado => {
+  this.isLoggedIn = logado;
+  if (logado) {
+    const user = this.authService.getUser();
+    this.isAdmin = user?.perfil === 'ADMIN';
+    if (user?.perfil === 'ADMIN') {
+      this.loading = true;
+      setTimeout(() => {
+        this.router.navigate(['/admin/dashboard']);
+        this.loading = false;
+      }, 300);
+    }
+    this.iniciarPolling();
+  } else {
+    this.isAdmin = false;
+    this.pararPolling();
+    this.pedidosAnteriores = [];
+  }
+});
 
     this.authService.abrirChat$.subscribe((pedidoId: number) => {
       const pedido = this.pedidosAnteriores.find(p => p.id === pedidoId);

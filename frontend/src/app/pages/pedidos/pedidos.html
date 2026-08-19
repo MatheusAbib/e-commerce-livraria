@@ -24,22 +24,28 @@
   </div>
 
   <div class="pedidos-wrapper">
-    <div *ngIf="loading" class="loading-state">
-      <i class="pi pi-spin pi-spinner"></i>
-      <p>Carregando seus pedidos...</p>
+  <div *ngIf="loading" class="loader-overlay" style="position: relative; min-height: 300px;">
+    <div class="loader-container">
+      <div class="loader-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+      </div>
+      <p class="loader-text">Carregando seus pedidos...</p>
     </div>
+  </div>
 
-    <div *ngIf="!loading && filteredPedidos.length === 0" class="empty-state">
-      <i class="pi pi-inbox"></i>
-      <h3>Nenhum pedido encontrado</h3>
-      <p>Não há pedidos com o status selecionado</p>
-      <button class="p-button-outlined" (click)="voltar()">
-        <i class="pi pi-arrow-left"></i> Voltar às compras
-      </button>
-    </div>
+  <div *ngIf="!loading && filteredPedidos.length === 0" class="empty-state">
+    <i class="pi pi-inbox"></i>
+    <h3>Nenhum pedido encontrado</h3>
+    <p>Não há pedidos com o status selecionado</p>
+    <button class="p-button-outlined" (click)="voltar()">
+      <i class="pi pi-arrow-left"></i> Voltar às compras
+    </button>
+  </div>
 
-    <div *ngIf="!loading && filteredPedidos.length > 0" class="pedidos-grid">
-      <div *ngFor="let pedido of filteredPedidos" class="pedido-card">
+  <div *ngIf="!loading && filteredPedidos.length > 0" class="pedidos-grid">
+    <div *ngFor="let pedido of filteredPedidos" class="pedido-card">
         <div class="pedido-header">
           <div class="pedido-info">
             <span class="pedido-id">Pedido #{{ pedido.id }}</span>

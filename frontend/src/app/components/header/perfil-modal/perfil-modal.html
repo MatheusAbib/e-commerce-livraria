@@ -12,7 +12,16 @@
     </div>
 
     <div class="custom-modal-body" style="position: relative; min-height: 300px;">
-      <app-loader [loading]="loading" message="Carregando seus dados..."></app-loader>
+      <div *ngIf="loading" class="loader-overlay">
+        <div class="loader-container">
+          <div class="loader-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+          </div>
+          <p class="loader-text">Carregando seus dados...</p>
+        </div>
+      </div>
 
       <div *ngIf="!loading">
         <div *ngIf="usuario" class="perfil-info-grid">

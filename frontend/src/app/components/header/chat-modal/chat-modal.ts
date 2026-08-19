@@ -29,6 +29,7 @@ export class ChatModalComponent {
 
   ngOnChanges(): void {
     if (this.visible) {
+      this.loadingChats = true;
       this.carregarChats();
     }
   }
@@ -40,9 +41,11 @@ export class ChatModalComponent {
 
   async carregarChats(): Promise<void> {
     const user = this.authService.getUser();
-    if (!user) return;
+    if (!user) {
+      this.loadingChats = false;
+      return;
+    }
 
-    this.loadingChats = true;
     try {
       const token = this.authService.getToken();
       const response = await fetch(`/api/chat/cliente/${user.id}/conversas`, {
@@ -64,16 +67,16 @@ export class ChatModalComponent {
     }
   }
 
-selecionarChat(pedidoId: number): void {
-  this.chatService.limparUltimoPedido();
+  selecionarChat(pedidoId: number): void {
+    this.chatService.limparUltimoPedido();
 
-  const pedido = this.chatsAtivos.find((c: any) => c.pedidoId === pedidoId) ||
-                 this.chatsEncerrados.find((c: any) => c.pedidoId === pedidoId);
+    const pedido = this.chatsAtivos.find((c: any) => c.pedidoId === pedidoId) ||
+                   this.chatsEncerrados.find((c: any) => c.pedidoId === pedidoId);
 
-  this.fechar();
+    this.fechar();
 
-  setTimeout(() => {
-    this.chatService.abrirChat(pedidoId, pedido);
-  }, 100);
-}
+    setTimeout(() => {
+      this.chatService.abrirChat(pedidoId, pedido);
+    }, 100);
+  }
 }

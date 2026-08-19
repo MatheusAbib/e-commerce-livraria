@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -79,7 +79,8 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private adminService: AdminService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -256,48 +257,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
     }
   }
 
-  async carregarPedidos(): Promise<void> {
-    this.loading = true;
-    try {
-      const token = this.authService.getToken();
-      const response = await fetch('/api/pedidos/todos', {
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      });
 
-      if (response.ok) {
-        this.pedidos = await response.json();
-
-        await Promise.all(this.pedidos.map(async (pedido) => {
-          const [mensagensResponse, naoLidasResponse] = await Promise.all([
-            fetch(`/api/chat/admin/${pedido.id}`, {
-              headers: { 'Authorization': 'Bearer ' + token }
-            }),
-            fetch(`/api/chat/admin/${pedido.id}/nao-lidas`, {
-              headers: { 'Authorization': 'Bearer ' + token }
-            })
-          ]);
-
-          if (mensagensResponse.ok) {
-            const mensagens = await mensagensResponse.json();
-            pedido.temConversa = mensagens.length > 0;
-          }
-
-          if (naoLidasResponse.ok) {
-            const data = await naoLidasResponse.json();
-            pedido.chatNaoLidas = data.naoLidas || 0;
-          }
-        }));
-
-        this.aplicarFiltros();
-      }
-    } catch (error) {
-      console.error('Erro ao carregar pedidos:', error);
-    } finally {
-      this.loading = false;
-    }
-  }
 
   async carregarPedidosSilenciosamente(): Promise<void> {
     try {
@@ -348,6 +308,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
         if (pedidosAtuaisStr !== novosPedidosStr) {
           this.pedidos = novosPedidos;
           this.aplicarFiltrosSemLoading();
+          this.cdr.detectChanges();
         }
       }
     } catch (error) {
@@ -387,38 +348,106 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
 
   filtrando: boolean = false;
 
-  aplicarFiltros(): void {
-    this.filtrando = true;
-    this.loading = true;
-    setTimeout(() => {
-      this.pedidosFiltrados = this.pedidos.filter(pedido => {
-        let match = true;
-        if (this.filtros.status && pedido.status !== this.filtros.status) match = false;
-        if (this.filtros.cliente) {
-          const nomeCliente = pedido.cliente?.nome || '';
-          if (!nomeCliente.toLowerCase().includes(this.filtros.cliente.toLowerCase())) match = false;
-        }
-        return match;
-      });
-      this.totalRecords = this.pedidosFiltrados.length;
-      this.first = 0;
-      this.atualizarPaginacao();
-      this.loading = false;
-      this.filtrando = false;
-    }, 1500);
-  }
+aplicarFiltros(): void {
+  this.filtrando = true;
+  this.loading = true;
+  this.cdr.detectChanges();
 
-  limparFiltros(): void {
-    this.filtrando = true;
-    this.filtros = { status: '', cliente: '' };
-    this.tabAtivo = 'todos';
-    this.pedidosFiltrados = [...this.pedidos];
-    this.totalRecords = this.pedidosFiltrados.length;
-    this.first = 0;
-    this.atualizarPaginacao();
+  const inicio = Date.now();
+
+  this.pedidosFiltrados = this.pedidos.filter(pedido => {
+    let match = true;
+    if (this.filtros.status && pedido.status !== this.filtros.status) match = false;
+    if (this.filtros.cliente) {
+      const nomeCliente = pedido.cliente?.nome || '';
+      if (!nomeCliente.toLowerCase().includes(this.filtros.cliente.toLowerCase())) match = false;
+    }
+    return match;
+  });
+
+  this.totalRecords = this.pedidosFiltrados.length;
+  this.first = 0;
+  this.atualizarPaginacao();
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
+    this.loading = false;
     this.filtrando = false;
-  }
+    this.cdr.detectChanges();
+  }, restante);
+}
 
+limparFiltros(): void {
+  this.filtrando = true;
+  this.loading = true;
+  this.cdr.detectChanges();
+
+  const inicio = Date.now();
+
+  this.filtros = { status: '', cliente: '' };
+  this.tabAtivo = 'todos';
+  this.pedidosFiltrados = [...this.pedidos];
+  this.totalRecords = this.pedidosFiltrados.length;
+  this.first = 0;
+  this.atualizarPaginacao();
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
+    this.loading = false;
+    this.filtrando = false;
+    this.cdr.detectChanges();
+  }, restante);
+}
+
+async carregarPedidos(): Promise<void> {
+  this.loading = true;
+  this.cdr.detectChanges();
+  try {
+    const token = this.authService.getToken();
+    const response = await fetch('/api/pedidos/todos', {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    if (response.ok) {
+      this.pedidos = await response.json();
+
+      await Promise.all(this.pedidos.map(async (pedido) => {
+        const [mensagensResponse, naoLidasResponse] = await Promise.all([
+          fetch(`/api/chat/admin/${pedido.id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+          }),
+          fetch(`/api/chat/admin/${pedido.id}/nao-lidas`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+          })
+        ]);
+
+        if (mensagensResponse.ok) {
+          const mensagens = await mensagensResponse.json();
+          pedido.temConversa = mensagens.length > 0;
+        }
+
+        if (naoLidasResponse.ok) {
+          const data = await naoLidasResponse.json();
+          pedido.chatNaoLidas = data.naoLidas || 0;
+        }
+      }));
+
+      this.aplicarFiltrosSemLoading();
+    }
+  } catch (error) {
+    console.error('Erro ao carregar pedidos:', error);
+    this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao carregar pedidos'});
+  } finally {
+    this.loading = false;
+    this.cdr.detectChanges();
+  }
+}
   abrirDetalhes(pedido: any): void {
     this.pedidoSelecionado = pedido;
     this.adminModals.abrirPedidoDetalhes(pedido);

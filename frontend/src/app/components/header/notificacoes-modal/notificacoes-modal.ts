@@ -49,17 +49,23 @@ export class NotificacoesModalComponent implements OnInit, OnChanges {
     }
   }
 
-  carregarNotificacoes(): void {
-    if (!this.usuario) {
-      this.usuario = this.authService.getUser();
-      if (!this.usuario) return;
-    }
+carregarNotificacoes(): void {
+  if (!this.usuario) {
+    this.usuario = this.authService.getUser();
+    if (!this.usuario) return;
+  }
 
+  this.loading = true;
+  this.cdr.detectChanges();
+
+  setTimeout(() => {
     const notificacoesPorUsuario = JSON.parse(localStorage.getItem('notificacoesPorUsuario') || '{}');
     this.notificacoes = notificacoesPorUsuario[this.usuario.id] || [];
     this.authService.notificacoesSubject.next(this.notificacoes);
+    this.loading = false;
     this.cdr.detectChanges();
-  }
+  }, 300);
+}
 
   fechar(): void {
     this.visible = false;

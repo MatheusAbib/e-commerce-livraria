@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PaginatorModule } from 'primeng/paginator';
@@ -23,13 +23,16 @@ export class RankingAdminComponent implements OnInit {
   rankingPaginado: any[] = [];
   loading: boolean = true;
   busca: string = '';
-  timeoutBusca: any = null;
+  filtrando: boolean = false;
 
   first: number = 0;
   rows: number = 10;
   totalRecords: number = 0;
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.carregarRanking();
@@ -37,6 +40,7 @@ export class RankingAdminComponent implements OnInit {
 
   async carregarRanking(): Promise<void> {
     this.loading = true;
+    this.cdr.detectChanges();
     try {
       const data = await this.adminService.getRanking().toPromise();
       this.ranking = data || [];
@@ -47,27 +51,61 @@ export class RankingAdminComponent implements OnInit {
       console.error('Erro ao carregar ranking:', error);
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
-  onBuscaChange(): void {
-    clearTimeout(this.timeoutBusca);
+  aplicarFiltro(): void {
+    this.filtrando = true;
     this.loading = true;
+    this.cdr.detectChanges();
 
-    this.timeoutBusca = setTimeout(() => {
-      const termo = this.busca.toLowerCase().trim();
-      if (!termo) {
-        this.rankingFiltrado = [...this.ranking];
-      } else {
-        this.rankingFiltrado = this.ranking.filter(cliente =>
-          cliente.nome?.toLowerCase().includes(termo)
-        );
-      }
-      this.totalRecords = this.rankingFiltrado.length;
-      this.first = 0;
-      this.atualizarPaginacao();
+    const inicio = Date.now();
+
+    const termo = this.busca.toLowerCase().trim();
+    if (!termo) {
+      this.rankingFiltrado = [...this.ranking];
+    } else {
+      this.rankingFiltrado = this.ranking.filter(cliente =>
+        cliente.nome?.toLowerCase().includes(termo)
+      );
+    }
+
+    this.totalRecords = this.rankingFiltrado.length;
+    this.first = 0;
+    this.atualizarPaginacao();
+
+    const decorrido = Date.now() - inicio;
+    const restante = Math.max(0, 500 - decorrido);
+
+    setTimeout(() => {
       this.loading = false;
-    }, 1500);
+      this.filtrando = false;
+      this.cdr.detectChanges();
+    }, restante);
+  }
+
+  limparFiltro(): void {
+    this.filtrando = true;
+    this.loading = true;
+    this.cdr.detectChanges();
+
+    const inicio = Date.now();
+
+    this.busca = '';
+    this.rankingFiltrado = [...this.ranking];
+    this.totalRecords = this.rankingFiltrado.length;
+    this.first = 0;
+    this.atualizarPaginacao();
+
+    const decorrido = Date.now() - inicio;
+    const restante = Math.max(0, 500 - decorrido);
+
+    setTimeout(() => {
+      this.loading = false;
+      this.filtrando = false;
+      this.cdr.detectChanges();
+    }, restante);
   }
 
   atualizarPaginacao(): void {

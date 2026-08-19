@@ -18,7 +18,7 @@
 </div>
 <div class="container-fluid" id="produtos">
   <div class="section-header">
-    <h2>Escolha Seu Livro</h2>
+    <h2>Acervo de Livros</h2>
     <div class="divider"></div>
   </div>
 
@@ -75,9 +75,15 @@
       </aside>
 
       <div class="produtos-lista">
-        <div *ngIf="loading" class="text-center">
-          <p-progressSpinner></p-progressSpinner>
-          <p class="loader-texto">Buscando livros...</p>
+        <div *ngIf="loading" class="loader-overlay-principal">
+          <div class="loader-container">
+            <div class="loader-spinner">
+              <div class="spinner-ring"></div>
+              <div class="spinner-ring"></div>
+              <div class="spinner-ring"></div>
+            </div>
+            <p class="loader-text">Buscando livros...</p>
+          </div>
         </div>
 
         <div *ngIf="!loading && filteredLivros.length === 0" class="empty-state">

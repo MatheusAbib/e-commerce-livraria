@@ -103,20 +103,20 @@
         </div>
       </div>
 
-      <div class="table-container">
-        <div *ngIf="loading" class="loading-state">
-          <i class="pi pi-spin pi-spinner"></i>
-          <p>Carregando livros...</p>
-        </div>
+<div class="table-container">
+  <div *ngIf="loading" class="loading-state">
+    <i class="pi pi-spin pi-spinner"></i>
+    <p>Carregando livros...</p>
+  </div>
 
-        <div *ngIf="!loading && livros.length === 0" class="empty-state">
-          <i class="pi pi-inbox"></i>
-          <h3>Nenhum livro encontrado</h3>
-          <p>Não há livros cadastrados para os filtros selecionados</p>
-        </div>
+  <div *ngIf="!loading && livros.length === 0" class="empty-state">
+    <i class="pi pi-inbox"></i>
+    <h3>Nenhum livro encontrado</h3>
+    <p>Não há livros cadastrados para os filtros selecionados</p>
+  </div>
 
-        <div *ngIf="!loading && livros.length > 0">
-          <table class="livros-table">
+  <div *ngIf="!loading && livros.length > 0">
+    <table class="livros-table">
             <thead>
               <tr>
                 <th>Código</th>

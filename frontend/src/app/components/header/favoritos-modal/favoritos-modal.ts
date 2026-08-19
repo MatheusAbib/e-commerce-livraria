@@ -46,6 +46,12 @@ export class FavoritosModalComponent implements OnInit {
     });
   }
 
+  ngOnChanges(): void {
+    if (this.visible) {
+      this.carregarFavoritos();
+    }
+  }
+
   fechar(): void {
     this.visible = false;
     this.visibleChange.emit(false);
@@ -62,6 +68,7 @@ export class FavoritosModalComponent implements OnInit {
     }
 
     this.loading = true;
+    this.cdr.detectChanges();
 
     try {
       const token = this.authService.getToken();
@@ -84,6 +91,7 @@ export class FavoritosModalComponent implements OnInit {
       console.error('Erro ao carregar favoritos:', error);
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -130,48 +138,48 @@ export class FavoritosModalComponent implements OnInit {
     }
   }
 
-adicionarAoCarrinho(livroId: number): void {
-  const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
-  if (!user) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Faça login para comprar'});
-    return;
-  }
-
-  const livro = this.favoritos.find(l => l.id === livroId);
-  if (!livro) return;
-
-  if (!livro.ativo) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Este livro está inativo e não pode ser comprado'});
-    return;
-  }
-
-  if (livro.estoque <= 0) {
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Este livro está esgotado'});
-    return;
-  }
-
-  const carrinhos = JSON.parse(localStorage.getItem('carrinhosPorUsuario') || '{}');
-  let carrinho = carrinhos[user.id] || [];
-  const existente = carrinho.find((i: any) => i.id === livroId);
-
-  if (existente) {
-    if (existente.quantidade + 1 > livro.estoque) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Quantidade indisponível em estoque'});
+  adicionarAoCarrinho(livroId: number): void {
+    const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
+    if (!user) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Faça login para comprar'});
       return;
     }
-    existente.quantidade++;
-  } else {
-    carrinho.push({ id: livroId, quantidade: 1 });
-  }
 
-  carrinhos[user.id] = carrinho;
-  localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhos));
-  this.carrinhoService.atualizarContador();
-  this.carrinhoService['carrinhoItensSubject'].next(
-    this.carrinhoService['carrinhoItensSubject'].value
-  );
-  this.carrinhoService.notificarCarrinhoAtualizado();
-  this.messageService.add({severity:'success', summary:'Sucesso', detail:'Adicionado ao carrinho!'});
-  this.authService.adicionarNotificacao('Carrinho', 'Produto adicionado ao carrinho', 'success');
-}
+    const livro = this.favoritos.find(l => l.id === livroId);
+    if (!livro) return;
+
+    if (!livro.ativo) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Este livro está inativo e não pode ser comprado'});
+      return;
+    }
+
+    if (livro.estoque <= 0) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Este livro está esgotado'});
+      return;
+    }
+
+    const carrinhos = JSON.parse(localStorage.getItem('carrinhosPorUsuario') || '{}');
+    let carrinho = carrinhos[user.id] || [];
+    const existente = carrinho.find((i: any) => i.id === livroId);
+
+    if (existente) {
+      if (existente.quantidade + 1 > livro.estoque) {
+        this.messageService.add({severity:'error', summary:'Erro', detail:'Quantidade indisponível em estoque'});
+        return;
+      }
+      existente.quantidade++;
+    } else {
+      carrinho.push({ id: livroId, quantidade: 1 });
+    }
+
+    carrinhos[user.id] = carrinho;
+    localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhos));
+    this.carrinhoService.atualizarContador();
+    this.carrinhoService['carrinhoItensSubject'].next(
+      this.carrinhoService['carrinhoItensSubject'].value
+    );
+    this.carrinhoService.notificarCarrinhoAtualizado();
+    this.messageService.add({severity:'success', summary:'Sucesso', detail:'Adicionado ao carrinho!'});
+    this.authService.adicionarNotificacao('Carrinho', 'Produto adicionado ao carrinho', 'success');
+  }
 }

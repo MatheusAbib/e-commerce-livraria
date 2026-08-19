@@ -34,12 +34,12 @@ export class CupomModalComponent implements OnInit {
 
   ngOnChanges(): void {
     if (this.visible) {
+      this.carregando = true;
       this.carregarCupons();
     }
   }
 
   async carregarCupons(): Promise<void> {
-    this.carregando = true;
     const user = this.authService.getUser();
     if (!user) {
       this.carregando = false;

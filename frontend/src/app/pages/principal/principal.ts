@@ -249,36 +249,53 @@ export class Principal implements OnInit {
 
   filtrando: boolean = false;
 
-  async aplicarFiltros(): Promise<void> {
-    this.filtrando = true;
-    this.loading = true;
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    this.filteredLivros = this.livros.filter(l => {
-      let match = true;
-      if (this.filtros.titulo && !l.titulo?.toLowerCase().includes(this.filtros.titulo.toLowerCase())) match = false;
-      if (this.filtros.autor && !l.autor?.toLowerCase().includes(this.filtros.autor.toLowerCase())) match = false;
-      if (this.filtros.editora && !l.editora?.toLowerCase().includes(this.filtros.editora.toLowerCase())) match = false;
-      if (this.filtros.categoria && l.categoria !== this.filtros.categoria) match = false;
-      if (this.filtros.precoMax && l.precoVenda > this.filtros.precoMax) match = false;
-      return match;
-    });
-    this.totalRecords = this.filteredLivros.length;
-    this.first = 0;
-    this.loading = false;
-    this.filtrando = false;
-  }
+async aplicarFiltros(): Promise<void> {
+  this.filtrando = true;
+  this.loading = true;
 
-  async limparFiltros(): Promise<void> {
-    this.filtrando = true;
-    this.loading = true;
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    this.filtros = { titulo: '', autor: '', editora: '', categoria: '', precoMax: null };
-    this.filteredLivros = [...this.livros];
-    this.totalRecords = this.filteredLivros.length;
-    this.first = 0;
+  const inicio = Date.now();
+
+  this.filteredLivros = this.livros.filter(l => {
+    let match = true;
+    if (this.filtros.titulo && !l.titulo?.toLowerCase().includes(this.filtros.titulo.toLowerCase())) match = false;
+    if (this.filtros.autor && !l.autor?.toLowerCase().includes(this.filtros.autor.toLowerCase())) match = false;
+    if (this.filtros.editora && !l.editora?.toLowerCase().includes(this.filtros.editora.toLowerCase())) match = false;
+    if (this.filtros.categoria && l.categoria !== this.filtros.categoria) match = false;
+    if (this.filtros.precoMax && l.precoVenda > this.filtros.precoMax) match = false;
+    return match;
+  });
+
+  this.totalRecords = this.filteredLivros.length;
+  this.first = 0;
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
     this.loading = false;
     this.filtrando = false;
-  }
+  }, restante);
+}
+
+async limparFiltros(): Promise<void> {
+  this.filtrando = true;
+  this.loading = true;
+
+  const inicio = Date.now();
+
+  this.filtros = { titulo: '', autor: '', editora: '', categoria: '', precoMax: null };
+  this.filteredLivros = [...this.livros];
+  this.totalRecords = this.filteredLivros.length;
+  this.first = 0;
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
+    this.loading = false;
+    this.filtrando = false;
+  }, restante);
+}
 
   onPageChange(event: any): void {
     this.first = event.first;

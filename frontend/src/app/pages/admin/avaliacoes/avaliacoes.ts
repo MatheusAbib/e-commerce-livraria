@@ -84,44 +84,63 @@ export class AdminAvaliacoesComponent implements OnInit {
     }
   }
 
-  async aplicarFiltros(): Promise<void> {
-    this.filtrando = true;
-    await new Promise(resolve => setTimeout(resolve, 1500));
+async aplicarFiltros(): Promise<void> {
+  this.filtrando = true;
+  this.loading = true;
 
-    this.filteredAvaliacoes = this.avaliacoes.filter(a => {
-      let match = true;
+  const inicio = Date.now();
 
-      if (this.filtroLivro) {
-        match = match && a.livro?.titulo?.toLowerCase().includes(this.filtroLivro.toLowerCase());
-      }
+  this.filteredAvaliacoes = this.avaliacoes.filter(a => {
+    let match = true;
 
-      if (this.filtroCliente) {
-        match = match && a.cliente?.nome?.toLowerCase().includes(this.filtroCliente.toLowerCase());
-      }
+    if (this.filtroLivro) {
+      match = match && a.livro?.titulo?.toLowerCase().includes(this.filtroLivro.toLowerCase());
+    }
 
-      if (this.filtroNota) {
-        match = match && a.nota === parseInt(this.filtroNota);
-      }
+    if (this.filtroCliente) {
+      match = match && a.cliente?.nome?.toLowerCase().includes(this.filtroCliente.toLowerCase());
+    }
 
-      return match;
-    });
-    this.totalRecords = this.filteredAvaliacoes.length;
-    this.first = 0;
+    if (this.filtroNota) {
+      match = match && a.nota === parseInt(this.filtroNota);
+    }
+
+    return match;
+  });
+
+  this.totalRecords = this.filteredAvaliacoes.length;
+  this.first = 0;
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
+    this.loading = false;
     this.filtrando = false;
-  }
+  }, restante);
+}
 
-  async limparFiltros(): Promise<void> {
-    this.filtrando = true;
-    await new Promise(resolve => setTimeout(resolve, 1500));
+async limparFiltros(): Promise<void> {
+  this.filtrando = true;
+  this.loading = true;
 
-    this.filtroLivro = '';
-    this.filtroCliente = '';
-    this.filtroNota = '';
-    this.filteredAvaliacoes = [...this.avaliacoes];
-    this.totalRecords = this.filteredAvaliacoes.length;
-    this.first = 0;
+  const inicio = Date.now();
+
+  this.filtroLivro = '';
+  this.filtroCliente = '';
+  this.filtroNota = '';
+  this.filteredAvaliacoes = [...this.avaliacoes];
+  this.totalRecords = this.filteredAvaliacoes.length;
+  this.first = 0;
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
+    this.loading = false;
     this.filtrando = false;
-  }
+  }, restante);
+}
 
   onPageChange(event: any): void {
     this.first = event.first;

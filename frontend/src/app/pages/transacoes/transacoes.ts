@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -81,10 +81,12 @@ export class TransacoesComponent implements OnInit {
 
   displayDetalhesModal: boolean = false;
   logSelecionado: any = null;
+  filtrando: boolean = false;
 
   constructor(
     private messageService: MessageService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -103,6 +105,7 @@ export class TransacoesComponent implements OnInit {
 
   async carregarLogs(): Promise<void> {
     this.loading = true;
+    this.cdr.detectChanges();
     try {
       const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
       if (!user) {
@@ -133,6 +136,7 @@ export class TransacoesComponent implements OnInit {
       this.authService.adicionarNotificacao('Erro', 'Falha ao carregar transações', 'error');
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -220,43 +224,60 @@ export class TransacoesComponent implements OnInit {
     return levels[level] || level;
   }
 
-filtrando: boolean = false;
-
-aplicarFiltros(): void {
+ aplicarFiltros(): void {
   this.filtrando = true;
   this.loading = true;
+  this.cdr.detectChanges();
+
+  const inicio = Date.now();
+
+  this.filteredLogs = this.logs.filter(log => {
+    let match = true;
+    if (this.filtros.action && log.action !== this.filtros.action) match = false;
+    if (this.filtros.date) {
+      const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+      const filterDate = new Date(this.filtros.date).toISOString().split('T')[0];
+      if (logDate !== filterDate) match = false;
+    }
+    if (this.filtros.level && log.level !== this.filtros.level) match = false;
+    return match;
+  });
+
+  this.totalRecords = this.filteredLogs.length;
+  this.first = 0;
+  this.atualizarPaginacao();
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
   setTimeout(() => {
-    this.filteredLogs = this.logs.filter(log => {
-      let match = true;
-      if (this.filtros.action && log.action !== this.filtros.action) match = false;
-      if (this.filtros.date) {
-        const logDate = new Date(log.timestamp).toISOString().split('T')[0];
-        const filterDate = new Date(this.filtros.date).toISOString().split('T')[0];
-        if (logDate !== filterDate) match = false;
-      }
-      if (this.filtros.level && log.level !== this.filtros.level) match = false;
-      return match;
-    });
-    this.totalRecords = this.filteredLogs.length;
-    this.first = 0;
-    this.atualizarPaginacao();
     this.loading = false;
     this.filtrando = false;
-  }, 1500);
+    this.cdr.detectChanges();
+  }, restante);
 }
 
 limparFiltros(): void {
   this.filtrando = true;
   this.loading = true;
+  this.cdr.detectChanges();
+
+  const inicio = Date.now();
+
+  this.filtros = { action: '', date: null, level: '' };
+  this.filteredLogs = [...this.logs];
+  this.totalRecords = this.filteredLogs.length;
+  this.first = 0;
+  this.atualizarPaginacao();
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
   setTimeout(() => {
-    this.filtros = { action: '', date: null, level: '' };
-    this.filteredLogs = [...this.logs];
-    this.totalRecords = this.filteredLogs.length;
-    this.first = 0;
-    this.atualizarPaginacao();
     this.loading = false;
     this.filtrando = false;
-  }, 1500);
+    this.cdr.detectChanges();
+  }, restante);
 }
   translateAction(action: string): string {
     const actions: any = {

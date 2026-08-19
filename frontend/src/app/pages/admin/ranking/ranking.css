@@ -1,44 +1,8 @@
-.campo-busca {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid #e8ecf0;
-  margin-bottom: 1.5rem;
-}
-
-.campo-busca label {
-  font-weight: 600;
-  margin-bottom: 8px;
-  display: block;
-  color: #1a2332;
-}
-
-.campo-busca label i {
-  color: #2a5298;
-  margin-right: 8px;
-}
-
-.campo-busca .auth-input {
-  width: 100%;
-  padding: 0.6rem 0.8rem;
-  border-radius: 8px;
-  border: 1.5px solid #d1d5db;
-  font-size: 0.9rem;
-  background: white;
-  color: #1a2332;
-  box-sizing: border-box;
-  height: 42px;
-}
-
-.campo-busca .auth-input:focus {
-  border-color: #2a5298;
-  outline: none;
-}
-
 .ranking-table-wrapper {
   background: white;
   border-radius: 12px;
   border: 1px solid #e8ecf0;
+  overflow: hidden;
 }
 
 .ranking-table {
@@ -139,6 +103,11 @@
 .ranking-paginator {
   border-top: 1px solid #e8ecf0;
   padding: 0.5rem;
+}
+
+.table-container {
+  position: relative;
+  min-height: 200px;
 }
 
 @media (max-width: 768px) {

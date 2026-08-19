@@ -116,25 +116,45 @@ aplicarFiltros(): void {
   clearTimeout(this.timeoutFiltro);
   this.loading = true;
 
-  this.timeoutFiltro = setTimeout(() => {
-    const filtros: any = {};
-    if (this.filtros.nome) filtros.nome = this.filtros.nome;
-    if (this.filtros.email) filtros.email = this.filtros.email;
-    if (this.filtros.cpf) filtros.cpf = this.filtros.cpf;
-    if (this.filtros.genero) filtros.genero = this.filtros.genero;
-    if (this.filtros.ativo) filtros.ativo = this.filtros.ativo;
-    this.carregarClientes(filtros);
+  const inicio = Date.now();
+
+  const filtros: any = {};
+  if (this.filtros.nome) filtros.nome = this.filtros.nome;
+  if (this.filtros.email) filtros.email = this.filtros.email;
+  if (this.filtros.cpf) filtros.cpf = this.filtros.cpf;
+  if (this.filtros.genero) filtros.genero = this.filtros.genero;
+  if (this.filtros.ativo) filtros.ativo = this.filtros.ativo;
+
+  this.carregarClientes(filtros);
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
+    this.loading = false;
     this.filtrando = false;
-  }, 1500);
+  }, restante);
 }
 
 limparFiltros(): void {
   this.filtrando = true;
   clearTimeout(this.timeoutFiltro);
+  this.loading = true;
+
+  const inicio = Date.now();
+
   this.filtros = { nome: '', email: '', cpf: '', genero: '', ativo: '' };
   this.carregarClientes();
-  this.filtrando = false;
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
+    this.loading = false;
+    this.filtrando = false;
+  }, restante);
 }
+
   atualizarPaginacao(): void {
     this.clientesPaginados = this.clientesFiltrados.slice(this.first, this.first + this.rows);
   }
