@@ -49,7 +49,7 @@
         <button class="btn-secondary" (click)="fecharPerfil()">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="salvarPerfil()">
+        <button class="btn-primary" (click)="salvarPerfil()" [disabled]="carregandoSalvarPerfil" [class.loading]="carregandoSalvarPerfil">
           <i class="pi pi-save"></i> Salvar
         </button>
       </div>
@@ -126,18 +126,18 @@
           <label>Editora</label>
           <input type="text" [(ngModel)]="livroEditando.editora" class="auth-input" placeholder="Digite a editora">
         </div>
-<div class="form-group">
-  <label>Categoria</label>
-  <p-dropdown
-    [options]="categorias"
-    [(ngModel)]="livroEditando.categoria"
-    placeholder="Selecione ou digite uma categoria"
-    [editable]="true"
-    [filter]="true"
-    styleClass="auth-input"
-    [style]="{'width':'100%'}">
-  </p-dropdown>
-</div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <p-dropdown
+            [options]="categorias"
+            [(ngModel)]="livroEditando.categoria"
+            placeholder="Selecione ou digite uma categoria"
+            [editable]="true"
+            [filter]="true"
+            styleClass="auth-input"
+            [style]="{'width':'100%'}">
+          </p-dropdown>
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -205,7 +205,7 @@
         <button class="btn-secondary" (click)="fecharFormulario()">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="salvarLivro()">
+        <button class="btn-primary" (click)="salvarLivro()" [disabled]="carregandoSalvarLivro" [class.loading]="carregandoSalvarLivro">
           <i class="pi pi-save"></i> Salvar
         </button>
       </div>
@@ -234,7 +234,7 @@
         <button class="btn-secondary" (click)="displayExcluirModal = false">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-danger" (click)="confirmarExcluir()">
+        <button class="btn-danger" (click)="confirmarExcluir()" [disabled]="carregandoExcluir" [class.loading]="carregandoExcluir">
           <i class="pi pi-trash"></i> Excluir
         </button>
       </div>
@@ -269,7 +269,7 @@
         <button class="btn-secondary" (click)="displayStatusModal = false">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="confirmarStatus()">
+        <button class="btn-primary" (click)="confirmarStatus()" [disabled]="carregandoStatus" [class.loading]="carregandoStatus">
           <i class="pi pi-check"></i> Confirmar
         </button>
       </div>
@@ -522,24 +522,24 @@
           <h4><i class="pi pi-comment"></i> Motivo da Devolução</h4>
           <p>{{ pedidoSelecionado.motivoDevolucao }}</p>
         </div>
-<div *ngIf="pedidoSelecionado.fotosDevolucao && pedidoSelecionado.fotosDevolucao.length > 0" class="detalhes-info full-width">
-  <h4><i class="pi pi-images"></i> Fotos da Devolução ({{ pedidoSelecionado.fotosDevolucao.length }})</h4>
-  <div class="fotos-devolucao-container-admin">
-    <div *ngFor="let foto of pedidoSelecionado.fotosDevolucao; let i = index"
-         class="foto-devolucao-item-admin"
-         (click)="abrirFotoAmpliada(foto.caminho)">
-<img [src]="'/uploads/devolucoes/' + foto.caminho" alt="Foto da devolução {{ i + 1 }}" class="foto-devolucao-img-admin">
-      <span class="foto-badge-admin">Foto {{ i + 1 }}</span>
-    </div>
-  </div>
-</div>
-<div *ngIf="!pedidoSelecionado.fotosDevolucao || pedidoSelecionado.fotosDevolucao.length === 0" class="detalhes-info full-width">
-  <h4><i class="pi pi-images"></i> Fotos da Devolução</h4>
-  <p style="color: #94a3b8; font-size: 0.9rem; font-style: italic;">
-    <i class="pi pi-image" style="margin-right: 0.3rem;"></i>
-    Nenhuma imagem anexada pelo cliente
-  </p>
-</div>
+        <div *ngIf="pedidoSelecionado.fotosDevolucao && pedidoSelecionado.fotosDevolucao.length > 0" class="detalhes-info full-width">
+          <h4><i class="pi pi-images"></i> Fotos da Devolução ({{ pedidoSelecionado.fotosDevolucao.length }})</h4>
+          <div class="fotos-devolucao-container-admin">
+            <div *ngFor="let foto of pedidoSelecionado.fotosDevolucao; let i = index"
+                 class="foto-devolucao-item-admin"
+                 (click)="abrirFotoAmpliada(foto.caminho)">
+              <img [src]="'/uploads/devolucoes/' + foto.caminho" alt="Foto da devolução {{ i + 1 }}" class="foto-devolucao-img-admin">
+              <span class="foto-badge-admin">Foto {{ i + 1 }}</span>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!pedidoSelecionado.fotosDevolucao || pedidoSelecionado.fotosDevolucao.length === 0" class="detalhes-info full-width">
+          <h4><i class="pi pi-images"></i> Fotos da Devolução</h4>
+          <p style="color: #94a3b8; font-size: 0.9rem; font-style: italic;">
+            <i class="pi pi-image" style="margin-right: 0.3rem;"></i>
+            Nenhuma imagem anexada pelo cliente
+          </p>
+        </div>
       </div>
     </div>
     <div class="custom-modal-footer">
@@ -567,24 +567,24 @@
         Deseja alterar o status do pedido <strong>#{{ pedidoStatus?.id }}</strong> para <strong>{{ getStatusLabel(pedidoNovoStatus) }}</strong>?
       </p>
 
-        <div *ngIf="pedidoNovoStatus === 'EM_TRANSITO'" class="rastreamento-section">
-          <div class="rastreamento-config">
-            <label>Código de rastreamento *</label>
-            <input
-              type="text"
-              [(ngModel)]="codigoRastreamentoAdmin"
-              (ngModelChange)="validarRastreamentoAdmin()"
-              placeholder="Ex: AA123456789BR"
-              class="auth-input"
-              style="text-transform: uppercase;">
-            <small style="color: #6b7a8f; font-size: 0.75rem;">
-              Formato: 2 letras + 9 números + 2 letras (ex: AA123456789BR)
-            </small>
-            <small *ngIf="erroRastreamentoAdmin" style="color: #dc2626; font-size: 0.75rem;">
-              {{ erroRastreamentoAdmin }}
-            </small>
-          </div>
+      <div *ngIf="pedidoNovoStatus === 'EM_TRANSITO'" class="rastreamento-section">
+        <div class="rastreamento-config">
+          <label>Código de rastreamento *</label>
+          <input
+            type="text"
+            [(ngModel)]="codigoRastreamentoAdmin"
+            (ngModelChange)="validarRastreamentoAdmin()"
+            placeholder="Ex: AA123456789BR"
+            class="auth-input"
+            style="text-transform: uppercase;">
+          <small style="color: #6b7a8f; font-size: 0.75rem;">
+            Formato: 2 letras + 9 números + 2 letras (ex: AA123456789BR)
+          </small>
+          <small *ngIf="erroRastreamentoAdmin" style="color: #dc2626; font-size: 0.75rem;">
+            {{ erroRastreamentoAdmin }}
+          </small>
         </div>
+      </div>
 
       <div *ngIf="pedidoNovoStatus === 'DEVOLVIDO'" class="cupom-section">
         <div class="cupom-toggle">
@@ -610,7 +610,8 @@
         <button
           class="btn-primary"
           (click)="confirmarPedidoStatus()"
-          [disabled]="pedidoNovoStatus === 'EM_TRANSITO' && !rastreamentoAdminSalvo">
+          [disabled]="(pedidoNovoStatus === 'EM_TRANSITO' && !rastreamentoAdminSalvo) || carregandoPedidoStatus"
+          [class.loading]="carregandoPedidoStatus">
           <i class="pi pi-check"></i> Confirmar
         </button>
       </div>
@@ -639,14 +640,12 @@
         <button class="btn-secondary" (click)="displayPedidoExcluirModal = false">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-danger" (click)="confirmarPedidoExcluir()">
+        <button class="btn-danger" (click)="confirmarPedidoExcluir()" [disabled]="carregandoPedidoExcluir" [class.loading]="carregandoPedidoExcluir">
           <i class="pi pi-trash"></i> Excluir
         </button>
       </div>
     </div>
   </div>
 </div>
-
-
 
 <p-toast position="top-right"></p-toast>

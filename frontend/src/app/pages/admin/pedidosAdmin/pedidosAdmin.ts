@@ -54,6 +54,11 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
   chatAdminAtivo: boolean = true;
   chatAdminInterval: any = null;
 
+  carregandoFiltrar: boolean = false;
+  carregandoLimpar: boolean = false;
+  carregandoStatus: boolean = false;
+  carregandoExcluir: boolean = false;
+
   tabAtivo: string = 'todos';
 
   filtros = {
@@ -350,7 +355,8 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
   filtrando: boolean = false;
 
 aplicarFiltros(): void {
-  this.filtrando = true;
+  if (this.carregandoFiltrar) return;
+  this.carregandoFiltrar = true;
   this.loading = true;
   this.cdr.detectChanges();
 
@@ -375,13 +381,14 @@ aplicarFiltros(): void {
 
   setTimeout(() => {
     this.loading = false;
-    this.filtrando = false;
+    this.carregandoFiltrar = false;
     this.cdr.detectChanges();
   }, restante);
 }
 
 limparFiltros(): void {
-  this.filtrando = true;
+  if (this.carregandoLimpar) return;
+  this.carregandoLimpar = true;
   this.loading = true;
   this.cdr.detectChanges();
 
@@ -399,7 +406,7 @@ limparFiltros(): void {
 
   setTimeout(() => {
     this.loading = false;
-    this.filtrando = false;
+    this.carregandoLimpar = false;
     this.cdr.detectChanges();
   }, restante);
 }
@@ -462,70 +469,79 @@ async carregarPedidos(): Promise<void> {
   }
 
   async confirmarStatus(pedido: any, status: string, dadosCupom?: any, codigoRastreamento?: string): Promise<void> {
-    if (!pedido || !status) return;
+  if (this.carregandoStatus) return;
+  this.carregandoStatus = true;
 
-    try {
-      const token = this.authService.getToken();
-      const body: any = { novoStatus: status };
-
-      if (status === 'DEVOLVIDO' && dadosCupom && dadosCupom.gerarCupom) {
-        body.cupom = {
-          gerarCupom: true,
-          porcentagem: dadosCupom.porcentagem
-        };
-      }
-
-      if (status === 'EM_TRANSITO' && codigoRastreamento) {
-        body.codigoRastreamentoEnvio = codigoRastreamento;
-      }
-
-      const response = await fetch(`${environment.apiUrl}/pedidos/${pedido.id}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (response.ok) {
-        const pedidoAtualizado = await response.json();
-        const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
-        if (index !== -1) {
-          this.pedidos[index] = pedidoAtualizado;
-        }
-
-        const clienteId = pedido.cliente?.id;
-        if (clienteId) {
-          let mensagem = `Pedido #${pedido.id} foi atualizado para ${this.getStatusLabel(status)}`;
-          if (status === 'DEVOLVIDO' && dadosCupom && dadosCupom.gerarCupom) {
-            mensagem += ` e você ganhou um cupom de ${dadosCupom.porcentagem}% de desconto!`;
-          }
-          if (status === 'EM_TRANSITO' && codigoRastreamento) {
-            mensagem += ` Código de rastreamento: ${codigoRastreamento}`;
-          }
-          this.authService.adicionarNotificacaoParaCliente(
-            clienteId,
-            'Status do Pedido',
-            mensagem,
-            'info'
-          );
-        }
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: `Status atualizado para: ${this.getStatusLabel(status)}`
-        });
-        this.aplicarFiltros();
-      } else {
-        this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao atualizar status'});
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Falha ao atualizar status'});
-    }
+  if (!pedido || !status) {
+    this.carregandoStatus = false;
+    return;
   }
+
+  try {
+    const token = this.authService.getToken();
+    const body: any = { novoStatus: status };
+
+    if (status === 'DEVOLVIDO' && dadosCupom && dadosCupom.gerarCupom) {
+      body.cupom = {
+        gerarCupom: true,
+        porcentagem: dadosCupom.porcentagem
+      };
+    }
+
+    if (status === 'EM_TRANSITO' && codigoRastreamento) {
+      body.codigoRastreamentoEnvio = codigoRastreamento;
+    }
+
+    const response = await fetch(`${environment.apiUrl}/pedidos/${pedido.id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (response.ok) {
+      const pedidoAtualizado = await response.json();
+      const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
+      if (index !== -1) {
+        this.pedidos[index] = pedidoAtualizado;
+      }
+
+      const clienteId = pedido.cliente?.id;
+      if (clienteId) {
+        let mensagem = `Pedido #${pedido.id} foi atualizado para ${this.getStatusLabel(status)}`;
+        if (status === 'DEVOLVIDO' && dadosCupom && dadosCupom.gerarCupom) {
+          mensagem += ` e você ganhou um cupom de ${dadosCupom.porcentagem}% de desconto!`;
+        }
+        if (status === 'EM_TRANSITO' && codigoRastreamento) {
+          mensagem += ` Código de rastreamento: ${codigoRastreamento}`;
+        }
+        this.authService.adicionarNotificacaoParaCliente(
+          clienteId,
+          'Status do Pedido',
+          mensagem,
+          'info'
+        );
+      }
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: `Status atualizado para: ${this.getStatusLabel(status)}`
+      });
+      this.aplicarFiltros();
+    } else {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao atualizar status'});
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar status:', error);
+    this.messageService.add({severity:'error', summary:'Erro', detail:'Falha ao atualizar status'});
+  } finally {
+    this.carregandoStatus = false;
+  }
+}
+
 
   abrirExcluir(pedido: any): void {
     this.adminModals.onConfirmarPedidoExcluir = (pedidoParam: any) => {
@@ -534,30 +550,38 @@ async carregarPedidos(): Promise<void> {
     this.adminModals.abrirPedidoExcluir(pedido);
   }
 
-  async confirmarExcluir(pedido: any): Promise<void> {
-    if (!pedido) return;
+async confirmarExcluir(pedido: any): Promise<void> {
+  if (this.carregandoExcluir) return;
+  this.carregandoExcluir = true;
 
-    try {
-      const token = this.authService.getToken();
-      const response = await fetch(`${environment.apiUrl}/pedidos/${pedido.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      });
-
-      if (response.ok) {
-        this.pedidos = this.pedidos.filter(p => p.id !== pedido.id);
-        this.messageService.add({severity:'success', summary:'Sucesso', detail:'Pedido excluído com sucesso!'});
-        this.aplicarFiltros();
-      } else {
-        this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao excluir pedido'});
-      }
-    } catch (error) {
-      console.error('Erro ao excluir pedido:', error);
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Falha ao excluir pedido'});
-    }
+  if (!pedido) {
+    this.carregandoExcluir = false;
+    return;
   }
+
+  try {
+    const token = this.authService.getToken();
+    const response = await fetch(`${environment.apiUrl}/pedidos/${pedido.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    if (response.ok) {
+      this.pedidos = this.pedidos.filter(p => p.id !== pedido.id);
+      this.messageService.add({severity:'success', summary:'Sucesso', detail:'Pedido excluído com sucesso!'});
+      this.aplicarFiltros();
+    } else {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao excluir pedido'});
+    }
+  } catch (error) {
+    console.error('Erro ao excluir pedido:', error);
+    this.messageService.add({severity:'error', summary:'Erro', detail:'Falha ao excluir pedido'});
+  } finally {
+    this.carregandoExcluir = false;
+  }
+}
 
   getStatusLabel(status: string): string {
     const labels: any = {

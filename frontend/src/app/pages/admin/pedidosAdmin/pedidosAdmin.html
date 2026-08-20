@@ -49,24 +49,16 @@
           <input type="text" [(ngModel)]="filtros.cliente" placeholder="Nome do cliente" class="auth-input" (keyup.enter)="aplicarFiltros()">
         </div>
         <div class="filtro-item full-width">
-<div class="filtro-actions">
-  <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
-    <i class="pi"
-       [class.pi-search]="!filtrando"
-       [class.pi-spin]="filtrando"
-       [class.pi-spinner]="filtrando">
-    </i>
-    {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
-  </button>
-  <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
-    <i class="pi"
-       [class.pi-times]="!filtrando"
-       [class.pi-spin]="filtrando"
-       [class.pi-spinner]="filtrando">
-    </i>
-    {{ filtrando ? 'Limpando...' : 'Limpar' }}
-  </button>
-</div>
+          <div class="filtro-actions">
+            <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="carregandoFiltrar" [class.loading]="carregandoFiltrar">
+              <i class="pi pi-search"></i>
+              {{ carregandoFiltrar ? 'Filtrando...' : 'Filtrar' }}
+            </button>
+            <button class="btn-limpar" (click)="limparFiltros()" [disabled]="carregandoLimpar" [class.loading]="carregandoLimpar">
+              <i class="pi pi-times"></i>
+              {{ carregandoLimpar ? 'Limpando...' : 'Limpar' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -83,20 +75,20 @@
         </div>
       </div>
 
-   <div class="table-container">
-  <div *ngIf="loading" class="loading-state">
-    <i class="pi pi-spin pi-spinner"></i>
-    <p>Carregando pedidos...</p>
-  </div>
+      <div class="table-container">
+        <div *ngIf="loading" class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Carregando pedidos...</p>
+        </div>
 
-  <div *ngIf="!loading && pedidosFiltrados.length === 0" class="empty-state">
-    <i class="pi pi-inbox"></i>
-    <h3>Nenhum pedido encontrado</h3>
-    <p>Não há pedidos para os filtros selecionados</p>
-  </div>
+        <div *ngIf="!loading && pedidosFiltrados.length === 0" class="empty-state">
+          <i class="pi pi-inbox"></i>
+          <h3>Nenhum pedido encontrado</h3>
+          <p>Não há pedidos para os filtros selecionados</p>
+        </div>
 
-  <div *ngIf="!loading && pedidosFiltrados.length > 0">
-    <table class="pedidos-table">
+        <div *ngIf="!loading && pedidosFiltrados.length > 0">
+          <table class="pedidos-table">
             <thead>
               <tr>
                 <th>Pedido</th>
@@ -131,19 +123,19 @@
                         <i class="pi pi-eye"></i>
                       </button>
 
-                      <button *ngIf="pedido.status === 'EM_PROCESSAMENTO'" class="btn-icon btn-success-icon" (click)="abrirStatus(pedido, 'EM_TRANSITO')" title="Aprovar">
+                      <button *ngIf="pedido.status === 'EM_PROCESSAMENTO'" class="btn-icon btn-success-icon" (click)="abrirStatus(pedido, 'EM_TRANSITO')" title="Aprovar" [disabled]="carregandoStatus" [class.loading]="carregandoStatus">
                         <i class="pi pi-check"></i>
                       </button>
 
-                      <button *ngIf="pedido.status === 'DEVOLUCAO'" class="btn-icon btn-success-icon" (click)="abrirStatus(pedido, 'AUTORIZADO_DEVOLUCAO')" title="Autorizar Devolução">
+                      <button *ngIf="pedido.status === 'DEVOLUCAO'" class="btn-icon btn-success-icon" (click)="abrirStatus(pedido, 'AUTORIZADO_DEVOLUCAO')" title="Autorizar Devolução" [disabled]="carregandoStatus" [class.loading]="carregandoStatus">
                         <i class="pi pi-check"></i>
                       </button>
 
-                      <button *ngIf="pedido.status === 'ENVIADO_DEVOLUCAO'" class="btn-icon btn-success-icon" (click)="abrirStatus(pedido, 'DEVOLVIDO')" title="Confirmar Recebimento">
+                      <button *ngIf="pedido.status === 'ENVIADO_DEVOLUCAO'" class="btn-icon btn-success-icon" (click)="abrirStatus(pedido, 'DEVOLVIDO')" title="Confirmar Recebimento" [disabled]="carregandoStatus" [class.loading]="carregandoStatus">
                         <i class="pi pi-check"></i>
                       </button>
 
-                      <button *ngIf="pedido.status === 'CANCELADO'" class="btn-icon btn-danger-icon" (click)="abrirExcluir(pedido)" title="Excluir">
+                      <button *ngIf="pedido.status === 'CANCELADO'" class="btn-icon btn-danger-icon" (click)="abrirExcluir(pedido)" title="Excluir" [disabled]="carregandoExcluir" [class.loading]="carregandoExcluir">
                         <i class="pi pi-trash"></i>
                       </button>
                       <button

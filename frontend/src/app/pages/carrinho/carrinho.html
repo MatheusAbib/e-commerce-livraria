@@ -41,43 +41,43 @@
               <th>Ações</th>
             </tr>
           </thead>
-<tbody>
-  <tr *ngFor="let item of carrinho" [class.item-problema]="!item.produto.ativo || item.produto.estoque <= 0 || item.quantidade > item.produto.estoque">
-    <td>
-      <div class="produto-info">
-        <img [src]="item.produto?.imagemUrl ? '/uploads/' + item.produto.imagemUrl : 'https://via.placeholder.com/60x80?text=Sem+Imagem'">
-        <div>
-          <span>{{ item.produto.titulo }}</span>
-          <span *ngIf="!item.produto.ativo" class="status-inativo">INATIVO</span>
-          <span *ngIf="item.produto.ativo && item.produto.estoque <= 0" class="status-esgotado">ESGOTADO</span>
-          <span *ngIf="item.produto.ativo && item.produto.estoque > 0 && item.quantidade > item.produto.estoque" class="status-insuficiente">ESTOQUE INSUFICIENTE</span>
-        </div>
-      </div>
-    </td>
-    <td>R$ {{ item.produto.precoVenda | number:'1.2-2' }}</td>
-    <td>
-      <div class="quantidade-controles">
-        <button (click)="alterarQuantidade(item.id, -1)" [disabled]="item.quantidade <= 1 || !item.produto.ativo || item.produto.estoque <= 0">
-          <i class="pi pi-minus"></i>
-        </button>
-        <span>{{ item.quantidade }}</span>
-        <button (click)="alterarQuantidade(item.id, 1)" [disabled]="item.quantidade >= 3 || !item.produto.ativo || item.produto.estoque <= 0 || item.quantidade >= item.produto.estoque">
-          <i class="pi pi-plus"></i>
-        </button>
-      </div>
-    </td>
-    <td>R$ {{ (item.produto.precoVenda * item.quantidade) | number:'1.2-2' }}</td>
-    <td>
-      <button class="btn-remover" (click)="removerItem(item.id)">
-        <i class="pi pi-trash"></i>
-      </button>
-    </td>
-  </tr>
-</tbody>
+          <tbody>
+            <tr *ngFor="let item of carrinho" [class.item-problema]="!item.produto.ativo || item.produto.estoque <= 0 || item.quantidade > item.produto.estoque">
+              <td>
+                <div class="produto-info">
+                  <img [src]="item.produto?.imagemUrl ? '/uploads/' + item.produto.imagemUrl : 'https://via.placeholder.com/60x80?text=Sem+Imagem'">
+                  <div>
+                    <span>{{ item.produto.titulo }}</span>
+                    <span *ngIf="!item.produto.ativo" class="status-inativo">INATIVO</span>
+                    <span *ngIf="item.produto.ativo && item.produto.estoque <= 0" class="status-esgotado">ESGOTADO</span>
+                    <span *ngIf="item.produto.ativo && item.produto.estoque > 0 && item.quantidade > item.produto.estoque" class="status-insuficiente">ESTOQUE INSUFICIENTE</span>
+                  </div>
+                </div>
+              </td>
+              <td>R$ {{ item.produto.precoVenda | number:'1.2-2' }}</td>
+              <td>
+                <div class="quantidade-controles">
+                  <button (click)="alterarQuantidade(item.id, -1)" [disabled]="item.quantidade <= 1 || !item.produto.ativo || item.produto.estoque <= 0">
+                    <i class="pi pi-minus"></i>
+                  </button>
+                  <span>{{ item.quantidade }}</span>
+                  <button (click)="alterarQuantidade(item.id, 1)" [disabled]="item.quantidade >= 3 || !item.produto.ativo || item.produto.estoque <= 0 || item.quantidade >= item.produto.estoque">
+                    <i class="pi pi-plus"></i>
+                  </button>
+                </div>
+              </td>
+              <td>R$ {{ (item.produto.precoVenda * item.quantidade) | number:'1.2-2' }}</td>
+              <td>
+                <button class="btn-remover" (click)="removerItem(item.id)" [disabled]="carregandoRemoverItem[item.id]" [class.loading]="carregandoRemoverItem[item.id]">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
         </table>
 
         <div class="carrinho-actions">
-          <button class="btn-danger" (click)="limparCarrinho()">
+          <button class="btn-danger" (click)="limparCarrinho()" [disabled]="carregandoLimpar" [class.loading]="carregandoLimpar">
             <i class="pi pi-trash"></i> Limpar Carrinho
           </button>
         </div>
@@ -92,30 +92,30 @@
         <span>R$ {{ subtotal | number:'1.2-2' }}</span>
       </div>
 
-<div class="resumo-frete-detalhes">
-  <div class="resumo-linha frete-base">
-    <span>Frete Base</span>
-    <span>R$ {{ freteBase | number:'1.2-2' }}</span>
-  </div>
-  <div class="resumo-linha frete-adicional" *ngIf="enderecoSelecionado && adicionalEstado > 0">
-    <span>Adicional {{ enderecoSelecionado.estado }}</span>
-    <span>R$ {{ adicionalEstado | number:'1.2-2' }}</span>
-  </div>
-  <div class="resumo-linha frete-total">
-    <span><strong>Frete Total</strong></span>
-    <span><strong>R$ {{ frete | number:'1.2-2' }}</strong></span>
-  </div>
-</div>
-<div *ngIf="cuponsAplicados.length > 0" class="desconto-container">
-  <div *ngFor="let cupom of cuponsAplicados" class="resumo-linha desconto">
-    <span>Desconto ({{ cupom.porcentagem }}%)</span>
-    <span class="text-success">-R$ {{ (subtotal * cupom.porcentagem / 100) | number:'1.2-2' }}</span>
-  </div>
-  <div class="resumo-linha desconto-total">
-    <span><strong>Desconto Total</strong></span>
-    <span class="text-success"><strong>-R$ {{ desconto | number:'1.2-2' }}</strong></span>
-  </div>
-</div>
+      <div class="resumo-frete-detalhes">
+        <div class="resumo-linha frete-base">
+          <span>Frete Base</span>
+          <span>R$ {{ freteBase | number:'1.2-2' }}</span>
+        </div>
+        <div class="resumo-linha frete-adicional" *ngIf="enderecoSelecionado && adicionalEstado > 0">
+          <span>Adicional {{ enderecoSelecionado.estado }}</span>
+          <span>R$ {{ adicionalEstado | number:'1.2-2' }}</span>
+        </div>
+        <div class="resumo-linha frete-total">
+          <span><strong>Frete Total</strong></span>
+          <span><strong>R$ {{ frete | number:'1.2-2' }}</strong></span>
+        </div>
+      </div>
+      <div *ngIf="cuponsAplicados.length > 0" class="desconto-container">
+        <div *ngFor="let cupom of cuponsAplicados" class="resumo-linha desconto">
+          <span>Desconto ({{ cupom.porcentagem }}%)</span>
+          <span class="text-success">-R$ {{ (subtotal * cupom.porcentagem / 100) | number:'1.2-2' }}</span>
+        </div>
+        <div class="resumo-linha desconto-total">
+          <span><strong>Desconto Total</strong></span>
+          <span class="text-success"><strong>-R$ {{ desconto | number:'1.2-2' }}</strong></span>
+        </div>
+      </div>
 
       <div class="resumo-linha total">
         <span><strong>Total</strong></span>
@@ -125,7 +125,7 @@
       <div class="cupom-container">
         <div class="cupom-input">
           <input [(ngModel)]="codigoCupom" placeholder="Digite seu cupom" class="auth-input">
-          <button class="p-button-outlined " (click)="aplicarCupom()">
+          <button class="p-button-outlined" (click)="aplicarCupom()" [disabled]="carregandoAplicarCupom" [class.loading]="carregandoAplicarCupom">
             <i class="pi pi-ticket"></i> Aplicar
           </button>
         </div>
@@ -152,60 +152,60 @@
         </select>
       </div>
 
-<div class="cartoes-container">
-  <div class="cartoes-header">
-    <label><i class="pi pi-credit-card"></i> Forma de Pagamento</label>
-    <div class="cartoes-actions">
-      <button class="btn-link" (click)="abrirModalCartao()">
-        <i class="pi pi-plus"></i> Novo
-      </button>
-      <button class="btn-link" (click)="toggleSelectCartao()" *ngIf="cartoes.length > 0">
-        <i class="pi pi-credit-card"></i> Adicionar Existente
-      </button>
-    </div>
-  </div>
+      <div class="cartoes-container">
+        <div class="cartoes-header">
+          <label><i class="pi pi-credit-card"></i> Forma de Pagamento</label>
+          <div class="cartoes-actions">
+            <button class="btn-link" (click)="abrirModalCartao()">
+              <i class="pi pi-plus"></i> Novo
+            </button>
+            <button class="btn-link" (click)="toggleSelectCartao()" *ngIf="cartoes.length > 0">
+              <i class="pi pi-credit-card"></i> Adicionar Existente
+            </button>
+          </div>
+        </div>
 
-  <div *ngIf="mostrarSelectCartao && cartoesNaoSelecionados.length > 0" class="cartao-select-container">
-    <select [(ngModel)]="cartaoParaAdicionar" class="auth-input">
-      <option [ngValue]="null">-- Selecione um cartão --</option>
-      <option *ngFor="let c of cartoesNaoSelecionados" [ngValue]="c">
-        {{ c.bandeira }} **** **** **** {{ c.numero.slice(-4) }}
-      </option>
-    </select>
-    <button class="btn-primary btn-sm" (click)="adicionarCartaoSelecionado()" [disabled]="!cartaoParaAdicionar">
-      <i class="pi pi-plus"></i>
-    </button>
-    <button class="btn-secondary btn-sm" (click)="toggleSelectCartao()">
-      <i class="pi pi-times"></i>
-    </button>
-  </div>
+        <div *ngIf="mostrarSelectCartao && cartoesNaoSelecionados.length > 0" class="cartao-select-container">
+          <select [(ngModel)]="cartaoParaAdicionar" class="auth-input">
+            <option [ngValue]="null">-- Selecione um cartão --</option>
+            <option *ngFor="let c of cartoesNaoSelecionados" [ngValue]="c">
+              {{ c.bandeira }} **** **** **** {{ c.numero.slice(-4) }}
+            </option>
+          </select>
+          <button class="btn-primary btn-sm" (click)="adicionarCartaoSelecionado()" [disabled]="!cartaoParaAdicionar">
+            <i class="pi pi-plus"></i>
+          </button>
+          <button class="btn-secondary btn-sm" (click)="toggleSelectCartao()">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
 
-  <div *ngIf="cartoesSelecionados.length === 0" class="empty-cartoes">
-    <span>Nenhum cartão adicionado</span>
-  </div>
+        <div *ngIf="cartoesSelecionados.length === 0" class="empty-cartoes">
+          <span>Nenhum cartão adicionado</span>
+        </div>
 
-  <div *ngFor="let cartao of cartoesSelecionados; let i = index" class="cartao-item">
-    <div class="cartao-info">
-      <i class="pi pi-credit-card"></i>
-      <span>{{ cartao.bandeira }} **** {{ cartao.ultimosDigitos }}</span>
-    </div>
-    <input
-      (input)="formatarValorCartao($event, cartao)"
-      placeholder="R$ 0,00"
-      class="auth-input cartao-valor"
-      [class.cartao-valor-invalido]="cartao.valorErro"
-    >
-    <button class="btn-remover" (click)="removerCartaoPagamento(i)">
-      <i class="pi pi-trash"></i>
-    </button>
-  </div>
+        <div *ngFor="let cartao of cartoesSelecionados; let i = index" class="cartao-item">
+          <div class="cartao-info">
+            <i class="pi pi-credit-card"></i>
+            <span>{{ cartao.bandeira }} **** {{ cartao.ultimosDigitos }}</span>
+          </div>
+          <input
+            (input)="formatarValorCartao($event, cartao)"
+            placeholder="R$ 0,00"
+            class="auth-input cartao-valor"
+            [class.cartao-valor-invalido]="cartao.valorErro"
+          >
+          <button class="btn-remover" (click)="removerCartaoPagamento(i)">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
 
-  <div *ngIf="valoresInvalidos" class="erro-pagamento">
-    <i class="pi pi-exclamation-triangle"></i>
-    <span>O valor total dos cartões não corresponde ao total do pedido (R$ {{ total | number:'1.2-2' }})</span>
-  </div>
-</div>
-      <button class="btn-finalizar" (click)="abrirConfirmacao()">
+        <div *ngIf="valoresInvalidos" class="erro-pagamento">
+          <i class="pi pi-exclamation-triangle"></i>
+          <span>O valor total dos cartões não corresponde ao total do pedido (R$ {{ total | number:'1.2-2' }})</span>
+        </div>
+      </div>
+      <button class="btn-finalizar" (click)="abrirConfirmacao()" [disabled]="carregandoFinalizar" [class.loading]="carregandoFinalizar">
         <i class="pi pi-credit-card"></i> Finalizar Compra
       </button>
     </div>
@@ -233,7 +233,7 @@
         <button class="btn-secondary" (click)="cancelarLimpeza()">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-danger" (click)="confirmarLimpeza()">
+        <button class="btn-danger" (click)="confirmarLimpeza()" [disabled]="carregandoLimpar" [class.loading]="carregandoLimpar">
           <i class="pi pi-trash"></i> Sim, limpar
         </button>
       </div>
@@ -262,25 +262,25 @@
         </div>
       </div>
 
-<div class="confirmacao-resumo">
-  <div><span>Subtotal:</span> <span>R$ {{ subtotal | number:'1.2-2' }}</span></div>
-  <div><span>Frete:</span> <span>R$ {{ frete | number:'1.2-2' }}</span></div>
-  <div *ngIf="cuponsAplicados.length > 0" class="confirmacao-cupons">
-    <div *ngFor="let cupom of cuponsAplicados" class="confirmacao-cupom">
-      <span>Cupom {{ cupom.porcentagem }}% ({{ cupom.codigo }})</span>
-      <span>-R$ {{ (subtotal * cupom.porcentagem / 100) | number:'1.2-2' }}</span>
-    </div>
-    <div class="confirmacao-desconto-total">
-      <span><strong>Desconto Total</strong></span>
-      <span><strong>-R$ {{ desconto | number:'1.2-2' }}</strong></span>
-    </div>
-  </div>
-  <div *ngIf="desconto > 0 && cuponsAplicados.length === 0" class="confirmacao-cupom">
-    <span>Desconto</span>
-    <span>-R$ {{ desconto | number:'1.2-2' }}</span>
-  </div>
-  <div class="confirmacao-total"><span><strong>Total:</strong></span> <span><strong>R$ {{ total | number:'1.2-2' }}</strong></span></div>
-</div>
+      <div class="confirmacao-resumo">
+        <div><span>Subtotal:</span> <span>R$ {{ subtotal | number:'1.2-2' }}</span></div>
+        <div><span>Frete:</span> <span>R$ {{ frete | number:'1.2-2' }}</span></div>
+        <div *ngIf="cuponsAplicados.length > 0" class="confirmacao-cupons">
+          <div *ngFor="let cupom of cuponsAplicados" class="confirmacao-cupom">
+            <span>Cupom {{ cupom.porcentagem }}% ({{ cupom.codigo }})</span>
+            <span>-R$ {{ (subtotal * cupom.porcentagem / 100) | number:'1.2-2' }}</span>
+          </div>
+          <div class="confirmacao-desconto-total">
+            <span><strong>Desconto Total</strong></span>
+            <span><strong>-R$ {{ desconto | number:'1.2-2' }}</strong></span>
+          </div>
+        </div>
+        <div *ngIf="desconto > 0 && cuponsAplicados.length === 0" class="confirmacao-cupom">
+          <span>Desconto</span>
+          <span>-R$ {{ desconto | number:'1.2-2' }}</span>
+        </div>
+        <div class="confirmacao-total"><span><strong>Total:</strong></span> <span><strong>R$ {{ total | number:'1.2-2' }}</strong></span></div>
+      </div>
 
       <div class="confirmacao-dados">
         <div> <strong>Endereço:</strong> {{ enderecoSelecionado?.rua }}, {{ enderecoSelecionado?.numero }} - {{ enderecoSelecionado?.bairro }}, {{ enderecoSelecionado?.cidade }}/{{ enderecoSelecionado?.estado }}</div>
@@ -296,7 +296,7 @@
         <button class="btn-secondary" (click)="fecharConfirmacao()">
           <i class="pi pi-times"></i> Voltar
         </button>
-        <button class="btn-primary" (click)="finalizarCompra()">
+        <button class="btn-primary" (click)="finalizarCompra()" [disabled]="carregandoFinalizar" [class.loading]="carregandoFinalizar">
           <i class="pi pi-check"></i> Confirmar Pedido
         </button>
       </div>
@@ -390,14 +390,13 @@
         <button class="btn-secondary" (click)="fecharModalEndereco()">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="salvarNovoEndereco()">
+        <button class="btn-primary" (click)="salvarNovoEndereco()" [disabled]="carregandoSalvarEndereco" [class.loading]="carregandoSalvarEndereco">
           <i class="pi pi-save"></i> Salvar
         </button>
       </div>
     </div>
   </div>
 </div>
-
 
 <div class="custom-modal" [class.active]="displayCartaoModal">
   <div class="custom-modal-overlay" (click)="displayCartaoModal = false"></div>
@@ -448,7 +447,7 @@
         <button class="btn-secondary" (click)="fecharModalCartao()">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="salvarNovoCartao()">
+        <button class="btn-primary" (click)="salvarNovoCartao()" [disabled]="carregandoSalvarCartao" [class.loading]="carregandoSalvarCartao">
           <i class="pi pi-save"></i> Salvar
         </button>
       </div>

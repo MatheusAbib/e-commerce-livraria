@@ -58,7 +58,7 @@
         </div>
 
         <div class="perfil-actions">
-          <button class="btn-primary" (click)="editarDados()">
+          <button class="btn-primary" (click)="editarDados()" [disabled]="carregandoEditarPerfil" [class.loading]="carregandoEditarPerfil">
             <i class="pi pi-pencil"></i> Editar Dados
           </button>
           <button class="p-button-outlined btn-sm" (click)="alterarSenha()">
@@ -250,7 +250,7 @@
         <button class="btn-secondary" (click)="displayEditarEndereco = false">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="salvarEndereco()">
+        <button class="btn-primary" (click)="salvarEndereco()" [disabled]="carregandoSalvarEndereco" [class.loading]="carregandoSalvarEndereco">
           <i class="pi pi-save"></i> Salvar
         </button>
       </div>
@@ -295,14 +295,14 @@
           <label>CVV *</label>
           <input [(ngModel)]="cartaoEditando.cvv" (input)="formatarCVV($event)" placeholder="000" class="auth-input" maxlength="4">
         </div>
-<div class="form-group">
-  <label>Validade *</label>
-  <input
-    [(ngModel)]="cartaoEditando.dataValidade"
-    type="month"
-    class="auth-input"
-    [value]="cartaoEditando.dataValidade">
-</div>
+        <div class="form-group">
+          <label>Validade *</label>
+          <input
+            [(ngModel)]="cartaoEditando.dataValidade"
+            type="month"
+            class="auth-input"
+            [value]="cartaoEditando.dataValidade">
+        </div>
       </div>
 
       <div class="field" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
@@ -315,7 +315,7 @@
         <button class="btn-secondary" (click)="displayEditarCartao = false">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="salvarCartao()">
+        <button class="btn-primary" (click)="salvarCartao()" [disabled]="carregandoSalvarCartao" [class.loading]="carregandoSalvarCartao">
           <i class="pi pi-save"></i> Salvar
         </button>
       </div>
@@ -383,7 +383,7 @@
         <button class="btn-secondary" (click)="displayEditarPerfil = false">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="salvarDados()">
+        <button class="btn-primary" (click)="salvarDados()" [disabled]="carregandoSalvarPerfil" [class.loading]="carregandoSalvarPerfil">
           <i class="pi pi-save"></i> Salvar
         </button>
       </div>
@@ -440,7 +440,7 @@
         <button class="btn-secondary" (click)="displayAlterarSenha = false">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="salvarSenha()">
+        <button class="btn-primary" (click)="salvarSenha()" [disabled]="carregandoSalvarSenha" [class.loading]="carregandoSalvarSenha">
           <i class="pi pi-save"></i> Alterar
         </button>
       </div>
@@ -469,7 +469,7 @@
         <button class="btn-secondary" (click)="cancelarExclusao()">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-danger" (click)="executarExclusao()">
+        <button class="btn-danger" (click)="executarExclusao()" [disabled]="carregandoExcluir" [class.loading]="carregandoExcluir">
           <i class="pi pi-trash"></i> Excluir
         </button>
       </div>

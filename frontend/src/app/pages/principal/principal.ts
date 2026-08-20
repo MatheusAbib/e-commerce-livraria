@@ -313,17 +313,16 @@ export class Principal implements OnInit {
     this.carregarComentarios(livro.id);
   }
 
-  async favoritarDoModal(): Promise<void> {
-    if (!this.selectedLivro) return;
-    this.carregandoFavoritoModal = true;
-    try {
-      await this.favoritar(this.selectedLivro.id);
-      this.selectedIsFavorited = this.favoritosIds.includes(this.selectedLivro.id);
-    } finally {
-      this.carregandoFavoritoModal = false;
-    }
+async favoritarDoModal(): Promise<void> {
+  if (!this.selectedLivro) return;
+  this.carregandoFavoritoModal = true;
+  try {
+    await this.favoritar(this.selectedLivro.id);
+    this.selectedIsFavorited = this.favoritosIds.includes(this.selectedLivro.id);
+  } finally {
+    this.carregandoFavoritoModal = false;
   }
-
+}
   aumentarQuantidade(): void {
     if (this.selectedLivro && this.quantidadeSelecionada < this.selectedLivro.estoque) {
       this.quantidadeSelecionada++;
@@ -336,71 +335,70 @@ export class Principal implements OnInit {
     }
   }
 
-  async favoritar(livroId: number): Promise<void> {
-    if (this.carregandoFavorito[livroId]) return;
-    this.carregandoFavorito[livroId] = true;
+async favoritar(livroId: number): Promise<void> {
+  if (this.carregandoFavorito[livroId]) return;
+  this.carregandoFavorito[livroId] = true;
 
-    const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
-    if (!user) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Atenção',
-        detail: 'Faça login para favoritar livros'
-      });
-      this.carregandoFavorito[livroId] = false;
-      return;
-    }
-
-    try {
-      const token = this.authService.getToken();
-      const isFavorited = this.favoritosIds.includes(livroId);
-
-      if (isFavorited) {
-        const response = await fetch(`${environment.apiUrl}/clientes/${user.id}/favoritos/${livroId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': 'Bearer ' + token
-          }
-        });
-        if (response.ok) {
-          this.favoritosIds = this.favoritosIds.filter(id => id !== livroId);
-          this.selectedIsFavorited = false;
-          const livro = this.livros.find(l => l.id === livroId);
-          const nomeLivro = livro ? livro.titulo : 'Livro';
-          this.messageService.add({severity:'info', summary:'Removido', detail:`${nomeLivro} removido dos favoritos`});
-          this.authService.adicionarNotificacao('Removido', `${nomeLivro} removido dos favoritos`, 'info');
-          await this.atualizarContadorFavoritos();
-          this.authService.notificarFavoritosAtualizados();
-          this.displayDialog = false;
-        }
-      } else {
-        const body = { livroId };
-        const response = await fetch(`${environment.apiUrl}/clientes/${user.id}/favoritos`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify(body)
-        });
-        if (response.ok) {
-          this.favoritosIds.push(livroId);
-          this.selectedIsFavorited = true;
-          const livro = this.livros.find(l => l.id === livroId);
-          const nomeLivro = livro ? livro.titulo : 'Livro';
-          this.messageService.add({severity:'success', summary:'Favoritado', detail:`${nomeLivro} adicionado aos favoritos`});
-          this.authService.adicionarNotificacao('Favoritado', `${nomeLivro} adicionado aos favoritos`, 'success');
-          await this.atualizarContadorFavoritos();
-          this.authService.notificarFavoritosAtualizados();
-          this.displayDialog = false;
-        }
-      }
-    } catch (error) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao favoritar'});
-    } finally {
-      this.carregandoFavorito[livroId] = false;
-    }
+  const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
+  if (!user) {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Atenção',
+      detail: 'Faça login para favoritar livros'
+    });
+    this.carregandoFavorito[livroId] = false;
+    return;
   }
+
+  try {
+    const token = this.authService.getToken();
+    const isFavorited = this.favoritosIds.includes(livroId);
+
+    if (isFavorited) {
+      const response = await fetch(`${environment.apiUrl}/clientes/${user.id}/favoritos/${livroId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      if (response.ok) {
+        this.favoritosIds = this.favoritosIds.filter(id => id !== livroId);
+        this.selectedIsFavorited = false;
+        const livro = this.livros.find(l => l.id === livroId);
+        const nomeLivro = livro ? livro.titulo : 'Livro';
+        this.messageService.add({severity:'info', summary:'Removido', detail:`${nomeLivro} removido dos favoritos`});
+        this.authService.adicionarNotificacao('Removido', `${nomeLivro} removido dos favoritos`, 'info');
+        await this.atualizarContadorFavoritos();
+        this.authService.notificarFavoritosAtualizados();
+      }
+    } else {
+      const body = { livroId };
+      const response = await fetch(`${environment.apiUrl}/clientes/${user.id}/favoritos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(body)
+      });
+      if (response.ok) {
+        this.favoritosIds.push(livroId);
+        this.selectedIsFavorited = true;
+        const livro = this.livros.find(l => l.id === livroId);
+        const nomeLivro = livro ? livro.titulo : 'Livro';
+        this.messageService.add({severity:'success', summary:'Favoritado', detail:`${nomeLivro} adicionado aos favoritos`});
+        this.authService.adicionarNotificacao('Favoritado', `${nomeLivro} adicionado aos favoritos`, 'success');
+        await this.atualizarContadorFavoritos();
+        this.authService.notificarFavoritosAtualizados();
+        // ✅ REMOVIDO: this.displayDialog = false;
+      }
+    }
+  } catch (error) {
+    this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao favoritar'});
+  } finally {
+    this.carregandoFavorito[livroId] = false;
+  }
+}
 
   async atualizarContadorFavoritos(): Promise<void> {
     const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');

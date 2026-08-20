@@ -72,6 +72,13 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
   TEMPO_LIMITE_CARRINHO: number = 600;
   private TIMER_KEY = 'carrinhoTimer';
 
+  carregandoLimpar: boolean = false;
+  carregandoFinalizar: boolean = false;
+  carregandoAplicarCupom: boolean = false;
+  carregandoSalvarEndereco: boolean = false;
+  carregandoSalvarCartao: boolean = false;
+  carregandoRemoverItem: { [key: number]: boolean } = {};
+
   constructor(
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
@@ -280,9 +287,12 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
   }
 
   removerItem(id: number): void {
+    if (this.carregandoRemoverItem[id]) return;
+    this.carregandoRemoverItem[id] = true;
     this.carrinho = this.carrinho.filter(i => i.id !== id);
     this.atualizarCarrinho();
     this.messageService.add({severity:'info', summary:'Removido', detail:'Item removido do carrinho'});
+    this.carregandoRemoverItem[id] = false;
   }
 
   atualizarCarrinho(): void {
@@ -302,6 +312,8 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
   }
 
   confirmarLimpeza(): void {
+    if (this.carregandoLimpar) return;
+    this.carregandoLimpar = true;
     this.carrinho = [];
     this.atualizarCarrinho();
     this.carrinhoService.limparCarrinho();
@@ -309,6 +321,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
     this.displayConfirmarLimpeza = false;
     this.messageService.add({severity:'success', summary:'Carrinho limpo', detail:'Todos os itens foram removidos'});
     this.authService.adicionarNotificacao('Carrinho', 'Carrinho limpo com sucesso', 'success');
+    this.carregandoLimpar = false;
   }
 
   cancelarLimpeza(): void {
@@ -504,14 +517,19 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
   }
 
   async aplicarCupom(): Promise<void> {
+    if (this.carregandoAplicarCupom) return;
+    this.carregandoAplicarCupom = true;
+
     if (!this.codigoCupom.trim()) {
       this.messageService.add({severity:'warn', summary:'Aviso', detail:'Digite um código de cupom'});
+      this.carregandoAplicarCupom = false;
       return;
     }
 
     const user = this.authService.getUser();
     if (!user) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Faça login para usar cupons'});
+      this.carregandoAplicarCupom = false;
       return;
     }
 
@@ -519,6 +537,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
     if (cupomJaAplicado) {
       this.messageService.add({severity:'warn', summary:'Aviso', detail:'Este cupom já foi aplicado'});
       this.codigoCupom = '';
+      this.carregandoAplicarCupom = false;
       return;
     }
 
@@ -533,6 +552,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
 
       if (!response.ok) {
         this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao verificar cupom'});
+        this.carregandoAplicarCupom = false;
         return;
       }
 
@@ -542,6 +562,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
       if (!cupom) {
         this.messageService.add({severity:'error', summary:'Erro', detail:'Cupom inválido ou já utilizado'});
         this.codigoCupom = '';
+        this.carregandoAplicarCupom = false;
         return;
       }
 
@@ -549,6 +570,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
       if (dataExpiracao < new Date()) {
         this.messageService.add({severity:'error', summary:'Erro', detail:'Cupom expirado'});
         this.codigoCupom = '';
+        this.carregandoAplicarCupom = false;
         return;
       }
 
@@ -577,6 +599,8 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
         summary: 'Erro',
         detail: 'Erro ao aplicar cupom'
       });
+    } finally {
+      this.carregandoAplicarCupom = false;
     }
   }
 
@@ -626,6 +650,8 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
   }
 
   async salvarNovoEndereco(): Promise<void> {
+    if (this.carregandoSalvarEndereco) return;
+    this.carregandoSalvarEndereco = true;
     const endereco = {
       ...this.novoEndereco,
       tipo: 'ENTREGA',
@@ -657,6 +683,8 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
+    } finally {
+      this.carregandoSalvarEndereco = false;
     }
   }
 
@@ -696,6 +724,8 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
   }
 
   async salvarNovoCartao(): Promise<void> {
+    if (this.carregandoSalvarCartao) return;
+    this.carregandoSalvarCartao = true;
     try {
       const token = this.authService.getToken();
       const headers: any = { 'Content-Type': 'application/json' };
@@ -722,6 +752,8 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
+    } finally {
+      this.carregandoSalvarCartao = false;
     }
   }
 
@@ -759,6 +791,9 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
   }
 
   async finalizarCompra(): Promise<void> {
+    if (this.carregandoFinalizar) return;
+    this.carregandoFinalizar = true;
+
     console.log('=== DEBUG FINALIZAR COMPRA ===');
     console.log('Subtotal:', this.subtotal);
     console.log('Frete:', this.frete);
@@ -769,16 +804,19 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
 
     if (this.carrinho.length === 0) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Carrinho vazio'});
+      this.carregandoFinalizar = false;
       return;
     }
 
     if (!this.enderecoSelecionado) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Selecione um endereço de entrega'});
+      this.carregandoFinalizar = false;
       return;
     }
 
     if (this.cartoesSelecionados.length === 0) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Adicione pelo menos um cartão'});
+      this.carregandoFinalizar = false;
       return;
     }
 
@@ -789,6 +827,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
           summary: 'Produto Inativo',
           detail: `"${item.produto.titulo}" está inativo. Remova-o do carrinho para continuar.`
         });
+        this.carregandoFinalizar = false;
         return;
       }
       if (item.produto.estoque <= 0) {
@@ -797,6 +836,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
           summary: 'Produto Esgotado',
           detail: `"${item.produto.titulo}" está esgotado. Remova-o do carrinho para continuar.`
         });
+        this.carregandoFinalizar = false;
         return;
       }
       if (item.quantidade > item.produto.estoque) {
@@ -805,6 +845,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
           summary: 'Estoque Insuficiente',
           detail: `Quantidade solicitada de "${item.produto.titulo}" (${item.quantidade}) excede o estoque disponível (${item.produto.estoque}).`
         });
+        this.carregandoFinalizar = false;
         return;
       }
     }
@@ -812,6 +853,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
     const cartaoInvalido = this.cartoesSelecionados.some(c => (c.valor || 0) < 10);
     if (cartaoInvalido) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Cada cartão deve ter no mínimo R$ 10,00'});
+      this.carregandoFinalizar = false;
       return;
     }
 
@@ -824,6 +866,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
       } else {
         this.messageService.add({severity:'error', summary:'Erro', detail:'Valor dos cartões excede o total da compra. Excedente de R$ ' + diferenca.toFixed(2)});
       }
+      this.carregandoFinalizar = false;
       return;
     }
 
@@ -909,6 +952,7 @@ export class CarrinhoComponent implements OnInit, OnDestroy {
       this.authService.adicionarNotificacao('Erro', 'Falha ao finalizar compra', 'error');
     } finally {
       this.loading = false;
+      this.carregandoFinalizar = false;
       this.cdr.detectChanges();
     }
   }

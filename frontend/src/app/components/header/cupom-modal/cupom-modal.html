@@ -54,7 +54,7 @@
               <span class="cupom-validade">Válido até: {{ cupom.dataExpiracao | date:'dd/MM/yyyy' }}</span>
             </div>
           </div>
-          <button class="btn-copiar" (click)="copiarCupom(cupom.codigo)">
+          <button class="btn-copiar" (click)="copiarCupom(cupom.codigo)" [disabled]="carregandoCopiar[cupom.codigo]" [class.loading]="carregandoCopiar[cupom.codigo]">
             <i class="pi pi-copy"></i> Copiar
           </button>
         </div>

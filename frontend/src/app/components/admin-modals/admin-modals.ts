@@ -75,8 +75,15 @@ export class AdminModalsComponent {
   pedidoNovoStatus: string = '';
   pedidoExcluir: any = null;
 
-erroRastreamentoAdmin: string = '';
-rastreamentoAdminSalvo: boolean = false;
+  erroRastreamentoAdmin: string = '';
+  rastreamentoAdminSalvo: boolean = false;
+
+  carregandoSalvarPerfil: boolean = false;
+  carregandoSalvarLivro: boolean = false;
+  carregandoExcluir: boolean = false;
+  carregandoStatus: boolean = false;
+  carregandoPedidoStatus: boolean = false;
+  carregandoPedidoExcluir: boolean = false;
 
   onConfirmarExcluir: (() => void) | null = null;
   onConfirmarStatus: (() => void) | null = null;
@@ -123,53 +130,61 @@ rastreamentoAdminSalvo: boolean = false;
   }
 
   abrirFotoAmpliada(caminho: string): void {
-  window.open(`${environment.apiUrl}/../${caminho}`, '_blank');
-}
+    window.open(`${environment.apiUrl}/../${caminho}`, '_blank');
+  }
 
   async salvarPerfil(): Promise<void> {
+    if (this.carregandoSalvarPerfil) return;
+    this.carregandoSalvarPerfil = true;
     try {
-        const user = this.authService.getUser();
-        if (!user) return;
+      const user = this.authService.getUser();
+      if (!user) {
+        this.carregandoSalvarPerfil = false;
+        return;
+      }
 
-        const dados: any = {
-            nome: this.usuario.nome,
-            email: this.usuario.email
-        };
+      const dados: any = {
+        nome: this.usuario.nome,
+        email: this.usuario.email
+      };
 
-        let senhaAlterada = false;
-        if (this.novaSenha) {
-            if (this.novaSenha !== this.confirmarSenha) {
-                this.messageService.add({severity:'error', summary:'Erro', detail:'As senhas não conferem'});
-                return;
-            }
-            dados.senha = this.novaSenha;
-            dados.confirmacaoSenha = this.confirmarSenha;
-            senhaAlterada = true;
+      let senhaAlterada = false;
+      if (this.novaSenha) {
+        if (this.novaSenha !== this.confirmarSenha) {
+          this.messageService.add({severity:'error', summary:'Erro', detail:'As senhas não conferem'});
+          this.carregandoSalvarPerfil = false;
+          return;
         }
+        dados.senha = this.novaSenha;
+        dados.confirmacaoSenha = this.confirmarSenha;
+        senhaAlterada = true;
+      }
 
-        await this.adminService.atualizarAdmin(user.id, dados).toPromise();
+      await this.adminService.atualizarAdmin(user.id, dados).toPromise();
 
-        const userAtualizado = {
-            ...user,
-            nome: this.usuario.nome,
-            email: this.usuario.email
-        };
+      const userAtualizado = {
+        ...user,
+        nome: this.usuario.nome,
+        email: this.usuario.email
+      };
 
-        localStorage.setItem('user_data', JSON.stringify(userAtualizado));
-        localStorage.setItem('clienteLogado', JSON.stringify(userAtualizado));
-        this.authService.atualizarUsuario(userAtualizado);
-        this.usuario = { ...userAtualizado };
-        this.perfilAtualizado.emit();
+      localStorage.setItem('user_data', JSON.stringify(userAtualizado));
+      localStorage.setItem('clienteLogado', JSON.stringify(userAtualizado));
+      this.authService.atualizarUsuario(userAtualizado);
+      this.usuario = { ...userAtualizado };
+      this.perfilAtualizado.emit();
 
-        if (senhaAlterada) {
-            this.atualizarSenhaSalva(this.novaSenha);
-        }
+      if (senhaAlterada) {
+        this.atualizarSenhaSalva(this.novaSenha);
+      }
 
-        this.messageService.add({severity:'success', summary:'Sucesso', detail:'Perfil atualizado com sucesso!'});
-        this.fecharPerfil();
+      this.messageService.add({severity:'success', summary:'Sucesso', detail:'Perfil atualizado com sucesso!'});
+      this.fecharPerfil();
     } catch (error) {
-        console.error('Erro ao salvar perfil:', error);
-        this.messageService.add({severity:'error', summary:'Erro', detail:'Falha ao atualizar perfil'});
+      console.error('Erro ao salvar perfil:', error);
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Falha ao atualizar perfil'});
+    } finally {
+      this.carregandoSalvarPerfil = false;
     }
   }
 
@@ -187,26 +202,25 @@ rastreamentoAdminSalvo: boolean = false;
     }
   }
 
+  validarRastreamentoAdmin(): void {
+    this.erroRastreamentoAdmin = '';
+    this.rastreamentoAdminSalvo = false;
 
-validarRastreamentoAdmin(): void {
-  this.erroRastreamentoAdmin = '';
-  this.rastreamentoAdminSalvo = false;
+    if (!this.codigoRastreamentoAdmin) {
+      return;
+    }
 
-  if (!this.codigoRastreamentoAdmin) {
-    return;
+    const regex = /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/;
+    const codigo = this.codigoRastreamentoAdmin.toUpperCase();
+
+    if (!regex.test(codigo)) {
+      this.erroRastreamentoAdmin = 'Formato inválido. Use: 2 letras + 9 números + 2 letras';
+      return;
+    }
+
+    this.codigoRastreamentoAdmin = codigo;
+    this.rastreamentoAdminSalvo = true;
   }
-
-  const regex = /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/;
-  const codigo = this.codigoRastreamentoAdmin.toUpperCase();
-
-  if (!regex.test(codigo)) {
-    this.erroRastreamentoAdmin = 'Formato inválido. Use: 2 letras + 9 números + 2 letras';
-    return;
-  }
-
-  this.codigoRastreamentoAdmin = codigo;
-  this.rastreamentoAdminSalvo = true;
-}
 
   abrirLogout(): void {
     this.displayLogoutModal = true;
@@ -327,9 +341,12 @@ validarRastreamentoAdmin(): void {
   }
 
   salvarLivro(): void {
+    if (this.carregandoSalvarLivro) return;
+    this.carregandoSalvarLivro = true;
     if (this.onSalvarLivro) {
       this.onSalvarLivro();
     }
+    this.carregandoSalvarLivro = false;
   }
 
   abrirExcluir(onConfirm: () => void): void {
@@ -338,10 +355,13 @@ validarRastreamentoAdmin(): void {
   }
 
   confirmarExcluir(): void {
+    if (this.carregandoExcluir) return;
+    this.carregandoExcluir = true;
     if (this.onConfirmarExcluir) {
       this.onConfirmarExcluir();
     }
     this.displayExcluirModal = false;
+    this.carregandoExcluir = false;
   }
 
   formatarPreco(event: any): void {
@@ -364,14 +384,18 @@ validarRastreamentoAdmin(): void {
   }
 
   confirmarStatus(): void {
+    if (this.carregandoStatus) return;
+    this.carregandoStatus = true;
     if (!this.motivoStatus.trim()) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Informe o motivo'});
+      this.carregandoStatus = false;
       return;
     }
     if (this.onConfirmarStatus) {
       this.onConfirmarStatus();
     }
     this.displayStatusModal = false;
+    this.carregandoStatus = false;
   }
 
   abrirDetalhes(item: any, itens: any[]): void {
@@ -402,35 +426,43 @@ validarRastreamentoAdmin(): void {
     this.displayPedidoStatusModal = true;
   }
 
-confirmarPedidoStatus(): void {
-  if (this.onConfirmarPedidoStatus) {
-    const dadosCupom = this.gerarCupom && this.pedidoNovoStatus === 'DEVOLVIDO'
-      ? { gerarCupom: true, porcentagem: this.porcentagemCupom }
-      : { gerarCupom: false, porcentagem: 0 };
+  confirmarPedidoStatus(): void {
+    if (this.carregandoPedidoStatus) return;
+    this.carregandoPedidoStatus = true;
 
-    const codigoRastreamentoEnvio = this.pedidoNovoStatus === 'EM_TRANSITO' && this.rastreamentoAdminSalvo
-      ? this.codigoRastreamentoAdmin
-      : null;
+    if (this.onConfirmarPedidoStatus) {
+      const dadosCupom = this.gerarCupom && this.pedidoNovoStatus === 'DEVOLVIDO'
+        ? { gerarCupom: true, porcentagem: this.porcentagemCupom }
+        : { gerarCupom: false, porcentagem: 0 };
 
-    this.onConfirmarPedidoStatus(this.pedidoStatus, this.pedidoNovoStatus, dadosCupom, codigoRastreamentoEnvio || undefined);
+      const codigoRastreamentoEnvio = this.pedidoNovoStatus === 'EM_TRANSITO' && this.rastreamentoAdminSalvo
+        ? this.codigoRastreamentoAdmin
+        : null;
+
+      this.onConfirmarPedidoStatus(this.pedidoStatus, this.pedidoNovoStatus, dadosCupom, codigoRastreamentoEnvio || undefined);
+    }
+    this.displayPedidoStatusModal = false;
+    this.gerarCupom = false;
+    this.porcentagemCupom = 15;
+    this.codigoRastreamentoAdmin = '';
+    this.rastreamentoAdminSalvo = false;
+    this.erroRastreamentoAdmin = '';
+    this.carregandoPedidoStatus = false;
   }
-  this.displayPedidoStatusModal = false;
-  this.gerarCupom = false;
-  this.porcentagemCupom = 15;
-  this.codigoRastreamentoAdmin = '';
-  this.rastreamentoAdminSalvo = false;
-  this.erroRastreamentoAdmin = '';
-}
+
   abrirPedidoExcluir(pedido: any): void {
     this.pedidoExcluir = pedido;
     this.displayPedidoExcluirModal = true;
   }
 
   confirmarPedidoExcluir(): void {
+    if (this.carregandoPedidoExcluir) return;
+    this.carregandoPedidoExcluir = true;
     if (this.onConfirmarPedidoExcluir) {
       this.onConfirmarPedidoExcluir(this.pedidoExcluir);
     }
     this.displayPedidoExcluirModal = false;
+    this.carregandoPedidoExcluir = false;
   }
 
   getStatusLabel(status: string): string {

@@ -84,6 +84,9 @@ export class TransacoesComponent implements OnInit {
   logSelecionado: any = null;
   filtrando: boolean = false;
 
+  carregandoFiltrar: boolean = false;
+  carregandoLimpar: boolean = false;
+
   constructor(
     private messageService: MessageService,
     private authService: AuthService,
@@ -226,7 +229,8 @@ export class TransacoesComponent implements OnInit {
   }
 
   aplicarFiltros(): void {
-    this.filtrando = true;
+    if (this.carregandoFiltrar) return;
+    this.carregandoFiltrar = true;
     this.loading = true;
     this.cdr.detectChanges();
 
@@ -253,13 +257,14 @@ export class TransacoesComponent implements OnInit {
 
     setTimeout(() => {
       this.loading = false;
-      this.filtrando = false;
+      this.carregandoFiltrar = false;
       this.cdr.detectChanges();
     }, restante);
   }
 
   limparFiltros(): void {
-    this.filtrando = true;
+    if (this.carregandoLimpar) return;
+    this.carregandoLimpar = true;
     this.loading = true;
     this.cdr.detectChanges();
 
@@ -276,7 +281,7 @@ export class TransacoesComponent implements OnInit {
 
     setTimeout(() => {
       this.loading = false;
-      this.filtrando = false;
+      this.carregandoLimpar = false;
       this.cdr.detectChanges();
     }, restante);
   }

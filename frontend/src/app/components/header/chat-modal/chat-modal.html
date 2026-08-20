@@ -12,7 +12,7 @@
       <p>Conversas com o vendedor</p>
     </div>
     <div class="custom-modal-body" style="position: relative; min-height: 200px;">
-      <div *ngIf="loadingChats" class="loader-overlay">
+      <div *ngIf="carregandoChats" class="loader-overlay">
         <div class="loader-container">
           <div class="loader-spinner">
             <div class="spinner-ring"></div>
@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <div *ngIf="!loadingChats">
+      <div *ngIf="!carregandoChats">
         <div class="chats-tabs">
           <button class="chats-tab" [class.active]="chatsTabAtivo === 'ativos'" (click)="chatsTabAtivo = 'ativos'">
             Ativos <span *ngIf="chatsAtivos.length > 0" class="tab-badge">{{ chatsAtivos.length }}</span>

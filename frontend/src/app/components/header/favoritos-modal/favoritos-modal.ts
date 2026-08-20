@@ -26,6 +26,9 @@ export class FavoritosModalComponent implements OnInit {
   loading: boolean = false;
   usuario: any = null;
 
+  carregandoRemover: { [key: number]: boolean } = {};
+  carregandoCarrinho: { [key: number]: boolean } = {};
+
   constructor(
     private messageService: MessageService,
     private carrinhoService: CarrinhoService,
@@ -101,7 +104,13 @@ export class FavoritosModalComponent implements OnInit {
   }
 
   async removerFavorito(livroId: number): Promise<void> {
-    if (!this.usuario) return;
+    if (this.carregandoRemover[livroId]) return;
+    this.carregandoRemover[livroId] = true;
+
+    if (!this.usuario) {
+      this.carregandoRemover[livroId] = false;
+      return;
+    }
 
     try {
       const token = this.authService.getToken();
@@ -136,51 +145,69 @@ export class FavoritosModalComponent implements OnInit {
       }
     } catch (error) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao remover favorito'});
+    } finally {
+      this.carregandoRemover[livroId] = false;
     }
   }
 
   adicionarAoCarrinho(livroId: number): void {
+    if (this.carregandoCarrinho[livroId]) return;
+    this.carregandoCarrinho[livroId] = true;
+
     const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
     if (!user) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Faça login para comprar'});
+      this.carregandoCarrinho[livroId] = false;
       return;
     }
 
     const livro = this.favoritos.find(l => l.id === livroId);
-    if (!livro) return;
+    if (!livro) {
+      this.carregandoCarrinho[livroId] = false;
+      return;
+    }
 
     if (!livro.ativo) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Este livro está inativo e não pode ser comprado'});
+      this.carregandoCarrinho[livroId] = false;
       return;
     }
 
     if (livro.estoque <= 0) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Este livro está esgotado'});
+      this.carregandoCarrinho[livroId] = false;
       return;
     }
 
-    const carrinhos = JSON.parse(localStorage.getItem('carrinhosPorUsuario') || '{}');
-    let carrinho = carrinhos[user.id] || [];
-    const existente = carrinho.find((i: any) => i.id === livroId);
+    try {
+      const carrinhos = JSON.parse(localStorage.getItem('carrinhosPorUsuario') || '{}');
+      let carrinho = carrinhos[user.id] || [];
+      const existente = carrinho.find((i: any) => i.id === livroId);
 
-    if (existente) {
-      if (existente.quantidade + 1 > livro.estoque) {
-        this.messageService.add({severity:'error', summary:'Erro', detail:'Quantidade indisponível em estoque'});
-        return;
+      if (existente) {
+        if (existente.quantidade + 1 > livro.estoque) {
+          this.messageService.add({severity:'error', summary:'Erro', detail:'Quantidade indisponível em estoque'});
+          this.carregandoCarrinho[livroId] = false;
+          return;
+        }
+        existente.quantidade++;
+      } else {
+        carrinho.push({ id: livroId, quantidade: 1 });
       }
-      existente.quantidade++;
-    } else {
-      carrinho.push({ id: livroId, quantidade: 1 });
-    }
 
-    carrinhos[user.id] = carrinho;
-    localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhos));
-    this.carrinhoService.atualizarContador();
-    this.carrinhoService['carrinhoItensSubject'].next(
-      this.carrinhoService['carrinhoItensSubject'].value
-    );
-    this.carrinhoService.notificarCarrinhoAtualizado();
-    this.messageService.add({severity:'success', summary:'Sucesso', detail:'Adicionado ao carrinho!'});
-    this.authService.adicionarNotificacao('Carrinho', 'Produto adicionado ao carrinho', 'success');
+      carrinhos[user.id] = carrinho;
+      localStorage.setItem('carrinhosPorUsuario', JSON.stringify(carrinhos));
+      this.carrinhoService.atualizarContador();
+      this.carrinhoService['carrinhoItensSubject'].next(
+        this.carrinhoService['carrinhoItensSubject'].value
+      );
+      this.carrinhoService.notificarCarrinhoAtualizado();
+      this.messageService.add({severity:'success', summary:'Sucesso', detail:'Adicionado ao carrinho!'});
+      this.authService.adicionarNotificacao('Carrinho', 'Produto adicionado ao carrinho', 'success');
+    } catch (error) {
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao adicionar ao carrinho'});
+    } finally {
+      this.carregandoCarrinho[livroId] = false;
+    }
   }
 }

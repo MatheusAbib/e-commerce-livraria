@@ -47,21 +47,13 @@
 
       <div class="filtro-item full-width">
         <div class="filtro-actions">
-          <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="filtrando">
-            <i class="pi"
-               [class.pi-search]="!filtrando"
-               [class.pi-spin]="filtrando"
-               [class.pi-spinner]="filtrando">
-            </i>
-            {{ filtrando ? 'Filtrando...' : 'Filtrar' }}
+          <button class="btn-filtrar" (click)="aplicarFiltros()" [disabled]="carregandoFiltrar" [class.loading]="carregandoFiltrar">
+            <i class="pi pi-search"></i>
+            {{ carregandoFiltrar ? 'Filtrando...' : 'Filtrar' }}
           </button>
-          <button class="btn-limpar" (click)="limparFiltros()" [disabled]="filtrando">
-            <i class="pi"
-               [class.pi-times]="!filtrando"
-               [class.pi-spin]="filtrando"
-               [class.pi-spinner]="filtrando">
-            </i>
-            {{ filtrando ? 'Limpando...' : 'Limpar' }}
+          <button class="btn-limpar" (click)="limparFiltros()" [disabled]="carregandoLimpar" [class.loading]="carregandoLimpar">
+            <i class="pi pi-times"></i>
+            {{ carregandoLimpar ? 'Limpando...' : 'Limpar' }}
           </button>
         </div>
       </div>

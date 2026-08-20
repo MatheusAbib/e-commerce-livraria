@@ -23,6 +23,8 @@ export class ChatModalComponent {
   loadingChats: boolean = false;
   totalChatsNaoLidas: number = 0;
 
+  carregandoChats: boolean = false;
+
   constructor(
     private authService: AuthService,
     private chatService: ChatService
@@ -30,7 +32,7 @@ export class ChatModalComponent {
 
   ngOnChanges(): void {
     if (this.visible) {
-      this.loadingChats = true;
+      this.carregandoChats = true;
       this.carregarChats();
     }
   }
@@ -43,7 +45,7 @@ export class ChatModalComponent {
   async carregarChats(): Promise<void> {
     const user = this.authService.getUser();
     if (!user) {
-      this.loadingChats = false;
+      this.carregandoChats = false;
       return;
     }
 
@@ -64,7 +66,7 @@ export class ChatModalComponent {
     } catch (error) {
       console.error('Erro ao carregar chats:', error);
     } finally {
-      this.loadingChats = false;
+      this.carregandoChats = false;
     }
   }
 

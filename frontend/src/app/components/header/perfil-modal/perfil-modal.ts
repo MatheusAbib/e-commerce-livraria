@@ -39,6 +39,13 @@ export class PerfilModalComponent implements OnInit {
   showNovaSenha: boolean = false;
   showConfirmarSenha: boolean = false;
 
+  carregandoEditarPerfil: boolean = false;
+  carregandoSalvarPerfil: boolean = false;
+  carregandoSalvarSenha: boolean = false;
+  carregandoSalvarEndereco: boolean = false;
+  carregandoSalvarCartao: boolean = false;
+  carregandoExcluir: boolean = false;
+
   constructor(
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
@@ -115,63 +122,70 @@ export class PerfilModalComponent implements OnInit {
   }
 
   async salvarDados(): Promise<void> {
-    if (!this.usuario) return;
+    if (this.carregandoSalvarPerfil) return;
+    this.carregandoSalvarPerfil = true;
     try {
-        const token = this.authService.getToken();
-        const usuarioAntigo = { ...this.usuario };
+      if (!this.usuario) {
+        this.carregandoSalvarPerfil = false;
+        return;
+      }
+      const token = this.authService.getToken();
+      const usuarioAntigo = { ...this.usuario };
 
-        const dadosParaEnviar = { ...this.usuario };
-        delete dadosParaEnviar.senha;
+      const dadosParaEnviar = { ...this.usuario };
+      delete dadosParaEnviar.senha;
 
-        const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify(dadosParaEnviar)
-        });
+      const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(dadosParaEnviar)
+      });
 
-        if (response.ok) {
-            const camposAlterados = [];
-            if (usuarioAntigo.nome !== this.usuario.nome) camposAlterados.push('Nome');
-            if (usuarioAntigo.email !== this.usuario.email) camposAlterados.push('E-mail');
-            if (usuarioAntigo.cpf !== this.usuario.cpf) camposAlterados.push('CPF');
-            if (usuarioAntigo.nascimento !== this.usuario.nascimento) camposAlterados.push('Data de Nascimento');
-            if (usuarioAntigo.genero !== this.usuario.genero) camposAlterados.push('Gênero');
-            if (usuarioAntigo.telefone !== this.usuario.telefone) camposAlterados.push('Telefone');
-            if (usuarioAntigo.tipotelefone !== this.usuario.tipotelefone) camposAlterados.push('Tipo de Telefone');
+      if (response.ok) {
+        const camposAlterados = [];
+        if (usuarioAntigo.nome !== this.usuario.nome) camposAlterados.push('Nome');
+        if (usuarioAntigo.email !== this.usuario.email) camposAlterados.push('E-mail');
+        if (usuarioAntigo.cpf !== this.usuario.cpf) camposAlterados.push('CPF');
+        if (usuarioAntigo.nascimento !== this.usuario.nascimento) camposAlterados.push('Data de Nascimento');
+        if (usuarioAntigo.genero !== this.usuario.genero) camposAlterados.push('Gênero');
+        if (usuarioAntigo.telefone !== this.usuario.telefone) camposAlterados.push('Telefone');
+        if (usuarioAntigo.tipotelefone !== this.usuario.tipotelefone) camposAlterados.push('Tipo de Telefone');
 
-            this.messageService.add({severity:'success', summary:'Sucesso', detail:'Dados atualizados!'});
-            if (camposAlterados.length > 0) {
-                this.authService.adicionarNotificacao(
-                    'Perfil Atualizado',
-                    `Campos alterados: ${camposAlterados.join(', ')}`,
-                    'success'
-                );
-            } else {
-                this.authService.adicionarNotificacao('Perfil Atualizado', 'Seus dados pessoais foram atualizados com sucesso!', 'success');
-            }
-            this.displayEditarPerfil = false;
-            await this.carregarDadosPerfil();
-            localStorage.setItem('clienteLogado', JSON.stringify(this.usuario));
-
-            this.authService.atualizarUsuario(this.usuario);
-
-            setTimeout(() => {
-                const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
-                const header = document.querySelector('app-header') as any;
-                if (header && header.atualizarNomeDoUsuario) {
-                    header.atualizarNomeDoUsuario(user);
-                }
-            }, 100);
+        this.messageService.add({severity:'success', summary:'Sucesso', detail:'Dados atualizados!'});
+        if (camposAlterados.length > 0) {
+          this.authService.adicionarNotificacao(
+            'Perfil Atualizado',
+            `Campos alterados: ${camposAlterados.join(', ')}`,
+            'success'
+          );
         } else {
-            this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao atualizar dados'});
+          this.authService.adicionarNotificacao('Perfil Atualizado', 'Seus dados pessoais foram atualizados com sucesso!', 'success');
         }
+        this.displayEditarPerfil = false;
+        await this.carregarDadosPerfil();
+        localStorage.setItem('clienteLogado', JSON.stringify(this.usuario));
+
+        this.authService.atualizarUsuario(this.usuario);
+
+        setTimeout(() => {
+          const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
+          const header = document.querySelector('app-header') as any;
+          if (header && header.atualizarNomeDoUsuario) {
+            header.atualizarNomeDoUsuario(user);
+          }
+        }, 100);
+      } else {
+        this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao atualizar dados'});
+      }
     } catch (error) {
-        this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
+    } finally {
+      this.carregandoSalvarPerfil = false;
     }
-}
+  }
 
   alterarSenha(): void {
     this.novaSenha = '';
@@ -190,17 +204,21 @@ export class PerfilModalComponent implements OnInit {
   }
 
   async salvarSenha(): Promise<void> {
-    if (!this.novaSenha || !this.confirmarSenha) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha todos os campos'});
-      return;
-    }
-
-    if (this.novaSenha !== this.confirmarSenha) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'As senhas não conferem'});
-      return;
-    }
-
+    if (this.carregandoSalvarSenha) return;
+    this.carregandoSalvarSenha = true;
     try {
+      if (!this.novaSenha || !this.confirmarSenha) {
+        this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha todos os campos'});
+        this.carregandoSalvarSenha = false;
+        return;
+      }
+
+      if (this.novaSenha !== this.confirmarSenha) {
+        this.messageService.add({severity:'error', summary:'Erro', detail:'As senhas não conferem'});
+        this.carregandoSalvarSenha = false;
+        return;
+      }
+
       const token = this.authService.getToken();
       const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}/change-password`, {
         method: 'POST',
@@ -223,6 +241,8 @@ export class PerfilModalComponent implements OnInit {
       }
     } catch (error) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
+    } finally {
+      this.carregandoSalvarSenha = false;
     }
   }
 
@@ -313,13 +333,16 @@ export class PerfilModalComponent implements OnInit {
   }
 
   async salvarEndereco(): Promise<void> {
-    if (!this.enderecoEditando.rua || !this.enderecoEditando.numero || !this.enderecoEditando.bairro ||
-        !this.enderecoEditando.cidade || !this.enderecoEditando.estado || !this.enderecoEditando.cep) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha todos os campos obrigatórios'});
-      return;
-    }
-
+    if (this.carregandoSalvarEndereco) return;
+    this.carregandoSalvarEndereco = true;
     try {
+      if (!this.enderecoEditando.rua || !this.enderecoEditando.numero || !this.enderecoEditando.bairro ||
+          !this.enderecoEditando.cidade || !this.enderecoEditando.estado || !this.enderecoEditando.cep) {
+        this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha todos os campos obrigatórios'});
+        this.carregandoSalvarEndereco = false;
+        return;
+      }
+
       const token = this.authService.getToken();
       const enderecoAntigo = this.enderecoEditando.id ? { ...this.enderecoEditando } : null;
       const endereco = {
@@ -329,9 +352,9 @@ export class PerfilModalComponent implements OnInit {
         pais: 'Brasil'
       };
 
-const url = this.enderecoEditando.id
-  ? `${environment.apiUrl}/enderecos/${this.enderecoEditando.id}`
-  : `${environment.apiUrl}/enderecos`;
+      const url = this.enderecoEditando.id
+        ? `${environment.apiUrl}/enderecos/${this.enderecoEditando.id}`
+        : `${environment.apiUrl}/enderecos`;
       const method = this.enderecoEditando.id ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -383,6 +406,8 @@ const url = this.enderecoEditando.id
       }
     } catch (error) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
+    } finally {
+      this.carregandoSalvarEndereco = false;
     }
   }
 
@@ -405,13 +430,16 @@ const url = this.enderecoEditando.id
   }
 
   async salvarCartao(): Promise<void> {
-    if (!this.cartaoEditando.numero || !this.cartaoEditando.nomeTitular || !this.cartaoEditando.bandeira ||
-        !this.cartaoEditando.cvv || !this.cartaoEditando.dataValidade) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha todos os campos obrigatórios'});
-      return;
-    }
-
+    if (this.carregandoSalvarCartao) return;
+    this.carregandoSalvarCartao = true;
     try {
+      if (!this.cartaoEditando.numero || !this.cartaoEditando.nomeTitular || !this.cartaoEditando.bandeira ||
+          !this.cartaoEditando.cvv || !this.cartaoEditando.dataValidade) {
+        this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha todos os campos obrigatórios'});
+        this.carregandoSalvarCartao = false;
+        return;
+      }
+
       const token = this.authService.getToken();
       const cartaoAntigo = this.cartaoEditando.id ? { ...this.cartaoEditando } : null;
       const cartao = {
@@ -423,9 +451,9 @@ const url = this.enderecoEditando.id
         preferencial: this.cartaoEditando.preferencial || false
       };
 
-const url = this.cartaoEditando.id
-  ? `${environment.apiUrl}/clientes/${this.usuario.id}/cartoes/${this.cartaoEditando.id}`
-  : `${environment.apiUrl}/clientes/${this.usuario.id}/cartoes`;
+      const url = this.cartaoEditando.id
+        ? `${environment.apiUrl}/clientes/${this.usuario.id}/cartoes/${this.cartaoEditando.id}`
+        : `${environment.apiUrl}/clientes/${this.usuario.id}/cartoes`;
       const method = this.cartaoEditando.id ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -475,6 +503,8 @@ const url = this.cartaoEditando.id
       }
     } catch (error) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
+    } finally {
+      this.carregandoSalvarCartao = false;
     }
   }
 
@@ -484,10 +514,15 @@ const url = this.cartaoEditando.id
   }
 
   async executarExclusao(): Promise<void> {
-    const item = this.itemParaExcluir;
-    if (!item) return;
-
+    if (this.carregandoExcluir) return;
+    this.carregandoExcluir = true;
     try {
+      const item = this.itemParaExcluir;
+      if (!item) {
+        this.carregandoExcluir = false;
+        return;
+      }
+
       const token = this.authService.getToken();
       let url = '';
       let nomeItem = '';
@@ -524,6 +559,8 @@ const url = this.cartaoEditando.id
       }
     } catch (error) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
+    } finally {
+      this.carregandoExcluir = false;
     }
   }
 

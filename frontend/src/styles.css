@@ -60,7 +60,7 @@ body {
 .p-button-outlined.loading::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 40%;
   left: 50%;
   width: 20px;
   height: 20px;
@@ -89,7 +89,7 @@ body {
 .btn-limpar.loading::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 40%;
   left: 50%;
   width: 20px;
   height: 20px;
@@ -122,14 +122,14 @@ body {
 .btn-favorito-modal.loading::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 40%;
   left: 50%;
   width: 16px;
   height: 16px;
   margin-top: -8px;
   margin-left: -8px;
   border: 2px solid rgba(0, 0, 0, 0.1);
-  border-top-color: #2a5298;
+  border-top-color: #dc2626;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -148,7 +148,7 @@ body {
 .btn-primary.loading::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 40%;
   left: 50%;
   width: 20px;
   height: 20px;
@@ -178,7 +178,7 @@ body {
 .btn-confirmar-reembolso.loading::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 40%;
   left: 50%;
   width: 20px;
   height: 20px;

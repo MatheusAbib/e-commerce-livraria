@@ -24,6 +24,8 @@ export class CupomModalComponent implements OnInit {
   cuponsDisponiveis: any[] = [];
   cuponsUsados: any[] = [];
 
+  carregandoCopiar: { [key: string]: boolean } = {};
+
   constructor(
     private messageService: MessageService,
     private authService: AuthService
@@ -82,6 +84,9 @@ export class CupomModalComponent implements OnInit {
   }
 
   copiarCupom(codigo: string): void {
+    if (this.carregandoCopiar[codigo]) return;
+    this.carregandoCopiar[codigo] = true;
+
     navigator.clipboard.writeText(codigo).then(() => {
       this.messageService.add({
         severity: 'success',
@@ -94,6 +99,8 @@ export class CupomModalComponent implements OnInit {
         summary: 'Erro',
         detail: 'Não foi possível copiar o cupom'
       });
+    }).finally(() => {
+      this.carregandoCopiar[codigo] = false;
     });
   }
 
