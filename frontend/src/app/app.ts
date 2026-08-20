@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { GlobalChatComponent } from "./app/global-chat.component";
 import { ChatbotComponent } from "./components/chatbot/chatbot.component";
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -35,31 +36,31 @@ export class AppComponent implements OnInit, OnDestroy {
   isLoggedIn: boolean = false;
   isAdmin: boolean = false;
 
-constructor(
-  public router: Router,
-  private authService: AuthService,
-  private messageService: MessageService,
-  private chatService: ChatService
-) {
-  this.router.events.subscribe((event: RouterEvent) => {
-    if (event instanceof NavigationStart) {
-      this.loading = true;
-    }
+  constructor(
+    public router: Router,
+    private authService: AuthService,
+    private messageService: MessageService,
+    private chatService: ChatService
+  ) {
+    this.router.events.subscribe((event: RouterEvent) => {
+      if (event instanceof NavigationStart) {
+        this.loading = true;
+      }
 
-    if (event instanceof NavigationEnd ||
-        event instanceof NavigationCancel ||
-        event instanceof NavigationError) {
-      const inicio = Date.now();
-      setTimeout(() => {
-        const decorrido = Date.now() - inicio;
-        const restante = Math.max(0, 900 - decorrido);
+      if (event instanceof NavigationEnd ||
+          event instanceof NavigationCancel ||
+          event instanceof NavigationError) {
+        const inicio = Date.now();
         setTimeout(() => {
-          this.loading = false;
-        }, restante);
-      }, 0);
-    }
-  });
-}
+          const decorrido = Date.now() - inicio;
+          const restante = Math.max(0, 900 - decorrido);
+          setTimeout(() => {
+            this.loading = false;
+          }, restante);
+        }, 0);
+      }
+    });
+  }
 
   ngOnInit(): void {
     const user = this.authService.getUser();
@@ -72,25 +73,25 @@ constructor(
       }
     }
 
-this.authService.loginStatus$.subscribe(logado => {
-  this.isLoggedIn = logado;
-  if (logado) {
-    const user = this.authService.getUser();
-    this.isAdmin = user?.perfil === 'ADMIN';
-    if (user?.perfil === 'ADMIN') {
-      this.loading = true;
-      setTimeout(() => {
-        this.router.navigate(['/admin/dashboard']);
-        this.loading = false;
-      }, 300);
-    }
-    this.iniciarPolling();
-  } else {
-    this.isAdmin = false;
-    this.pararPolling();
-    this.pedidosAnteriores = [];
-  }
-});
+    this.authService.loginStatus$.subscribe(logado => {
+      this.isLoggedIn = logado;
+      if (logado) {
+        const user = this.authService.getUser();
+        this.isAdmin = user?.perfil === 'ADMIN';
+        if (user?.perfil === 'ADMIN') {
+          this.loading = true;
+          setTimeout(() => {
+            this.router.navigate(['/admin/dashboard']);
+            this.loading = false;
+          }, 300);
+        }
+        this.iniciarPolling();
+      } else {
+        this.isAdmin = false;
+        this.pararPolling();
+        this.pedidosAnteriores = [];
+      }
+    });
 
     this.authService.abrirChat$.subscribe((pedidoId: number) => {
       const pedido = this.pedidosAnteriores.find(p => p.id === pedidoId);
@@ -126,7 +127,7 @@ this.authService.loginStatus$.subscribe(logado => {
       if (!user) return;
 
       const token = this.authService.getToken();
-      const response = await fetch(`/api/pedidos?clienteId=${user.id}`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos?clienteId=${user.id}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -152,7 +153,7 @@ this.authService.loginStatus$.subscribe(logado => {
 
             if (pedido.status === 'DEVOLVIDO') {
               setTimeout(async () => {
-                const cupomResponse = await fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+                const cupomResponse = await fetch(`${environment.apiUrl}/cupons/cliente/${user.id}/disponiveis`, {
                   headers: {
                     'Authorization': 'Bearer ' + token
                   }

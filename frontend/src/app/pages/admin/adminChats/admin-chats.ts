@@ -7,6 +7,7 @@ import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../services/auth';
 import { AdminSidebarComponent } from '../../../components/admin-sidebar/admin-sidebar';
 import { ActivatedRoute } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-chats',
@@ -68,7 +69,7 @@ export class AdminChatsComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
     try {
       const token = this.authService.getToken();
-      const response = await fetch('/api/chat/admin/conversas', {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/conversas`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -151,7 +152,7 @@ export class AdminChatsComponent implements OnInit, OnDestroy {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin/${this.chatAdminPedido.id}/reativar`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/${this.chatAdminPedido.id}/reativar`, {
         method: 'PUT',
         headers: {
           'Authorization': 'Bearer ' + token
@@ -209,7 +210,7 @@ export class AdminChatsComponent implements OnInit, OnDestroy {
   async carregarDetalhesPedido(pedidoId: number): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/pedidos/${pedidoId}`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos/${pedidoId}`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -254,7 +255,7 @@ export class AdminChatsComponent implements OnInit, OnDestroy {
   async carregarMensagensChatAdmin(pedidoId: number): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin/${pedidoId}`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/${pedidoId}`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -265,7 +266,7 @@ export class AdminChatsComponent implements OnInit, OnDestroy {
         this.scrollChatAdminParaBaixo();
         this.cdr.detectChanges();
 
-        await fetch(`/api/chat/admin/${pedidoId}/ler`, {
+       await fetch(`${environment.apiUrl}/chat/admin/${pedidoId}/ler`, {
           method: 'PUT',
           headers: {
             'Authorization': 'Bearer ' + token
@@ -327,7 +328,7 @@ export class AdminChatsComponent implements OnInit, OnDestroy {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin?pedidoId=${this.chatAdminPedido.id}`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin?pedidoId=${this.chatAdminPedido.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -355,7 +356,7 @@ export class AdminChatsComponent implements OnInit, OnDestroy {
   async verificarAtendimentoAdmin(pedidoId: number): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin/${pedidoId}/atendimento-ativo`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/${pedidoId}/atendimento-ativo`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -392,7 +393,7 @@ export class AdminChatsComponent implements OnInit, OnDestroy {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin/${this.chatAdminPedido.id}/encerrar`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/${this.chatAdminPedido.id}/encerrar`, {
         method: 'PUT',
         headers: {
           'Authorization': 'Bearer ' + token

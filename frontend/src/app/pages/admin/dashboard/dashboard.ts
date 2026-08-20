@@ -7,6 +7,7 @@ import { AuthService } from '../../../services/auth';
 import { Router } from '@angular/router';
 import { AdminSidebarComponent } from '../../../components/admin-sidebar/admin-sidebar';
 import { PaginatorModule } from 'primeng/paginator';
+import { environment } from '../../../../environments/environment';
 
 Chart.register(...registerables);
 
@@ -121,7 +122,7 @@ ngAfterViewInit(): void {
     this.cdr.detectChanges();
     try {
       const token = this.authService.getToken();
-      const response = await fetch('/api/avaliacoes/todas', {
+      const response = await fetch(`${environment.apiUrl}/avaliacoes/todas`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }

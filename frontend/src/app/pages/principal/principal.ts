@@ -19,6 +19,7 @@ import { CarrinhoService } from '../../services/carrinho';
 import { AuthService } from '../../services/auth';
 import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-principal',
@@ -125,7 +126,7 @@ export class Principal implements OnInit {
   async carregarComentarios(livroId: number): Promise<void> {
     this.comentariosLoading = true;
     try {
-      const response = await fetch(`/api/avaliacoes/livro/${livroId}`);
+      const response = await fetch(`${environment.apiUrl}/avaliacoes/livro/${livroId}`);
       if (response.ok) {
         this.comentarios = await response.json();
         this.comentarios.sort((a, b) =>
@@ -186,7 +187,7 @@ export class Principal implements OnInit {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/clientes/${user.id}/favoritos`, {
+      const response = await fetch(`${environment.apiUrl}/clientes/${user.id}/favoritos`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -212,7 +213,7 @@ export class Principal implements OnInit {
   async carregarLivros(): Promise<void> {
     this.loading = true;
     try {
-      const response = await fetch('/api/livros');
+      const response = await fetch(`${environment.apiUrl}/livros`);
       this.livros = await response.json();
       this.filteredLivros = [...this.livros];
       await this.carregarAvaliacoesDosLivros();
@@ -228,7 +229,7 @@ export class Principal implements OnInit {
   async carregarAvaliacoesDosLivros(): Promise<void> {
     for (const livro of this.livros) {
       try {
-        const response = await fetch(`/api/avaliacoes/livro/${livro.id}/resumo`);
+        const response = await fetch(`${environment.apiUrl}/avaliacoes/livro/${livro.id}/resumo`);
         if (response.ok) {
           livro.avaliacao = await response.json();
         }
@@ -249,53 +250,53 @@ export class Principal implements OnInit {
 
   filtrando: boolean = false;
 
-async aplicarFiltros(): Promise<void> {
-  this.filtrando = true;
-  this.loading = true;
+  async aplicarFiltros(): Promise<void> {
+    this.filtrando = true;
+    this.loading = true;
 
-  const inicio = Date.now();
+    const inicio = Date.now();
 
-  this.filteredLivros = this.livros.filter(l => {
-    let match = true;
-    if (this.filtros.titulo && !l.titulo?.toLowerCase().includes(this.filtros.titulo.toLowerCase())) match = false;
-    if (this.filtros.autor && !l.autor?.toLowerCase().includes(this.filtros.autor.toLowerCase())) match = false;
-    if (this.filtros.editora && !l.editora?.toLowerCase().includes(this.filtros.editora.toLowerCase())) match = false;
-    if (this.filtros.categoria && l.categoria !== this.filtros.categoria) match = false;
-    if (this.filtros.precoMax && l.precoVenda > this.filtros.precoMax) match = false;
-    return match;
-  });
+    this.filteredLivros = this.livros.filter(l => {
+      let match = true;
+      if (this.filtros.titulo && !l.titulo?.toLowerCase().includes(this.filtros.titulo.toLowerCase())) match = false;
+      if (this.filtros.autor && !l.autor?.toLowerCase().includes(this.filtros.autor.toLowerCase())) match = false;
+      if (this.filtros.editora && !l.editora?.toLowerCase().includes(this.filtros.editora.toLowerCase())) match = false;
+      if (this.filtros.categoria && l.categoria !== this.filtros.categoria) match = false;
+      if (this.filtros.precoMax && l.precoVenda > this.filtros.precoMax) match = false;
+      return match;
+    });
 
-  this.totalRecords = this.filteredLivros.length;
-  this.first = 0;
+    this.totalRecords = this.filteredLivros.length;
+    this.first = 0;
 
-  const decorrido = Date.now() - inicio;
-  const restante = Math.max(0, 500 - decorrido);
+    const decorrido = Date.now() - inicio;
+    const restante = Math.max(0, 500 - decorrido);
 
-  setTimeout(() => {
-    this.loading = false;
-    this.filtrando = false;
-  }, restante);
-}
+    setTimeout(() => {
+      this.loading = false;
+      this.filtrando = false;
+    }, restante);
+  }
 
-async limparFiltros(): Promise<void> {
-  this.filtrando = true;
-  this.loading = true;
+  async limparFiltros(): Promise<void> {
+    this.filtrando = true;
+    this.loading = true;
 
-  const inicio = Date.now();
+    const inicio = Date.now();
 
-  this.filtros = { titulo: '', autor: '', editora: '', categoria: '', precoMax: null };
-  this.filteredLivros = [...this.livros];
-  this.totalRecords = this.filteredLivros.length;
-  this.first = 0;
+    this.filtros = { titulo: '', autor: '', editora: '', categoria: '', precoMax: null };
+    this.filteredLivros = [...this.livros];
+    this.totalRecords = this.filteredLivros.length;
+    this.first = 0;
 
-  const decorrido = Date.now() - inicio;
-  const restante = Math.max(0, 500 - decorrido);
+    const decorrido = Date.now() - inicio;
+    const restante = Math.max(0, 500 - decorrido);
 
-  setTimeout(() => {
-    this.loading = false;
-    this.filtrando = false;
-  }, restante);
-}
+    setTimeout(() => {
+      this.loading = false;
+      this.filtrando = false;
+    }, restante);
+  }
 
   onPageChange(event: any): void {
     this.first = event.first;
@@ -354,7 +355,7 @@ async limparFiltros(): Promise<void> {
       const isFavorited = this.favoritosIds.includes(livroId);
 
       if (isFavorited) {
-        const response = await fetch(`http://localhost:8081/api/clientes/${user.id}/favoritos/${livroId}`, {
+        const response = await fetch(`${environment.apiUrl}/clientes/${user.id}/favoritos/${livroId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': 'Bearer ' + token
@@ -373,7 +374,7 @@ async limparFiltros(): Promise<void> {
         }
       } else {
         const body = { livroId };
-        const response = await fetch(`http://localhost:8081/api/clientes/${user.id}/favoritos`, {
+        const response = await fetch(`${environment.apiUrl}/clientes/${user.id}/favoritos`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -404,7 +405,7 @@ async limparFiltros(): Promise<void> {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/clientes/${user.id}/favoritos`, {
+      const response = await fetch(`${environment.apiUrl}/clientes/${user.id}/favoritos`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -457,7 +458,7 @@ async limparFiltros(): Promise<void> {
       }
 
       const token = this.authService.getToken();
-      const responseUser = await fetch(`http://localhost:8081/api/clientes/${user.id}`, {
+      const responseUser = await fetch(`${environment.apiUrl}/clientes/${user.id}`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -489,7 +490,7 @@ async limparFiltros(): Promise<void> {
         }
       }
 
-      const response = await fetch(`/api/livros/${id}`);
+      const response = await fetch(`${environment.apiUrl}/livros/${id}`);
       const produto = await response.json();
 
       if (produto.estoque <= 0) {
@@ -523,6 +524,7 @@ async limparFiltros(): Promise<void> {
         summary: 'Sucesso',
         detail: `${novaQuantidade}x ${produto.titulo} adicionado ao carrinho!`
       });
+      this.authService.adicionarNotificacao('Carrinho', `${produto.titulo} adicionado ao carrinho!`, 'success');
       this.displayDialog = false;
       this.quantidadeSelecionada = 1;
     } catch (error) {
@@ -593,7 +595,7 @@ async limparFiltros(): Promise<void> {
       }
 
       const token = this.authService.getToken();
-      const responseUser = await fetch(`http://localhost:8081/api/clientes/${user.id}`, {
+      const responseUser = await fetch(`${environment.apiUrl}/clientes/${user.id}`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -625,7 +627,7 @@ async limparFiltros(): Promise<void> {
         }
       }
 
-      const response = await fetch(`/api/livros/${id}`);
+      const response = await fetch(`${environment.apiUrl}/livros/${id}`);
       const produto = await response.json();
 
       if (produto.estoque <= 0) {
@@ -658,6 +660,7 @@ async limparFiltros(): Promise<void> {
         summary: 'Sucesso',
         detail: `${produto.titulo} adicionado ao carrinho!`
       });
+      this.authService.adicionarNotificacao('Carrinho', `${produto.titulo} adicionado ao carrinho!`, 'success');
     } catch (error) {
       this.messageService.add({
         severity: 'error',

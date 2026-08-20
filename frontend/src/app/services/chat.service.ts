@@ -12,7 +12,6 @@ export class ChatService {
   private timeoutId: any = null;
 
   abrirChat(pedidoId: number, pedido: any = null): void {
-    // Se for o mesmo pedido, reseta para permitir reabrir
     if (this.ultimoPedidoId === pedidoId) {
       this.ultimoPedidoId = null;
       if (this.timeoutId) {

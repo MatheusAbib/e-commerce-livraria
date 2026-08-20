@@ -291,7 +291,7 @@
     <div class="custom-modal-body" *ngIf="detalhesItem">
       <div class="detalhes-layout">
         <div class="detalhes-imagem">
-          <img *ngIf="detalhesItem.imagemUrl" [src]="'http://localhost:8081/uploads/' + detalhesItem.imagemUrl" alt="Capa do livro">
+          <img *ngIf="detalhesItem.imagemUrl" [src]="'/uploads/' + detalhesItem.imagemUrl" alt="Capa do livro">
           <div *ngIf="!detalhesItem.imagemUrl" class="detalhes-sem-imagem">
             <i class="pi pi-book"></i>
             <span>Sem imagem</span>
@@ -528,10 +528,7 @@
     <div *ngFor="let foto of pedidoSelecionado.fotosDevolucao; let i = index"
          class="foto-devolucao-item-admin"
          (click)="abrirFotoAmpliada(foto.caminho)">
-      <img
-        [src]="'http://localhost:8081/' + foto.caminho"
-        alt="Foto da devolução {{ i + 1 }}"
-        class="foto-devolucao-img-admin">
+<img [src]="'/uploads/devolucoes/' + foto.caminho" alt="Foto da devolução {{ i + 1 }}" class="foto-devolucao-img-admin">
       <span class="foto-badge-admin">Foto {{ i + 1 }}</span>
     </div>
   </div>

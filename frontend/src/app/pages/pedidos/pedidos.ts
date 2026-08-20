@@ -14,6 +14,7 @@ import { AuthService } from '../../services/auth';
 import { RatingModule } from 'primeng/rating';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-pedidos',
@@ -89,7 +90,6 @@ export class PedidosComponent implements OnInit, OnDestroy {
   fotoIndexAtual: number = 0;
   fotoAtual: string = '';
 
-
   private intervalId: any = null;
 
   constructor(
@@ -119,49 +119,47 @@ export class PedidosComponent implements OnInit, OnDestroy {
     });
   }
 
-
   abrirModalFotos(fotos: string[], index: number): void {
-  this.fotosDevolucaoList = fotos.map((f: any) => f.caminho || f);
-  this.fotoIndexAtual = index;
-  this.fotoAtual = this.fotosDevolucaoList[index];
-  this.displayFotosModal = true;
-}
-
-fecharModalFotos(): void {
-  this.displayFotosModal = false;
-  this.fotosDevolucaoList = [];
-  this.fotoAtual = '';
-  this.fotoIndexAtual = 0;
-}
-
-fotoAnterior(): void {
-  if (this.fotoIndexAtual > 0) {
-    this.fotoIndexAtual--;
-    this.fotoAtual = this.fotosDevolucaoList[this.fotoIndexAtual];
+    this.fotosDevolucaoList = fotos.map((f: any) => f.caminho || f);
+    this.fotoIndexAtual = index;
+    this.fotoAtual = this.fotosDevolucaoList[index];
+    this.displayFotosModal = true;
   }
-}
 
-fotoProxima(): void {
-  if (this.fotoIndexAtual < this.fotosDevolucaoList.length - 1) {
-    this.fotoIndexAtual++;
-    this.fotoAtual = this.fotosDevolucaoList[this.fotoIndexAtual];
+  fecharModalFotos(): void {
+    this.displayFotosModal = false;
+    this.fotosDevolucaoList = [];
+    this.fotoAtual = '';
+    this.fotoIndexAtual = 0;
   }
-}
 
-selecionarFoto(index: number): void {
-  this.fotoIndexAtual = index;
-  this.fotoAtual = this.fotosDevolucaoList[index];
-}
-
-
-validarCodigoRastreamentoInput(codigo: string): void {
-  const regex = /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/;
-  const codigoUpper = codigo?.toUpperCase() || '';
-  this.codigoRastreamentoValido = regex.test(codigoUpper);
-  if (this.codigoRastreamentoValido) {
-    this.codigoRastreamento = codigoUpper;
+  fotoAnterior(): void {
+    if (this.fotoIndexAtual > 0) {
+      this.fotoIndexAtual--;
+      this.fotoAtual = this.fotosDevolucaoList[this.fotoIndexAtual];
+    }
   }
-}
+
+  fotoProxima(): void {
+    if (this.fotoIndexAtual < this.fotosDevolucaoList.length - 1) {
+      this.fotoIndexAtual++;
+      this.fotoAtual = this.fotosDevolucaoList[this.fotoIndexAtual];
+    }
+  }
+
+  selecionarFoto(index: number): void {
+    this.fotoIndexAtual = index;
+    this.fotoAtual = this.fotosDevolucaoList[index];
+  }
+
+  validarCodigoRastreamentoInput(codigo: string): void {
+    const regex = /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/;
+    const codigoUpper = codigo?.toUpperCase() || '';
+    this.codigoRastreamentoValido = regex.test(codigoUpper);
+    if (this.codigoRastreamentoValido) {
+      this.codigoRastreamento = codigoUpper;
+    }
+  }
 
   abrirChatVendedor(pedidoId: number): void {
     const pedido = this.pedidos.find(p => p.id === pedidoId);
@@ -221,7 +219,7 @@ validarCodigoRastreamentoInput(codigo: string): void {
       const token = this.authService.getToken();
 
       const avaliacoesResponse = await fetch(
-        `/api/avaliacoes/cliente/${user.id}`,
+        `${environment.apiUrl}/avaliacoes/cliente/${user.id}`,
         {
           headers: {
             'Authorization': 'Bearer ' + token
@@ -299,8 +297,8 @@ validarCodigoRastreamentoInput(codigo: string): void {
       const isEdit = avaliacao.avaliacaoId !== null && avaliacao.avaliacaoId !== undefined;
 
       const url = isEdit
-        ? `/api/avaliacoes/${avaliacao.avaliacaoId}?clienteId=${user.id}`
-        : `/api/avaliacoes?clienteId=${user.id}`;
+        ? `${environment.apiUrl}/avaliacoes/${avaliacao.avaliacaoId}?clienteId=${user.id}`
+        : `${environment.apiUrl}/avaliacoes?clienteId=${user.id}`;
 
       const method = isEdit ? 'PUT' : 'POST';
 
@@ -392,7 +390,7 @@ validarCodigoRastreamentoInput(codigo: string): void {
       const token = this.authService.getToken();
 
       const response = await fetch(
-        `/api/avaliacoes/verificar?clienteId=${user.id}&pedidoId=${pedidoId}&livroId=${livroId}`,
+        `${environment.apiUrl}/avaliacoes/verificar?clienteId=${user.id}&pedidoId=${pedidoId}&livroId=${livroId}`,
         {
           headers: {
             'Authorization': 'Bearer ' + token
@@ -430,7 +428,7 @@ validarCodigoRastreamentoInput(codigo: string): void {
 
     try {
       const response = await fetch(
-        `/api/avaliacoes/cliente/${user.id}`,
+        `${environment.apiUrl}/avaliacoes/cliente/${user.id}`,
         {
           headers: {
             'Authorization': 'Bearer ' + token
@@ -466,167 +464,32 @@ validarCodigoRastreamentoInput(codigo: string): void {
     }
   }
 
-async carregarPedidos(): Promise<void> {
-  this.loading = true;
-  try {
-    const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
-    if (!user) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Faça login para visualizar seus pedidos'});
-      this.authService.adicionarNotificacao('Erro', 'Faça login para visualizar seus pedidos', 'error');
-      return;
-    }
-
-    const token = this.authService.getToken();
-    const response = await fetch(`/api/pedidos?clienteId=${user.id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+  async carregarPedidos(): Promise<void> {
+    this.loading = true;
+    try {
+      const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
+      if (!user) {
+        this.messageService.add({severity:'error', summary:'Erro', detail:'Faça login para visualizar seus pedidos'});
+        this.authService.adicionarNotificacao('Erro', 'Faça login para visualizar seus pedidos', 'error');
+        return;
       }
-    });
-    if (!response.ok) throw new Error('Erro ao carregar pedidos');
 
-    this.pedidos = await response.json();
-
-    const [disponiveisRes, usadosRes] = await Promise.all([
-      fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      }),
-      fetch(`/api/cupons/cliente/${user.id}/usados`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      })
-    ]);
-
-    let todosCupons: any[] = [];
-
-    if (disponiveisRes.ok) {
-      const disponiveis = await disponiveisRes.json();
-      todosCupons = [...todosCupons, ...disponiveis];
-    }
-
-    if (usadosRes.ok) {
-      const usados = await usadosRes.json();
-      todosCupons = [...todosCupons, ...usados];
-    }
-
-    for (const pedido of this.pedidos) {
-      if (pedido.status === 'DEVOLVIDO') {
-        const cupom = todosCupons.find((c: any) => c.pedidoId === pedido.id);
-        if (cupom) {
-          pedido.cupomGerado = cupom.codigo;
-          pedido.cupomPorcentagem = cupom.porcentagem;
-          pedido.cupomDisponivel = !cupom.usado;
-          pedido.cupomDataUso = cupom.dataUso;
+      const token = this.authService.getToken();
+      const response = await fetch(`${environment.apiUrl}/pedidos?clienteId=${user.id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
         }
-      }
-
-      const devolucoes = this.pedidos.filter(p => p.pedidoOriginalId === pedido.id);
-      const itensDevolvidos: any = {};
-      for (const devolucao of devolucoes) {
-        if (devolucao.status === 'DEVOLUCAO' ||
-            devolucao.status === 'AUTORIZADO_DEVOLUCAO' ||
-            devolucao.status === 'ENVIADO_DEVOLUCAO' ||
-            devolucao.status === 'DEVOLVIDO') {
-          for (const item of devolucao.itens) {
-            const livroId = item.livro.id;
-            if (!itensDevolvidos[livroId]) {
-              itensDevolvidos[livroId] = 0;
-            }
-            itensDevolvidos[livroId] += item.quantidade;
-          }
-        }
-      }
-
-      let temItemDisponivel = false;
-      for (const item of pedido.itens) {
-        const quantidadeDevolvida = itensDevolvidos[item.livro.id] || 0;
-        if (item.quantidade - quantidadeDevolvida > 0) {
-          temItemDisponivel = true;
-          break;
-        }
-      }
-      pedido.temItemDisponivelParaDevolucao = temItemDisponivel;
-    }
-
-    this.pedidos.forEach((p: any) => {
-      if (p.reembolsoConfirmado === undefined) {
-        p.reembolsoConfirmado = false;
-      }
-      p.temAvaliacao = false;
-    });
-
-    this.recalcularStatusDevolucao();
-    await this.carregarAvaliacoesDosPedidos();
-    this.filtrarPorStatus(this.statusAtivo);
-  } catch (error) {
-    console.error('Erro:', error);
-    this.messageService.add({severity:'error', summary:'Erro', detail:'Falha ao carregar pedidos'});
-    this.authService.adicionarNotificacao('Erro', 'Falha ao carregar pedidos', 'error');
-  } finally {
-    this.loading = false;
-  }
-}
-
-  onFotosDevolucaoSelected(event: any): void {
-    const files = event.target.files;
-    const maxFiles = 3;
-
-    if (this.fotosDevolucao.length + files.length > maxFiles) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: `Máximo de ${maxFiles} fotos permitidas`
       });
-      return;
-    }
+      if (!response.ok) throw new Error('Erro ao carregar pedidos');
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file.size > 5 * 1024 * 1024) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Cada imagem deve ter no máximo 5MB'
-        });
-        continue;
-      }
-      this.fotosDevolucao.push(file);
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.fotosDevolucaoPreview.push(e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    event.target.value = '';
-  }
-
-  removerFotoDevolucao(index: number): void {
-    this.fotosDevolucao.splice(index, 1);
-    this.fotosDevolucaoPreview.splice(index, 1);
-  }
-
-async carregarPedidosSilenciosamente(): Promise<void> {
-  try {
-    const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
-    if (!user) return;
-
-    const token = this.authService.getToken();
-    const response = await fetch(`/api/pedidos?clienteId=${user.id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      }
-    });
-    if (response.ok) {
-      const novosPedidos = await response.json();
-
-      this.pedidos = novosPedidos;
+      this.pedidos = await response.json();
 
       const [disponiveisRes, usadosRes] = await Promise.all([
-        fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+        fetch(`${environment.apiUrl}/cupons/cliente/${user.id}/disponiveis`, {
           headers: { 'Authorization': 'Bearer ' + token }
         }),
-        fetch(`/api/cupons/cliente/${user.id}/usados`, {
+        fetch(`${environment.apiUrl}/cupons/cliente/${user.id}/usados`, {
           headers: { 'Authorization': 'Bearer ' + token }
         })
       ]);
@@ -692,19 +555,154 @@ async carregarPedidosSilenciosamente(): Promise<void> {
       this.recalcularStatusDevolucao();
       await this.carregarAvaliacoesDosPedidos();
       this.filtrarPorStatus(this.statusAtivo);
+    } catch (error) {
+      console.error('Erro:', error);
+      this.messageService.add({severity:'error', summary:'Erro', detail:'Falha ao carregar pedidos'});
+      this.authService.adicionarNotificacao('Erro', 'Falha ao carregar pedidos', 'error');
+    } finally {
+      this.loading = false;
     }
-  } catch (error) {
-    console.error('Erro ao monitorar pedidos:', error);
   }
-}
 
-verificarPrazoDevolucao(dataEntrega: string): boolean {
-  if (!dataEntrega) return true;
-  const entrega = new Date(dataEntrega);
-  const hoje = new Date();
-  const diff = (hoje.getTime() - entrega.getTime()) / (1000 * 60 * 60 * 24);
-  return diff > 7;
-}
+  onFotosDevolucaoSelected(event: any): void {
+    const files = event.target.files;
+    const maxFiles = 3;
+
+    if (this.fotosDevolucao.length + files.length > maxFiles) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: `Máximo de ${maxFiles} fotos permitidas`
+      });
+      return;
+    }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size > 5 * 1024 * 1024) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Cada imagem deve ter no máximo 5MB'
+        });
+        continue;
+      }
+      this.fotosDevolucao.push(file);
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.fotosDevolucaoPreview.push(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    event.target.value = '';
+  }
+
+  removerFotoDevolucao(index: number): void {
+    this.fotosDevolucao.splice(index, 1);
+    this.fotosDevolucaoPreview.splice(index, 1);
+  }
+
+  async carregarPedidosSilenciosamente(): Promise<void> {
+    try {
+      const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
+      if (!user) return;
+
+      const token = this.authService.getToken();
+      const response = await fetch(`${environment.apiUrl}/pedidos?clienteId=${user.id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      if (response.ok) {
+        const novosPedidos = await response.json();
+
+        this.pedidos = novosPedidos;
+
+        const [disponiveisRes, usadosRes] = await Promise.all([
+          fetch(`${environment.apiUrl}/cupons/cliente/${user.id}/disponiveis`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+          }),
+          fetch(`${environment.apiUrl}/cupons/cliente/${user.id}/usados`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+          })
+        ]);
+
+        let todosCupons: any[] = [];
+
+        if (disponiveisRes.ok) {
+          const disponiveis = await disponiveisRes.json();
+          todosCupons = [...todosCupons, ...disponiveis];
+        }
+
+        if (usadosRes.ok) {
+          const usados = await usadosRes.json();
+          todosCupons = [...todosCupons, ...usados];
+        }
+
+        for (const pedido of this.pedidos) {
+          if (pedido.status === 'DEVOLVIDO') {
+            const cupom = todosCupons.find((c: any) => c.pedidoId === pedido.id);
+            if (cupom) {
+              pedido.cupomGerado = cupom.codigo;
+              pedido.cupomPorcentagem = cupom.porcentagem;
+              pedido.cupomDisponivel = !cupom.usado;
+              pedido.cupomDataUso = cupom.dataUso;
+            }
+          }
+
+          const devolucoes = this.pedidos.filter(p => p.pedidoOriginalId === pedido.id);
+          const itensDevolvidos: any = {};
+          for (const devolucao of devolucoes) {
+            if (devolucao.status === 'DEVOLUCAO' ||
+                devolucao.status === 'AUTORIZADO_DEVOLUCAO' ||
+                devolucao.status === 'ENVIADO_DEVOLUCAO' ||
+                devolucao.status === 'DEVOLVIDO') {
+              for (const item of devolucao.itens) {
+                const livroId = item.livro.id;
+                if (!itensDevolvidos[livroId]) {
+                  itensDevolvidos[livroId] = 0;
+                }
+                itensDevolvidos[livroId] += item.quantidade;
+              }
+            }
+          }
+
+          let temItemDisponivel = false;
+          for (const item of pedido.itens) {
+            const quantidadeDevolvida = itensDevolvidos[item.livro.id] || 0;
+            if (item.quantidade - quantidadeDevolvida > 0) {
+              temItemDisponivel = true;
+              break;
+            }
+          }
+          pedido.temItemDisponivelParaDevolucao = temItemDisponivel;
+        }
+
+        this.pedidos.forEach((p: any) => {
+          if (p.reembolsoConfirmado === undefined) {
+            p.reembolsoConfirmado = false;
+          }
+          p.temAvaliacao = false;
+        });
+
+        this.recalcularStatusDevolucao();
+        await this.carregarAvaliacoesDosPedidos();
+        this.filtrarPorStatus(this.statusAtivo);
+      }
+    } catch (error) {
+      console.error('Erro ao monitorar pedidos:', error);
+    }
+  }
+
+  verificarPrazoDevolucao(dataEntrega: string): boolean {
+    if (!dataEntrega) return true;
+    const entrega = new Date(dataEntrega);
+    const hoje = new Date();
+    const diff = (hoje.getTime() - entrega.getTime()) / (1000 * 60 * 60 * 24);
+    return diff > 7;
+  }
 
   calcularDiasRestantes(dataEntrega: string): number {
     if (!dataEntrega) return 0;
@@ -715,43 +713,43 @@ verificarPrazoDevolucao(dataEntrega: string): boolean {
     return restantes;
   }
 
-recalcularStatusDevolucao(): void {
-  for (const pedido of this.pedidos) {
-    for (const item of pedido.itens) {
-      item.statusDevolucao = null;
-      item.quantidadeDevolvida = 0;
+  recalcularStatusDevolucao(): void {
+    for (const pedido of this.pedidos) {
+      for (const item of pedido.itens) {
+        item.statusDevolucao = null;
+        item.quantidadeDevolvida = 0;
+      }
     }
-  }
 
-  const devolucoes = this.pedidos.filter((p: any) => p.pedidoOriginalId);
-  for (const devolucao of devolucoes) {
-    const pedidoOriginal = this.pedidos.find((p: any) => p.id === devolucao.pedidoOriginalId);
-    if (pedidoOriginal) {
-      for (const itemDev of devolucao.itens) {
-        const itemOriginal = pedidoOriginal.itens.find((i: any) => i.livro.id === itemDev.livro.id);
-        if (itemOriginal) {
-          itemOriginal.quantidadeDevolvida = (itemOriginal.quantidadeDevolvida || 0) + itemDev.quantidade;
+    const devolucoes = this.pedidos.filter((p: any) => p.pedidoOriginalId);
+    for (const devolucao of devolucoes) {
+      const pedidoOriginal = this.pedidos.find((p: any) => p.id === devolucao.pedidoOriginalId);
+      if (pedidoOriginal) {
+        for (const itemDev of devolucao.itens) {
+          const itemOriginal = pedidoOriginal.itens.find((i: any) => i.livro.id === itemDev.livro.id);
+          if (itemOriginal) {
+            itemOriginal.quantidadeDevolvida = (itemOriginal.quantidadeDevolvida || 0) + itemDev.quantidade;
 
-          if (devolucao.status === 'DEVOLUCAO' ||
-              devolucao.status === 'AUTORIZADO_DEVOLUCAO' ||
-              devolucao.status === 'ENVIADO_DEVOLUCAO') {
-            if (itemOriginal.quantidadeDevolvida < itemOriginal.quantidade) {
-              itemOriginal.statusDevolucao = 'DEVOLUCAO_PARCIAL';
-            } else {
-              itemOriginal.statusDevolucao = 'DEVOLUCAO';
-            }
-          } else if (devolucao.status === 'DEVOLVIDO') {
-            if (itemOriginal.quantidadeDevolvida < itemOriginal.quantidade) {
-              itemOriginal.statusDevolucao = 'DEVOLUCAO_PARCIAL';
-            } else {
-              itemOriginal.statusDevolucao = 'DEVOLVIDO';
+            if (devolucao.status === 'DEVOLUCAO' ||
+                devolucao.status === 'AUTORIZADO_DEVOLUCAO' ||
+                devolucao.status === 'ENVIADO_DEVOLUCAO') {
+              if (itemOriginal.quantidadeDevolvida < itemOriginal.quantidade) {
+                itemOriginal.statusDevolucao = 'DEVOLUCAO_PARCIAL';
+              } else {
+                itemOriginal.statusDevolucao = 'DEVOLUCAO';
+              }
+            } else if (devolucao.status === 'DEVOLVIDO') {
+              if (itemOriginal.quantidadeDevolvida < itemOriginal.quantidade) {
+                itemOriginal.statusDevolucao = 'DEVOLUCAO_PARCIAL';
+              } else {
+                itemOriginal.statusDevolucao = 'DEVOLVIDO';
+              }
             }
           }
         }
       }
     }
   }
-}
 
   abrirInstrucoesEnvio(pedidoId: number): void {
     this.pedidoEnvioId = pedidoId;
@@ -764,75 +762,47 @@ recalcularStatusDevolucao(): void {
     this.displayInstrucoesEnvio = false;
   }
 
-salvarRastreamento(): void {
-  if (!this.codigoRastreamento) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Aviso',
-      detail: 'Digite o código de rastreamento'
-    });
-    return;
-  }
-
-  if (!this.codigoRastreamentoValido) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Código inválido. Formato: AA123456789BR (2 letras + 9 números + 2 letras)'
-    });
-    return;
-  }
-
-  this.rastreamentoSalvo = true;
-  this.messageService.add({
-    severity: 'success',
-    summary: 'Sucesso',
-    detail: 'Código de rastreamento salvo!'
-  });
-  this.authService.adicionarNotificacao(
-    'Rastreamento',
-    `Código de rastreamento: ${this.codigoRastreamento}`,
-    'info'
-  );
-}
-
-async filtrarPorStatus(status: string): Promise<void> {
-  this.loading = true;
-  this.statusAtivo = status;
-
-  try {
-    const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
-    if (!user) {
-      this.loading = false;
+  salvarRastreamento(): void {
+    if (!this.codigoRastreamento) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Aviso',
+        detail: 'Digite o código de rastreamento'
+      });
       return;
     }
 
-    const token = this.authService.getToken();
-    const response = await fetch(`/api/pedidos?clienteId=${user.id}&status=${status}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      }
-    });
-
-    if (response.ok) {
-      const pedidos = await response.json();
-
-      const pedidosExistentes = this.pedidos.filter(p => p.status !== status);
-      this.pedidos = [...pedidosExistentes, ...pedidos];
-
-      this.filteredPedidos = pedidos;
+    if (!this.codigoRastreamentoValido) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Código inválido. Formato: AA123456789BR (2 letras + 9 números + 2 letras)'
+      });
+      return;
     }
-  } catch (error) {
-    console.error('Erro ao carregar pedidos:', error);
-  } finally {
-    this.loading = false;
-  }
-}
 
-trocarStatus(status: string): void {
-  this.filtrarPorStatus(status);
-}
+    this.rastreamentoSalvo = true;
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: 'Código de rastreamento salvo!'
+    });
+    this.authService.adicionarNotificacao(
+      'Rastreamento',
+      `Código de rastreamento: ${this.codigoRastreamento}`,
+      'info'
+    );
+  }
+
+  filtrarPorStatus(status: string): void {
+    this.statusAtivo = status;
+    const pedidosValidos = this.pedidos.filter(p => p.status !== 'CANCELADO');
+    this.filteredPedidos = pedidosValidos.filter(p => p.status === status);
+  }
+
+  trocarStatus(status: string): void {
+    this.filtrarPorStatus(status);
+  }
 
   getStatusClass(status: string): string {
     const classes: any = {
@@ -874,7 +844,7 @@ trocarStatus(status: string): void {
   async confirmarCancelamento(): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/pedidos/${this.pedidoCancelamentoId}/cancelar`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoCancelamentoId}/cancelar`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -908,7 +878,7 @@ trocarStatus(status: string): void {
         body.codigoRastreamentoDevolucao = codigoRastreamento;
       }
 
-      const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos/${pedidoId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1112,7 +1082,7 @@ trocarStatus(status: string): void {
         }
       }
 
-      const response = await fetch(`/api/pedidos/${this.pedidoDevolucaoId}/devolucao`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoDevolucaoId}/devolucao`, {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + token
@@ -1167,7 +1137,7 @@ trocarStatus(status: string): void {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/pedidos/${this.pedidoReembolso.id}/confirmar-reembolso`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoReembolso.id}/confirmar-reembolso`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1214,7 +1184,7 @@ trocarStatus(status: string): void {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/pedidos/${this.pedidoEntrega.id}/status`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoEntrega.id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

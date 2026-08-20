@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../services/auth';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-cupom-modal',
@@ -50,10 +51,10 @@ export class CupomModalComponent implements OnInit {
       const token = this.authService.getToken();
 
       const [disponiveisRes, usadosRes] = await Promise.all([
-        fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+        fetch(`${environment.apiUrl}/cupons/cliente/${user.id}/disponiveis`, {
           headers: { 'Authorization': 'Bearer ' + token }
         }),
-        fetch(`/api/cupons/cliente/${user.id}/usados`, {
+        fetch(`${environment.apiUrl}/cupons/cliente/${user.id}/usados`, {
           headers: { 'Authorization': 'Bearer ' + token }
         })
       ]);

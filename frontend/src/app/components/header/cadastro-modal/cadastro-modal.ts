@@ -8,6 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AuthService } from '../../../services/auth';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-cadastro-modal',
@@ -168,7 +169,7 @@ export class CadastroModalComponent {
     this.loading = true;
 
     try {
-      const response = await fetch('http://localhost:8081/api/clientes', {
+      const response = await fetch(`${environment.apiUrl}/clientes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

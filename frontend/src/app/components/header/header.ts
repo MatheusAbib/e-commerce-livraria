@@ -17,6 +17,7 @@ import { AuthService } from '../../services/auth';
 import { CupomModalComponent } from './cupom-modal/cupom-modal';
 import { ChatModalComponent } from './chat-modal/chat-modal';
 import { ChatService } from '../../services/chat.service';
+import { environment } from '../../../environments/environment';
 
 import { Router } from '@angular/router';
 import { AppComponent } from '../../app';
@@ -157,7 +158,7 @@ async carregarContadorChats(): Promise<void> {
 
   try {
     const token = this.authService.getToken();
-    const response = await fetch(`/api/chat/cliente/${user.id}/conversas`, {
+    const response = await fetch(`${environment.apiUrl}/chat/cliente/${user.id}/conversas`, {
       headers: {
         'Authorization': 'Bearer ' + token
       }
@@ -296,7 +297,7 @@ async carregarContadorCupons(): Promise<void> {
 
   try {
     const token = this.authService.getToken();
-    const response = await fetch(`/api/cupons/cliente/${user.id}/disponiveis`, {
+    const response = await fetch(`${environment.apiUrl}/cupons/cliente/${user.id}/disponiveis`, {
       headers: {
         'Authorization': 'Bearer ' + token
       }
@@ -325,7 +326,7 @@ async carregarContadorCupons(): Promise<void> {
         headers['Authorization'] = 'Bearer ' + token;
       }
 
-      const response = await fetch('http://localhost:8081/api/clientes/' + this.usuario.id + '/favoritos', {
+      const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}/favoritos`, {
         headers: headers
       });
       if (response.ok) {
@@ -419,7 +420,7 @@ async abrirCarrinho(): Promise<void> {
 
   try {
     const token = this.authService.getToken();
-    const response = await fetch(`http://localhost:8081/api/clientes/${user.id}`, {
+    const response = await fetch(`${environment.apiUrl}/clientes/${user.id}`, {
       headers: {
         'Authorization': 'Bearer ' + token
       }

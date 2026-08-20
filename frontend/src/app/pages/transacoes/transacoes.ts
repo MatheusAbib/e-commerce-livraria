@@ -13,6 +13,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DialogModule } from 'primeng/dialog';
 import { PaginatorModule } from 'primeng/paginator';
 import { AuthService } from '../../services/auth';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-transacoes',
@@ -115,7 +116,7 @@ export class TransacoesComponent implements OnInit {
       }
 
       const token = this.authService.getToken();
-      const response = await fetch('/api/logs', {
+      const response = await fetch(`${environment.apiUrl}/logs`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -224,61 +225,62 @@ export class TransacoesComponent implements OnInit {
     return levels[level] || level;
   }
 
- aplicarFiltros(): void {
-  this.filtrando = true;
-  this.loading = true;
-  this.cdr.detectChanges();
-
-  const inicio = Date.now();
-
-  this.filteredLogs = this.logs.filter(log => {
-    let match = true;
-    if (this.filtros.action && log.action !== this.filtros.action) match = false;
-    if (this.filtros.date) {
-      const logDate = new Date(log.timestamp).toISOString().split('T')[0];
-      const filterDate = new Date(this.filtros.date).toISOString().split('T')[0];
-      if (logDate !== filterDate) match = false;
-    }
-    if (this.filtros.level && log.level !== this.filtros.level) match = false;
-    return match;
-  });
-
-  this.totalRecords = this.filteredLogs.length;
-  this.first = 0;
-  this.atualizarPaginacao();
-
-  const decorrido = Date.now() - inicio;
-  const restante = Math.max(0, 500 - decorrido);
-
-  setTimeout(() => {
-    this.loading = false;
-    this.filtrando = false;
+  aplicarFiltros(): void {
+    this.filtrando = true;
+    this.loading = true;
     this.cdr.detectChanges();
-  }, restante);
-}
 
-limparFiltros(): void {
-  this.filtrando = true;
-  this.loading = true;
-  this.cdr.detectChanges();
+    const inicio = Date.now();
 
-  const inicio = Date.now();
+    this.filteredLogs = this.logs.filter(log => {
+      let match = true;
+      if (this.filtros.action && log.action !== this.filtros.action) match = false;
+      if (this.filtros.date) {
+        const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+        const filterDate = new Date(this.filtros.date).toISOString().split('T')[0];
+        if (logDate !== filterDate) match = false;
+      }
+      if (this.filtros.level && log.level !== this.filtros.level) match = false;
+      return match;
+    });
 
-  this.filtros = { action: '', date: null, level: '' };
-  this.filteredLogs = [...this.logs];
-  this.totalRecords = this.filteredLogs.length;
-  this.first = 0;
-  this.atualizarPaginacao();
+    this.totalRecords = this.filteredLogs.length;
+    this.first = 0;
+    this.atualizarPaginacao();
 
-  const decorrido = Date.now() - inicio;
-  const restante = Math.max(0, 500 - decorrido);
+    const decorrido = Date.now() - inicio;
+    const restante = Math.max(0, 500 - decorrido);
 
-  setTimeout(() => {
-    this.loading = false;
-    this.filtrando = false;
+    setTimeout(() => {
+      this.loading = false;
+      this.filtrando = false;
+      this.cdr.detectChanges();
+    }, restante);
+  }
+
+  limparFiltros(): void {
+    this.filtrando = true;
+    this.loading = true;
     this.cdr.detectChanges();
-  }, restante);
-}
+
+    const inicio = Date.now();
+
+    this.filtros = { action: '', date: null, level: '' };
+    this.filteredLogs = [...this.logs];
+    this.totalRecords = this.filteredLogs.length;
+    this.first = 0;
+    this.atualizarPaginacao();
+
+    const decorrido = Date.now() - inicio;
+    const restante = Math.max(0, 500 - decorrido);
+
+    setTimeout(() => {
+      this.loading = false;
+      this.filtrando = false;
+      this.cdr.detectChanges();
+    }, restante);
+  }
+
   translateAction(action: string): string {
     const actions: any = {
       login: 'Login',

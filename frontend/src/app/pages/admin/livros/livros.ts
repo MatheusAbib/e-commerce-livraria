@@ -17,6 +17,7 @@ import { AdminSidebarComponent } from '../../../components/admin-sidebar/admin-s
 import { AdminModalsComponent } from '../../../components/admin-modals/admin-modals';
 import { AdminService } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-livros-admin',
@@ -81,7 +82,7 @@ export class LivrosComponent implements OnInit {
   async carregarCategorias(): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch('http://localhost:8081/api/livros/categorias', {
+      const response = await fetch(`${environment.apiUrl}/livros/categorias`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -122,7 +123,7 @@ export class LivrosComponent implements OnInit {
         params.append('status', filtros.status);
       }
 
-      const data = await this.adminService.getLivrosConsulta('/api/livros/consulta?' + params.toString()).toPromise();
+      const data = await this.adminService.getLivrosConsulta(`${environment.apiUrl}/livros/consulta?${params.toString()}`).toPromise();
       this.livros = data?.livros || [];
       this.totalRecords = this.livros.length;
       this.first = 0;
@@ -241,9 +242,9 @@ async limparFiltros(): Promise<void> {
         headers['Authorization'] = 'Bearer ' + token;
       }
 
-      const url = livroData.id
-        ? `http://localhost:8081/api/livros/${livroData.id}/com-imagem`
-        : 'http://localhost:8081/api/livros/com-imagem';
+const url = livroData.id
+  ? `${environment.apiUrl}/livros/${livroData.id}/com-imagem`
+  : `${environment.apiUrl}/livros/com-imagem`;
       const method = livroData.id ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -273,7 +274,7 @@ async limparFiltros(): Promise<void> {
   async confirmarExcluir(livro: any): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/livros/${livro.id}`, {
+      const response = await fetch(`${environment.apiUrl}/livros/${livro.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': 'Bearer ' + token
@@ -299,7 +300,7 @@ async limparFiltros(): Promise<void> {
   async confirmarStatus(livro: any, ativo: boolean): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/livros/change-status/${livro.id}`, {
+      const response = await fetch(`${environment.apiUrl}/livros/change-status/${livro.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

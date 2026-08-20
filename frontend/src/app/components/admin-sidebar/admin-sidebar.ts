@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { AdminModalsComponent } from '../admin-modals/admin-modals';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-admin-sidebar',
@@ -43,7 +44,7 @@ export class AdminSidebarComponent implements OnInit {
   async carregarTotalChatNaoLidas(): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch('/api/chat/admin/total-nao-lidas', {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/total-nao-lidas`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }

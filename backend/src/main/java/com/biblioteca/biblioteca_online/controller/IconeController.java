@@ -15,12 +15,13 @@ public class IconeController {
     private IconeService iconeService;
 
     @GetMapping(value = "/favicon")
-    public ResponseEntity<String> getFavicon() {
+    public ResponseEntity<byte[]> getFavicon() {
         String conteudo = iconeService.getConteudoPorNome("favicon");
         if (conteudo != null) {
+            byte[] imageBytes = java.util.Base64.getDecoder().decode(conteudo);
             return ResponseEntity.ok()
-                    .contentType(MediaType.valueOf("image/svg+xml"))
-                    .body(conteudo);
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(imageBytes);
         }
         return ResponseEntity.notFound().build();
     }

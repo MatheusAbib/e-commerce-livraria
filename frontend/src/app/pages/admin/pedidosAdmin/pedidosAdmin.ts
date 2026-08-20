@@ -14,6 +14,7 @@ import { AdminModalsComponent } from '../../../components/admin-modals/admin-mod
 import { AdminService } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth';
 import { Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-pedidos-admin',
@@ -117,7 +118,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
   async carregarMensagensChatAdmin(pedidoId: number): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin/${pedidoId}`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/${pedidoId}`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -127,7 +128,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
         this.mensagensChatAdmin = await response.json();
         this.scrollChatAdminParaBaixo();
 
-        await fetch(`/api/chat/admin/${pedidoId}/ler`, {
+        await fetch(`${environment.apiUrl}/chat/admin/${pedidoId}/ler`, {
           method: 'PUT',
           headers: {
             'Authorization': 'Bearer ' + token
@@ -142,7 +143,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
   async carregarMensagensChatAdminSilenciosamente(pedidoId: number): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin/${pedidoId}`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/${pedidoId}`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -154,7 +155,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
           this.mensagensChatAdmin = novasMensagens;
           this.scrollChatAdminParaBaixo();
 
-          await fetch(`/api/chat/admin/${pedidoId}/ler`, {
+          await fetch(`${environment.apiUrl}/chat/admin/${pedidoId}/ler`, {
             method: 'PUT',
             headers: {
               'Authorization': 'Bearer ' + token
@@ -181,7 +182,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin?pedidoId=${this.chatAdminPedido.id}`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin?pedidoId=${this.chatAdminPedido.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -209,7 +210,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
   async verificarAtendimentoAdmin(pedidoId: number): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin/${pedidoId}/atendimento-ativo`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/${pedidoId}/atendimento-ativo`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -229,7 +230,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/admin/${this.chatAdminPedido.id}/encerrar`, {
+      const response = await fetch(`${environment.apiUrl}/chat/admin/${this.chatAdminPedido.id}/encerrar`, {
         method: 'PUT',
         headers: {
           'Authorization': 'Bearer ' + token
@@ -262,7 +263,7 @@ export class PedidosAdminComponent implements OnInit, OnDestroy {
   async carregarPedidosSilenciosamente(): Promise<void> {
     try {
       const token = this.authService.getToken();
-      const response = await fetch('/api/pedidos/todos', {
+      const response = await fetch(`${environment.apiUrl}/pedidos/todos`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -408,7 +409,7 @@ async carregarPedidos(): Promise<void> {
   this.cdr.detectChanges();
   try {
     const token = this.authService.getToken();
-    const response = await fetch('/api/pedidos/todos', {
+    const response = await fetch(`${environment.apiUrl}/pedidos/todos`, {
       headers: {
         'Authorization': 'Bearer ' + token
       }
@@ -478,7 +479,7 @@ async carregarPedidos(): Promise<void> {
         body.codigoRastreamentoEnvio = codigoRastreamento;
       }
 
-      const response = await fetch(`http://localhost:8081/api/pedidos/${pedido.id}/status`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos/${pedido.id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -538,7 +539,7 @@ async carregarPedidos(): Promise<void> {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/pedidos/${pedido.id}`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos/${pedido.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': 'Bearer ' + token

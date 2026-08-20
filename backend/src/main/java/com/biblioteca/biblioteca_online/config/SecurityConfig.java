@@ -37,7 +37,7 @@ public class SecurityConfig {
                     "/api/livros/**",
                     "/api/enderecos",
                     "/api/enderecos/**",
-                    "/api/icones/**", 
+                    "/api/icones/**",
                     "/uploads/**",
                     "/**"
                 ).permitAll()
@@ -51,12 +51,17 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:4200",
+            "https://livraria-online-gold.vercel.app"
+        ));
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

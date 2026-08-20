@@ -7,6 +7,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AdminSidebarComponent } from '../../../components/admin-sidebar/admin-sidebar';
 import { AdminService } from '../../../services/admin.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-log-completo',
@@ -85,7 +86,7 @@ export class LogCompletoComponent implements OnInit {
 
   async carregarUsuarios(): Promise<void> {
     try {
-      const data = await this.adminService.getClientes().toPromise();
+     const data = await this.adminService.getClientes().toPromise();
       this.usuarios = data || [];
       this.usuariosMap = {};
       this.usuarios.forEach((u: any) => {

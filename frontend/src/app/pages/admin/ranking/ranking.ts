@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PaginatorModule } from 'primeng/paginator';
 import { AdminSidebarComponent } from '../../../components/admin-sidebar/admin-sidebar';
 import { AdminService } from '../../../services/admin.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-ranking-admin',

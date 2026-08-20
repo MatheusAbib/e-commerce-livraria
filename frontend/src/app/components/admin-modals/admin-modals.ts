@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth';
 import { AdminService } from '../../services/admin.service';
 import { AppComponent } from '../../app';
 import { DropdownModule } from 'primeng/dropdown';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-admin-modals',
@@ -122,7 +123,7 @@ rastreamentoAdminSalvo: boolean = false;
   }
 
   abrirFotoAmpliada(caminho: string): void {
-  window.open('http://localhost:8081/' + caminho, '_blank');
+  window.open(`${environment.apiUrl}/../${caminho}`, '_blank');
 }
 
   async salvarPerfil(): Promise<void> {
@@ -246,7 +247,7 @@ validarRastreamentoAdmin(): void {
         imagemUrl: livro.imagemUrl || ''
       };
       if (livro.imagemUrl) {
-        this.imagemPreview = `http://localhost:8081/uploads/${livro.imagemUrl}`;
+        this.imagemPreview = `${environment.apiUrl}/../uploads/${livro.imagemUrl}`;
       } else {
         this.imagemPreview = null;
       }

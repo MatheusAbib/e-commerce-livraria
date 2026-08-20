@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth';
 import { ChatService } from '../../../services/chat.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-chat-modal',
@@ -48,7 +49,7 @@ export class ChatModalComponent {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/chat/cliente/${user.id}/conversas`, {
+      const response = await fetch(`${environment.apiUrl}/chat/cliente/${user.id}/conversas`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-chatbot',
@@ -418,7 +419,7 @@ export class ChatbotComponent implements OnInit, OnDestroy {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`/api/pedidos?clienteId=${user.id}`, {
+      const response = await fetch(`${environment.apiUrl}/pedidos?clienteId=${user.id}`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -487,7 +488,7 @@ REGRAS:
 Resposta:`;
 
     try {
-      const response = await fetch('/api/chatbot', {
+      const response = await fetch(`${environment.apiUrl}/chatbot`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })

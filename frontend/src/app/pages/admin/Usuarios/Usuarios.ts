@@ -7,6 +7,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AdminSidebarComponent } from '../../../components/admin-sidebar/admin-sidebar';
 import { AdminService } from '../../../services/admin.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-usuarios-admin',
@@ -95,7 +96,7 @@ export class UsuariosComponent implements OnInit {
       if (filtros.ativo !== undefined && filtros.ativo !== null && filtros.ativo !== '') {
         params.append('ativo', filtros.ativo === 'ativo' ? 'true' : 'false');
       }
-      const url = '/api/clientes/consulta?' + params.toString();
+      const url = `${environment.apiUrl}/clientes/consulta?${params.toString()}`;
       const data = await this.adminService.getClientesConsulta(url).toPromise();
       this.clientes = data || [];
       this.clientesFiltrados = [...this.clientes];

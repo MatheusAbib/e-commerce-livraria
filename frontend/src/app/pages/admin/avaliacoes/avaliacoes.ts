@@ -8,6 +8,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../services/auth';
 import { AdminSidebarComponent } from "../../../components/admin-sidebar/admin-sidebar";
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-avaliacoes',
@@ -55,7 +56,7 @@ export class AdminAvaliacoesComponent implements OnInit {
     this.loading = true;
     try {
       const token = this.authService.getToken();
-      const response = await fetch('/api/avaliacoes/todas', {
+      const response = await fetch(`${environment.apiUrl}/avaliacoes/todas`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -161,7 +162,7 @@ async confirmarExcluir(): Promise<void> {
 
   try {
     const token = this.authService.getToken();
-    const response = await fetch(`/api/avaliacoes/${this.avaliacaoSelecionada.id}/remover-comentario`, {
+    const response = await fetch(`${environment.apiUrl}/avaliacoes/${this.avaliacaoSelecionada.id}/remover-comentario`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

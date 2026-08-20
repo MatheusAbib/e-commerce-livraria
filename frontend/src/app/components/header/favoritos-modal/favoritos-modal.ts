@@ -7,6 +7,7 @@ import { MessageService } from 'primeng/api';
 import { CarrinhoService } from '../../../services/carrinho';
 import { AuthService } from '../../../services/auth';
 import { Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-favoritos-modal',
@@ -72,7 +73,7 @@ export class FavoritosModalComponent implements OnInit {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/clientes/${this.usuario.id}/favoritos`, {
+      const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}/favoritos`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -104,7 +105,7 @@ export class FavoritosModalComponent implements OnInit {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/clientes/${this.usuario.id}/favoritos/${livroId}`, {
+      const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}/favoritos/${livroId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': 'Bearer ' + token
@@ -119,7 +120,7 @@ export class FavoritosModalComponent implements OnInit {
         const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
         if (user) {
           const tokenCount = this.authService.getToken();
-          const responseCount = await fetch(`http://localhost:8081/api/clientes/${user.id}/favoritos`, {
+          const responseCount = await fetch(`${environment.apiUrl}/clientes/${user.id}/favoritos`, {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer ' + tokenCount

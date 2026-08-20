@@ -45,7 +45,7 @@
   <tr *ngFor="let item of carrinho" [class.item-problema]="!item.produto.ativo || item.produto.estoque <= 0 || item.quantidade > item.produto.estoque">
     <td>
       <div class="produto-info">
-        <img [src]="item.produto?.imagemUrl ? 'http://localhost:8081/uploads/' + item.produto.imagemUrl : 'https://via.placeholder.com/60x80?text=Sem+Imagem'">
+        <img [src]="item.produto?.imagemUrl ? '/uploads/' + item.produto.imagemUrl : 'https://via.placeholder.com/60x80?text=Sem+Imagem'">
         <div>
           <span>{{ item.produto.titulo }}</span>
           <span *ngIf="!item.produto.ativo" class="status-inativo">INATIVO</span>

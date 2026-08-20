@@ -6,6 +6,7 @@ import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../services/auth';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-perfil-modal',
@@ -77,7 +78,7 @@ export class PerfilModalComponent implements OnInit {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/clientes/${user.id}`, {
+      const response = await fetch(`${environment.apiUrl}/clientes/${user.id}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -118,7 +119,7 @@ export class PerfilModalComponent implements OnInit {
     try {
       const token = this.authService.getToken();
       const usuarioAntigo = { ...this.usuario };
-      const response = await fetch(`http://localhost:8081/api/clientes/${this.usuario.id}`, {
+      const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -197,7 +198,7 @@ export class PerfilModalComponent implements OnInit {
 
     try {
       const token = this.authService.getToken();
-      const response = await fetch(`http://localhost:8081/api/clientes/${this.usuario.id}/change-password`, {
+      const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -324,9 +325,9 @@ export class PerfilModalComponent implements OnInit {
         pais: 'Brasil'
       };
 
-      const url = this.enderecoEditando.id
-        ? `http://localhost:8081/api/enderecos/${this.enderecoEditando.id}`
-        : 'http://localhost:8081/api/enderecos';
+const url = this.enderecoEditando.id
+  ? `${environment.apiUrl}/enderecos/${this.enderecoEditando.id}`
+  : `${environment.apiUrl}/enderecos`;
       const method = this.enderecoEditando.id ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -418,9 +419,9 @@ export class PerfilModalComponent implements OnInit {
         preferencial: this.cartaoEditando.preferencial || false
       };
 
-      const url = this.cartaoEditando.id
-        ? `http://localhost:8081/api/clientes/${this.usuario.id}/cartoes/${this.cartaoEditando.id}`
-        : `http://localhost:8081/api/clientes/${this.usuario.id}/cartoes`;
+const url = this.cartaoEditando.id
+  ? `${environment.apiUrl}/clientes/${this.usuario.id}/cartoes/${this.cartaoEditando.id}`
+  : `${environment.apiUrl}/clientes/${this.usuario.id}/cartoes`;
       const method = this.cartaoEditando.id ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -489,11 +490,11 @@ export class PerfilModalComponent implements OnInit {
       if (item.tipo === 'endereco') {
         const endereco = this.perfilEnderecos.find(e => e.id === item.id);
         nomeItem = endereco?.nomeEndereco || 'Endereço';
-        url = `http://localhost:8081/api/enderecos/${item.id}`;
+        url = `${environment.apiUrl}/enderecos/${item.id}`;
       } else if (item.tipo === 'cartao') {
         const cartao = this.perfilCartoes.find(c => c.id === item.id);
         nomeItem = cartao?.bandeira || 'Cartão';
-        url = `http://localhost:8081/api/clientes/${this.usuario.id}/cartoes/${item.id}`;
+        url = `${environment.apiUrl}/clientes/${this.usuario.id}/cartoes/${item.id}`;
       }
 
       const response = await fetch(url, {

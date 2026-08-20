@@ -58,8 +58,7 @@
 
         <div class="pedido-produtos">
           <div *ngFor="let item of pedido.itens" class="produto-item">
-            <img
-              [src]="item.livro?.imagemUrl ? 'http://localhost:8081/uploads/' + item.livro.imagemUrl : 'https://via.placeholder.com/60x80?text=Sem+Imagem'"
+<img [src]="item.livro?.imagemUrl ? '/uploads/' + item.livro.imagemUrl : 'https://via.placeholder.com/60x80?text=Sem+Imagem'"
               class="produto-imagem"
               [alt]="item.livro?.titulo">
             <div class="produto-info">
@@ -657,7 +656,7 @@
         <button class="carousel-btn carousel-prev" (click)="fotoAnterior()" *ngIf="fotosDevolucaoList.length > 1">
           <i class="pi pi-chevron-left"></i>
         </button>
-        <img [src]="'http://localhost:8081/' + fotoAtual" class="foto-modal-img" alt="Foto da devolução">
+        <img [src]="'/uploads/devolucoes/' + fotoAtual" class="foto-modal-img" alt="Foto da devolução">
         <button class="carousel-btn carousel-next" (click)="fotoProxima()" *ngIf="fotosDevolucaoList.length > 1">
           <i class="pi pi-chevron-right"></i>
         </button>
@@ -667,7 +666,7 @@
              class="thumb-item"
              [class.active]="i === fotoIndexAtual"
              (click)="selecionarFoto(i)">
-          <img [src]="'http://localhost:8081/' + foto" alt="Miniatura {{ i + 1 }}">
+          <img [src]="'/uploads/devolucoes/' + foto" alt="Miniatura {{ i + 1 }}">
         </div>
       </div>
       <div class="foto-counter" *ngIf="fotosDevolucaoList.length > 1">
@@ -700,8 +699,7 @@
     <div class="custom-modal-body">
       <div *ngFor="let avaliacao of avaliacoes; let i = index" class="avaliacao-item">
         <div class="avaliacao-produto">
-          <img
-            [src]="avaliacao.imagemUrl ? 'http://localhost:8081/uploads/' + avaliacao.imagemUrl : 'https://via.placeholder.com/40x50?text=Sem+Imagem'"
+          <img [src]="avaliacao.imagemUrl ? '/uploads/' + avaliacao.imagemUrl : 'https://via.placeholder.com/40x50?text=Sem+Imagem'"
             class="avaliacao-imagem"
             [alt]="avaliacao.titulo">
           <div class="avaliacao-info">
