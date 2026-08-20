@@ -45,6 +45,156 @@ body {
   animation-delay: -0.3s;
   border-top-color: #22c55e;
 }
+
+.btn-primary.loading,
+.btn-secondary.loading,
+.p-button-outlined.loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.btn-primary.loading::after,
+.btn-secondary.loading::after,
+.p-button-outlined.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-secondary.loading::after,
+.p-button-outlined.loading::after {
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #2a5298;
+}
+.btn-filtrar.loading,
+.btn-limpar.loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.btn-filtrar.loading::after,
+.btn-limpar.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-limpar.loading::after {
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #2a5298;
+}
+
+.btn-favorito.loading,
+.btn-favorito-modal.loading {
+  position: relative;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.btn-favorito.loading i,
+.btn-favorito-modal.loading i {
+  opacity: 0;
+}
+
+.btn-favorito.loading::after,
+.btn-favorito-modal.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  margin-left: -8px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #2a5298;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-favorito.loading::after {
+  border-top-color: #dc2626;
+}
+
+.btn-primary.loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.btn-primary.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-devolucao.loading,
+.btn-avaliar.loading,
+.btn-enviar-devolucao.loading,
+.btn-falar-vendedor.loading,
+.btn-confirmar-reembolso.loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.btn-devolucao.loading::after,
+.btn-avaliar.loading::after,
+.btn-enviar-devolucao.loading::after,
+.btn-falar-vendedor.loading::after,
+.btn-confirmar-reembolso.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-confirmar-reembolso.loading::after {
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #2a5298;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

@@ -117,57 +117,61 @@ export class PerfilModalComponent implements OnInit {
   async salvarDados(): Promise<void> {
     if (!this.usuario) return;
     try {
-      const token = this.authService.getToken();
-      const usuarioAntigo = { ...this.usuario };
-      const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify(this.usuario)
-      });
+        const token = this.authService.getToken();
+        const usuarioAntigo = { ...this.usuario };
 
-      if (response.ok) {
-        const camposAlterados = [];
-        if (usuarioAntigo.nome !== this.usuario.nome) camposAlterados.push('Nome');
-        if (usuarioAntigo.email !== this.usuario.email) camposAlterados.push('E-mail');
-        if (usuarioAntigo.cpf !== this.usuario.cpf) camposAlterados.push('CPF');
-        if (usuarioAntigo.nascimento !== this.usuario.nascimento) camposAlterados.push('Data de Nascimento');
-        if (usuarioAntigo.genero !== this.usuario.genero) camposAlterados.push('Gênero');
-        if (usuarioAntigo.telefone !== this.usuario.telefone) camposAlterados.push('Telefone');
-        if (usuarioAntigo.tipotelefone !== this.usuario.tipotelefone) camposAlterados.push('Tipo de Telefone');
+        const dadosParaEnviar = { ...this.usuario };
+        delete dadosParaEnviar.senha;
 
-        this.messageService.add({severity:'success', summary:'Sucesso', detail:'Dados atualizados!'});
-        if (camposAlterados.length > 0) {
-          this.authService.adicionarNotificacao(
-            'Perfil Atualizado',
-            `Campos alterados: ${camposAlterados.join(', ')}`,
-            'success'
-          );
+        const response = await fetch(`${environment.apiUrl}/clientes/${this.usuario.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(dadosParaEnviar)
+        });
+
+        if (response.ok) {
+            const camposAlterados = [];
+            if (usuarioAntigo.nome !== this.usuario.nome) camposAlterados.push('Nome');
+            if (usuarioAntigo.email !== this.usuario.email) camposAlterados.push('E-mail');
+            if (usuarioAntigo.cpf !== this.usuario.cpf) camposAlterados.push('CPF');
+            if (usuarioAntigo.nascimento !== this.usuario.nascimento) camposAlterados.push('Data de Nascimento');
+            if (usuarioAntigo.genero !== this.usuario.genero) camposAlterados.push('Gênero');
+            if (usuarioAntigo.telefone !== this.usuario.telefone) camposAlterados.push('Telefone');
+            if (usuarioAntigo.tipotelefone !== this.usuario.tipotelefone) camposAlterados.push('Tipo de Telefone');
+
+            this.messageService.add({severity:'success', summary:'Sucesso', detail:'Dados atualizados!'});
+            if (camposAlterados.length > 0) {
+                this.authService.adicionarNotificacao(
+                    'Perfil Atualizado',
+                    `Campos alterados: ${camposAlterados.join(', ')}`,
+                    'success'
+                );
+            } else {
+                this.authService.adicionarNotificacao('Perfil Atualizado', 'Seus dados pessoais foram atualizados com sucesso!', 'success');
+            }
+            this.displayEditarPerfil = false;
+            await this.carregarDadosPerfil();
+            localStorage.setItem('clienteLogado', JSON.stringify(this.usuario));
+
+            this.authService.atualizarUsuario(this.usuario);
+
+            setTimeout(() => {
+                const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
+                const header = document.querySelector('app-header') as any;
+                if (header && header.atualizarNomeDoUsuario) {
+                    header.atualizarNomeDoUsuario(user);
+                }
+            }, 100);
         } else {
-          this.authService.adicionarNotificacao('Perfil Atualizado', 'Seus dados pessoais foram atualizados com sucesso!', 'success');
+            this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao atualizar dados'});
         }
-        this.displayEditarPerfil = false;
-        await this.carregarDadosPerfil();
-        localStorage.setItem('clienteLogado', JSON.stringify(this.usuario));
-
-        this.authService.atualizarUsuario(this.usuario);
-
-        setTimeout(() => {
-          const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
-          const header = document.querySelector('app-header') as any;
-          if (header && header.atualizarNomeDoUsuario) {
-            header.atualizarNomeDoUsuario(user);
-          }
-        }, 100);
-      } else {
-        this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao atualizar dados'});
-      }
     } catch (error) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
+        this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao conectar ao servidor'});
     }
-  }
+}
 
   alterarSenha(): void {
     this.novaSenha = '';

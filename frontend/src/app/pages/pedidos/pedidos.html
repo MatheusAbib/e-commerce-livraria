@@ -290,19 +290,23 @@
         </div>
 
         <div class="pedido-acoes">
-          <button
-            *ngIf="pedido.status === 'EM_PROCESSAMENTO'"
-            class="btn-danger"
-            (click)="cancelarPedido(pedido.id)">
-            <i class="pi pi-times"></i> Cancelar Pedido
-          </button>
+<button
+  *ngIf="pedido.status === 'EM_PROCESSAMENTO'"
+  class="btn-danger"
+  (click)="cancelarPedido(pedido.id)"
+  [disabled]="carregandoCancelar"
+  [class.loading]="carregandoCancelar">
+  <i class="pi pi-times"></i> Cancelar Pedido
+</button>
 
-          <button
-            *ngIf="pedido.status === 'EM_TRANSITO'"
-            class="btn-primary"
-            (click)="abrirConfirmarEntrega(pedido.id)">
-            <i class="pi pi-check"></i> Marcar como Entregue
-          </button>
+<button
+  *ngIf="pedido.status === 'EM_TRANSITO'"
+  class="btn-primary"
+  (click)="abrirConfirmarEntrega(pedido.id)"
+  [disabled]="carregandoEntrega"
+  [class.loading]="carregandoEntrega">
+  <i class="pi pi-check"></i> Marcar como Entregue
+</button>
 
 <button
   *ngIf="pedido.status === 'ENTREGUE' && !verificarPrazoDevolucao(pedido.dataEntrega) && pedido.temItemDisponivelParaDevolucao"
@@ -340,12 +344,14 @@
             <i class="pi pi-comment"></i> Falar com vendedor
           </button>
 
-          <button
-            *ngIf="pedido.status === 'DEVOLVIDO' && !pedido.reembolsoConfirmado"
-            class="btn-confirmar-reembolso"
-            (click)="confirmarReembolso(pedido.id)">
-            <i class="pi pi-check-circle"></i> Confirmar reembolso
-          </button>
+<button
+  *ngIf="pedido.status === 'DEVOLVIDO' && !pedido.reembolsoConfirmado"
+  class="btn-confirmar-reembolso"
+  (click)="confirmarReembolso(pedido.id)"
+  [disabled]="carregandoReembolso"
+  [class.loading]="carregandoReembolso">
+  <i class="pi pi-check-circle"></i> Confirmar reembolso
+</button>
         </div>
       </div>
     </div>
@@ -372,9 +378,9 @@
         <button class="btn-secondary" (click)="displayCancelamentoModal = false">
           <i class="pi pi-times"></i> Voltar
         </button>
-        <button class="btn-danger" (click)="confirmarCancelamento()">
-          <i class="pi pi-check"></i> Sim, Cancelar
-        </button>
+<button class="btn-danger" (click)="confirmarCancelamento()" [disabled]="carregandoCancelar" [class.loading]="carregandoCancelar">
+  <i class="pi pi-check"></i> Sim, Cancelar
+</button>
       </div>
     </div>
   </div>
@@ -453,9 +459,9 @@
         <button class="btn-secondary" (click)="displayDevolucaoModal = false">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="confirmarDevolucao()">
-          <i class="pi pi-check"></i> Solicitar Devolução
-        </button>
+<button class="btn-primary" (click)="confirmarDevolucao()" [disabled]="carregandoDevolucao" [class.loading]="carregandoDevolucao">
+  <i class="pi pi-check"></i> Solicitar Devolução
+</button>
       </div>
     </div>
   </div>
@@ -527,12 +533,13 @@
                 placeholder="Ex: AA123456789BR"
                 class="auth-input"
                 style="text-transform: uppercase;">
-              <button
-                class="btn-primary btn-sm"
-                (click)="salvarRastreamento()"
-                [disabled]="!codigoRastreamento || !codigoRastreamentoValido">
-                <i class="pi pi-save"></i> Salvar
-              </button>
+<button
+  class="btn-primary btn-sm"
+  (click)="salvarRastreamento()"
+  [disabled]="!codigoRastreamento || !codigoRastreamentoValido || carregandoRastreamento"
+  [class.loading]="carregandoRastreamento">
+  <i class="pi pi-save"></i> Salvar
+</button>
             </div>
             <small style="color: #6b7a8f; font-size: 0.75rem;">
               Formato: 2 letras + 9 números + 2 letras (ex: AA123456789BR)
@@ -585,9 +592,9 @@
         <button class="btn-secondary" (click)="displayConfirmarReembolso = false">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="confirmarReembolsoFinal()">
-          <i class="pi pi-check"></i> Sim, Confirmar
-        </button>
+<button class="btn-primary" (click)="confirmarReembolsoFinal()" [disabled]="carregandoReembolso" [class.loading]="carregandoReembolso">
+  <i class="pi pi-check"></i> Sim, Confirmar
+</button>
       </div>
     </div>
   </div>
@@ -630,9 +637,9 @@
         <button class="btn-secondary" (click)="fecharConfirmarEntrega()">
           <i class="pi pi-times"></i> Cancelar
         </button>
-        <button class="btn-primary" (click)="confirmarEntregaFinal()">
-          <i class="pi pi-check"></i> Sim, Confirmar
-        </button>
+<button class="btn-primary" (click)="confirmarEntregaFinal()" [disabled]="carregandoEntrega" [class.loading]="carregandoEntrega">
+  <i class="pi pi-check"></i> Sim, Confirmar
+</button>
       </div>
     </div>
   </div>
@@ -735,9 +742,9 @@
             rows="2">
           </textarea>
 
-          <button class="btn-primary btn-salvar-avaliacao" (click)="salvarAvaliacao(i)">
-            <i class="pi pi-check"></i> {{ avaliacao.avaliacaoId ? 'Atualizar Avaliação' : 'Salvar Avaliação' }}
-          </button>
+<button class="btn-primary btn-salvar-avaliacao" (click)="salvarAvaliacao(i)" [disabled]="carregandoAvaliacao[i]" [class.loading]="carregandoAvaliacao[i]">
+  <i class="pi pi-check"></i> {{ avaliacao.avaliacaoId ? 'Atualizar Avaliação' : 'Salvar Avaliação' }}
+</button>
         </div>
 
         <div *ngIf="avaliacao.avaliado" class="avaliacao-feita">

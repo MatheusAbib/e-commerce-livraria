@@ -60,7 +60,16 @@ public Pedido criarPedido(Long clienteId, List<ItemPedidoDTO> itensDTO,
     pedido.setCliente(cliente);
 
     for (ItemPedidoDTO itemDTO : itensDTO) {
-        Livro livro = livroService.buscarPorId(itemDTO.getLivroId()).get();
+        Livro livro = livroService.buscarPorId(itemDTO.getLivroId())
+            .orElseThrow(() -> new RuntimeException("Livro não encontrado: " + itemDTO.getLivroId()));
+        
+        if (livro.getEstoque() < itemDTO.getQuantidade()) {
+            throw new RuntimeException(
+                "Estoque insuficiente para o livro: " + livro.getTitulo() + 
+                " (Disponível: " + livro.getEstoque() + ", Solicitado: " + itemDTO.getQuantidade() + ")"
+            );
+        }
+        
         pedido.adicionarItem(livro, itemDTO.getQuantidade());
     }
 
@@ -105,7 +114,6 @@ public Pedido criarPedido(Long clienteId, List<ItemPedidoDTO> itensDTO,
     pedido.setValorTotal(totalFinal);
 
     Pedido pedidoSalvo = pedidoRepository.save(pedido);
-
 
     Map<Long, Integer> quantidadesPorLivro = new HashMap<>();
     for (ItemPedido item : pedidoSalvo.getItens()) {

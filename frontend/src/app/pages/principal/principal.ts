@@ -64,6 +64,13 @@ export class Principal implements OnInit {
   comentariosRows: number = 5;
   comentariosTotal: number = 0;
 
+  carregandoFiltro: boolean = false;
+  carregandoLimpar: boolean = false;
+  carregandoCarrinho: { [key: number]: boolean } = {};
+  carregandoFavorito: { [key: number]: boolean } = {};
+  carregandoCarrinhoModal: boolean = false;
+  carregandoFavoritoModal: boolean = false;
+
   filtros = {
     titulo: '',
     autor: '',
@@ -251,10 +258,8 @@ export class Principal implements OnInit {
   filtrando: boolean = false;
 
   async aplicarFiltros(): Promise<void> {
-    this.filtrando = true;
+    this.carregandoFiltro = true;
     this.loading = true;
-
-    const inicio = Date.now();
 
     this.filteredLivros = this.livros.filter(l => {
       let match = true;
@@ -268,34 +273,21 @@ export class Principal implements OnInit {
 
     this.totalRecords = this.filteredLivros.length;
     this.first = 0;
-
-    const decorrido = Date.now() - inicio;
-    const restante = Math.max(0, 500 - decorrido);
-
-    setTimeout(() => {
-      this.loading = false;
-      this.filtrando = false;
-    }, restante);
+    this.loading = false;
+    this.carregandoFiltro = false;
   }
 
   async limparFiltros(): Promise<void> {
-    this.filtrando = true;
+    this.carregandoLimpar = true;
     this.loading = true;
-
-    const inicio = Date.now();
 
     this.filtros = { titulo: '', autor: '', editora: '', categoria: '', precoMax: null };
     this.filteredLivros = [...this.livros];
     this.totalRecords = this.filteredLivros.length;
     this.first = 0;
 
-    const decorrido = Date.now() - inicio;
-    const restante = Math.max(0, 500 - decorrido);
-
-    setTimeout(() => {
-      this.loading = false;
-      this.filtrando = false;
-    }, restante);
+    this.loading = false;
+    this.carregandoLimpar = false;
   }
 
   onPageChange(event: any): void {
@@ -323,8 +315,13 @@ export class Principal implements OnInit {
 
   async favoritarDoModal(): Promise<void> {
     if (!this.selectedLivro) return;
-    await this.favoritar(this.selectedLivro.id);
-    this.selectedIsFavorited = this.favoritosIds.includes(this.selectedLivro.id);
+    this.carregandoFavoritoModal = true;
+    try {
+      await this.favoritar(this.selectedLivro.id);
+      this.selectedIsFavorited = this.favoritosIds.includes(this.selectedLivro.id);
+    } finally {
+      this.carregandoFavoritoModal = false;
+    }
   }
 
   aumentarQuantidade(): void {
@@ -340,6 +337,9 @@ export class Principal implements OnInit {
   }
 
   async favoritar(livroId: number): Promise<void> {
+    if (this.carregandoFavorito[livroId]) return;
+    this.carregandoFavorito[livroId] = true;
+
     const user = JSON.parse(localStorage.getItem('clienteLogado') || 'null');
     if (!user) {
       this.messageService.add({
@@ -347,6 +347,7 @@ export class Principal implements OnInit {
         summary: 'Atenção',
         detail: 'Faça login para favoritar livros'
       });
+      this.carregandoFavorito[livroId] = false;
       return;
     }
 
@@ -396,6 +397,8 @@ export class Principal implements OnInit {
       }
     } catch (error) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Erro ao favoritar'});
+    } finally {
+      this.carregandoFavorito[livroId] = false;
     }
   }
 
@@ -425,9 +428,13 @@ export class Principal implements OnInit {
   }
 
   async adicionarAoCarrinhoComQuantidade(id: number): Promise<void> {
+    if (this.carregandoCarrinhoModal) return;
+    this.carregandoCarrinhoModal = true;
+
     const user = this.authService.getUser();
     if (!user) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Faça login para comprar'});
+      this.carregandoCarrinhoModal = false;
       return;
     }
 
@@ -486,6 +493,7 @@ export class Principal implements OnInit {
             life: 4000
           });
           this.authService.adicionarNotificacao('Dados incompletos', mensagem, 'warning');
+          this.carregandoCarrinhoModal = false;
           return;
         }
       }
@@ -495,6 +503,7 @@ export class Principal implements OnInit {
 
       if (produto.estoque <= 0) {
         this.messageService.add({severity:'error', summary:'Erro', detail:'Produto indisponivel'});
+        this.carregandoCarrinhoModal = false;
         return;
       }
 
@@ -504,6 +513,7 @@ export class Principal implements OnInit {
       if (existente) {
         if (existente.quantidade + novaQuantidade > produto.estoque) {
           this.messageService.add({severity:'error', summary:'Erro', detail:'Quantidade indisponivel em estoque'});
+          this.carregandoCarrinhoModal = false;
           return;
         }
         existente.quantidade += novaQuantidade;
@@ -533,6 +543,8 @@ export class Principal implements OnInit {
         summary: 'Erro',
         detail: 'Erro ao adicionar produto'
       });
+    } finally {
+      this.carregandoCarrinhoModal = false;
     }
   }
 
@@ -562,9 +574,13 @@ export class Principal implements OnInit {
   }
 
   async adicionarAoCarrinho(id: number): Promise<void> {
+    if (this.carregandoCarrinho[id]) return;
+    this.carregandoCarrinho[id] = true;
+
     const user = this.authService.getUser();
     if (!user) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Faça login para comprar'});
+      this.carregandoCarrinho[id] = false;
       return;
     }
 
@@ -623,6 +639,7 @@ export class Principal implements OnInit {
             life: 4000
           });
           this.authService.adicionarNotificacao('Dados incompletos', mensagem, 'warning');
+          this.carregandoCarrinho[id] = false;
           return;
         }
       }
@@ -632,6 +649,7 @@ export class Principal implements OnInit {
 
       if (produto.estoque <= 0) {
         this.messageService.add({severity:'error', summary:'Erro', detail:'Produto indisponivel'});
+        this.carregandoCarrinho[id] = false;
         return;
       }
 
@@ -640,6 +658,7 @@ export class Principal implements OnInit {
       if (existente) {
         if (existente.quantidade + 1 > produto.estoque) {
           this.messageService.add({severity:'error', summary:'Erro', detail:'Quantidade indisponivel em estoque'});
+          this.carregandoCarrinho[id] = false;
           return;
         }
         existente.quantidade++;
@@ -667,6 +686,8 @@ export class Principal implements OnInit {
         summary: 'Erro',
         detail: 'Erro ao adicionar produto'
       });
+    } finally {
+      this.carregandoCarrinho[id] = false;
     }
   }
 }

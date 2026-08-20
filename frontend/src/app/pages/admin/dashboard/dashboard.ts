@@ -343,9 +343,9 @@ ngAfterViewInit(): void {
       'EM_PROCESSAMENTO': 'Em Processamento',
       'EM_TRANSITO': 'Em Trânsito',
       'CANCELADO': 'Cancelado',
-      'DEVOLUCAO': 'Devolução Solicitada',
-      'AUTORIZADO_DEVOLUCAO': 'Devolução Autorizada',
-      'ENVIADO_DEVOLUCAO': 'Devolução Enviada',
+      'DEVOLUCAO': 'Devolucao Solicitada',
+      'AUTORIZADO_DEVOLUCAO': 'Devolucao Autorizada',
+      'ENVIADO_DEVOLUCAO': 'Devolucao Enviada',
       'DEVOLVIDO': 'Devolvido'
     };
     return labels[status] || status;
@@ -630,29 +630,185 @@ renderChart(labels: string[], data: number[]): void {
     }, restante);
   }
 
-  exportarPDF(): void {
-    window.print();
+  async exportarPDF(): Promise<void> {
+    const { default: html2canvas } = await import('html2canvas');
+    const { default: jsPDF } = await import('jspdf');
+
+    const relatorio = document.createElement('div');
+    relatorio.style.cssText = `
+      padding: 40px;
+      background: white;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+    `;
+
+    relatorio.innerHTML = `
+      <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #2a5298; padding-bottom: 20px;">
+        <h1 style="color: #2a5298; font-size: 28px; margin: 0;">Relatorio do Dashboard</h1>
+        <p style="color: #6b7a8a; font-size: 14px; margin: 5px 0 0 0;">
+          Gerado em ${new Date().toLocaleString('pt-BR')}
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+        <div style="background: #f0f4f8; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 24px; color: #2a5298; font-weight: bold;">${this.stats.totalLivros}</div>
+          <div style="font-size: 12px; color: #6b7a8a;">Total de Livros</div>
+        </div>
+        <div style="background: #f0f4f8; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 24px; color: #2a5298; font-weight: bold;">${this.stats.totalVendas}</div>
+          <div style="font-size: 12px; color: #6b7a8a;">Vendas Totais</div>
+        </div>
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 24px; color: #2e7d32; font-weight: bold;">R$ ${this.stats.lucroTotal.toFixed(2)}</div>
+          <div style="font-size: 12px; color: #6b7a8a;">Lucro Total</div>
+        </div>
+        <div style="background: #f0f4f8; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 24px; color: #2a5298; font-weight: bold;">${this.stats.totalPedidos}</div>
+          <div style="font-size: 12px; color: #6b7a8a;">Total de Pedidos</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 24px; color: #d97706; font-weight: bold;">${this.statsAvaliacoes.mediaGeral.toFixed(1)}</div>
+          <div style="font-size: 12px; color: #6b7a8a;">Nota Media</div>
+        </div>
+        <div style="background: #dbeafe; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 24px; color: #2563eb; font-weight: bold;">${this.statsAvaliacoes.totalAvaliacoes}</div>
+          <div style="font-size: 12px; color: #6b7a8a;">Total Avaliacoes</div>
+        </div>
+        <div style="background: #d1fae5; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 24px; color: #059669; font-weight: bold;">${this.statsAvaliacoes.notaMaxima}</div>
+          <div style="font-size: 12px; color: #6b7a8a;">Maior Nota</div>
+        </div>
+        <div style="background: #fee2e2; padding: 15px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 24px; color: #dc2626; font-weight: bold;">${this.statsAvaliacoes.notaMinima}</div>
+          <div style="font-size: 12px; color: #6b7a8a;">Menor Nota</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3 style="color: #2a5298; font-size: 16px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+          Ranking de Livros por Avaliacao
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background: #2a5298; color: white;">
+              <th style="padding: 8px 12px; text-align: left;">#</th>
+              <th style="padding: 8px 12px; text-align: left;">Livro</th>
+              <th style="padding: 8px 12px; text-align: center;">Media</th>
+              <th style="padding: 8px 12px; text-align: center;">Avaliacoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${this.rankingLivros.slice(0, 10).map((item, i) => `
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 6px 12px;">${i + 1}</td>
+                <td style="padding: 6px 12px;">${item.titulo}</td>
+                <td style="padding: 6px 12px; text-align: center; font-weight: bold;">${item.media.toFixed(1)}</td>
+                <td style="padding: 6px 12px; text-align: center;">${item.total}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #2a5298; font-size: 16px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+          Distribuicao por Status
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background: #2a5298; color: white;">
+              <th style="padding: 8px 12px; text-align: left;">Status</th>
+              <th style="padding: 8px 12px; text-align: center;">Quantidade</th>
+              <th style="padding: 8px 12px; text-align: center;">Percentual</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${this.statusDistribuicao.map(item => `
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 6px 12px;">${this.getStatusLabel(item.status)}</td>
+                <td style="padding: 6px 12px; text-align: center;">${item.total}</td>
+                <td style="padding: 6px 12px; text-align: center;">${item.percentual.toFixed(1)}%</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 30px; text-align: center; font-size: 11px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 15px;">
+        Livraria Online - Dashboard Gerencial
+      </div>
+    `;
+
+    document.body.appendChild(relatorio);
+
+    try {
+      const canvas = await html2canvas(relatorio, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`dashboard_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+    } finally {
+      document.body.removeChild(relatorio);
+    }
   }
 
   exportarExcel(): void {
-    const dados = [
-      ['Métrica', 'Valor'],
-      ['Total de Livros', this.stats.totalLivros],
-      ['Vendas Totais', this.stats.totalVendas],
-      ['Lucro Total', this.stats.lucroTotal],
-      ['Total de Pedidos', this.stats.totalPedidos],
-      ['Nota Média Geral', this.statsAvaliacoes.mediaGeral],
-      ['Total de Avaliações', this.statsAvaliacoes.totalAvaliacoes],
-      ['Maior Nota', this.statsAvaliacoes.notaMaxima],
-      ['Menor Nota', this.statsAvaliacoes.notaMinima]
-    ];
+    const dataAtual = new Date().toLocaleString('pt-BR');
 
-    let csv = dados.map(row => row.join(';')).join('\n');
-    csv += '\n\nRanking de Livros por Avaliação\n';
-    csv += 'Livro;Média;Total de Avaliações\n';
-    for (const item of this.rankingLivros) {
-      csv += `${item.titulo};${item.media.toFixed(1)};${item.total}\n`;
-    }
+    let csv = `RELATORIO DO DASHBOARD\n`;
+    csv += `Gerado em: ${dataAtual}\n`;
+    csv += `Sistema: Livraria Online\n\n`;
+
+    csv += `===== ESTATISTICAS GERAIS =====\n`;
+    csv += `Total de Livros;${this.stats.totalLivros}\n`;
+    csv += `Vendas Totais;${this.stats.totalVendas}\n`;
+    csv += `Lucro Total;R$ ${this.stats.lucroTotal.toFixed(2)}\n`;
+    csv += `Total de Pedidos;${this.stats.totalPedidos}\n\n`;
+
+    csv += `===== AVALIACOES =====\n`;
+    csv += `Nota Media Geral;${this.statsAvaliacoes.mediaGeral.toFixed(1)}\n`;
+    csv += `Total de Avaliacoes;${this.statsAvaliacoes.totalAvaliacoes}\n`;
+    csv += `Maior Nota;${this.statsAvaliacoes.notaMaxima}\n`;
+    csv += `Menor Nota;${this.statsAvaliacoes.notaMinima}\n\n`;
+
+    csv += `===== RANKING DE LIVROS POR AVALIACAO =====\n`;
+    csv += `Posicao;Livro;Media;Total Avaliacoes\n`;
+    this.rankingLivros.forEach((item, i) => {
+      csv += `${i + 1};${item.titulo};${item.media.toFixed(1)};${item.total}\n`;
+    });
+    csv += `\n`;
+
+    csv += `===== DISTRIBUICAO POR STATUS =====\n`;
+    csv += `Status;Quantidade;Percentual\n`;
+    this.statusDistribuicao.forEach(item => {
+      csv += `${this.getStatusLabel(item.status)};${item.total};${item.percentual.toFixed(1)}%\n`;
+    });
+    csv += `\n`;
+
+    csv += `===== LUCRO POR LIVRO =====\n`;
+    csv += `Livro;Vendidos;Lucro (R$)\n`;
+    this.lucros.forEach(item => {
+      csv += `${item[0]};${item[1]};R$ ${Number(item[2]).toFixed(2)}\n`;
+    });
+
+    csv += `\n\nRelatorio gerado em ${dataAtual}`;
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');

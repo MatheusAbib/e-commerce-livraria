@@ -90,6 +90,13 @@ export class PedidosComponent implements OnInit, OnDestroy {
   fotoIndexAtual: number = 0;
   fotoAtual: string = '';
 
+  carregandoCancelar: boolean = false;
+  carregandoDevolucao: boolean = false;
+  carregandoReembolso: boolean = false;
+  carregandoEntrega: boolean = false;
+  carregandoRastreamento: boolean = false;
+  carregandoAvaliacao: { [key: number]: boolean } = {};
+
   private intervalId: any = null;
 
   constructor(
@@ -262,87 +269,94 @@ export class PedidosComponent implements OnInit, OnDestroy {
     this.avaliacoes[index].nota = valor;
   }
 
-  async salvarAvaliacao(index: number): Promise<void> {
-    const avaliacao = this.avaliacoes[index];
+async salvarAvaliacao(index: number): Promise<void> {
+  if (this.carregandoAvaliacao[index]) return;
+  this.carregandoAvaliacao[index] = true;
 
-    if (avaliacao.nota === 0) {
+  const avaliacao = this.avaliacoes[index];
+
+  if (avaliacao.nota === 0) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Selecione uma nota para avaliar'
+    });
+    this.carregandoAvaliacao[index] = false;
+    return;
+  }
+
+  try {
+    const user = this.authService.getUser();
+    if (!user) {
       this.messageService.add({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Selecione uma nota para avaliar'
+        detail: 'Usuário não encontrado. Faça login novamente.'
       });
+      this.carregandoAvaliacao[index] = false;
       return;
     }
 
-    try {
-      const user = this.authService.getUser();
-      if (!user) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Usuário não encontrado. Faça login novamente.'
-        });
-        return;
-      }
+    const token = this.authService.getToken();
 
-      const token = this.authService.getToken();
+    const body = {
+      livroId: avaliacao.livroId,
+      nota: avaliacao.nota,
+      comentario: avaliacao.comentario || '',
+      pedidoId: this.pedidoAvaliacao.id
+    };
 
-      const body = {
-        livroId: avaliacao.livroId,
-        nota: avaliacao.nota,
-        comentario: avaliacao.comentario || '',
-        pedidoId: this.pedidoAvaliacao.id
-      };
+    const isEdit = avaliacao.avaliacaoId !== null && avaliacao.avaliacaoId !== undefined;
 
-      const isEdit = avaliacao.avaliacaoId !== null && avaliacao.avaliacaoId !== undefined;
+    const url = isEdit
+      ? `${environment.apiUrl}/avaliacoes/${avaliacao.avaliacaoId}?clienteId=${user.id}`
+      : `${environment.apiUrl}/avaliacoes?clienteId=${user.id}`;
 
-      const url = isEdit
-        ? `${environment.apiUrl}/avaliacoes/${avaliacao.avaliacaoId}?clienteId=${user.id}`
-        : `${environment.apiUrl}/avaliacoes?clienteId=${user.id}`;
+    const method = isEdit ? 'PUT' : 'POST';
 
-      const method = isEdit ? 'PUT' : 'POST';
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(body)
+    });
 
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.mensagem || 'Erro ao salvar avaliação');
-      }
-
-      const data = await response.json();
-
-      avaliacao.avaliado = true;
-      avaliacao.avaliacaoId = data.id || avaliacao.avaliacaoId;
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: `Avaliação do livro "${avaliacao.titulo}" ${isEdit ? 'atualizada' : 'salva'} com sucesso!`
-      });
-
-      this.authService.adicionarNotificacao(
-        'Avaliação',
-        `Você ${isEdit ? 'atualizou' : 'avaliou'} "${avaliacao.titulo}" com ${avaliacao.nota} estrelas`,
-        'success'
-      );
-
-      await this.carregarPedidos();
-
-    } catch (error: any) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: error.message
-      });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.mensagem || 'Erro ao salvar avaliação');
     }
+
+    const data = await response.json();
+
+    avaliacao.avaliado = true;
+    avaliacao.avaliacaoId = data.id || avaliacao.avaliacaoId;
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: `Avaliação do livro "${avaliacao.titulo}" ${isEdit ? 'atualizada' : 'salva'} com sucesso!`
+    });
+
+    this.authService.adicionarNotificacao(
+      'Avaliação',
+      `Você ${isEdit ? 'atualizou' : 'avaliou'} "${avaliacao.titulo}" com ${avaliacao.nota} estrelas`,
+      'success'
+    );
+
+    await this.carregarPedidos();
+
+  } catch (error: any) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: error.message
+    });
+  } finally {
+    this.carregandoAvaliacao[index] = false;
   }
+}
 
   alternarEstrela(index: number, estrelaIndex: number): void {
     const avaliacao = this.avaliacoes[index];
@@ -762,37 +776,41 @@ export class PedidosComponent implements OnInit, OnDestroy {
     this.displayInstrucoesEnvio = false;
   }
 
-  salvarRastreamento(): void {
-    if (!this.codigoRastreamento) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Aviso',
-        detail: 'Digite o código de rastreamento'
-      });
-      return;
-    }
+salvarRastreamento(): void {
+  if (this.carregandoRastreamento) return;
 
-    if (!this.codigoRastreamentoValido) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Código inválido. Formato: AA123456789BR (2 letras + 9 números + 2 letras)'
-      });
-      return;
-    }
-
-    this.rastreamentoSalvo = true;
+  if (!this.codigoRastreamento) {
     this.messageService.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Código de rastreamento salvo!'
+      severity: 'warn',
+      summary: 'Aviso',
+      detail: 'Digite o código de rastreamento'
     });
-    this.authService.adicionarNotificacao(
-      'Rastreamento',
-      `Código de rastreamento: ${this.codigoRastreamento}`,
-      'info'
-    );
+    return;
   }
+
+  if (!this.codigoRastreamentoValido) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Código inválido. Formato: AA123456789BR (2 letras + 9 números + 2 letras)'
+    });
+    return;
+  }
+
+  this.carregandoRastreamento = true;
+  this.rastreamentoSalvo = true;
+  this.messageService.add({
+    severity: 'success',
+    summary: 'Sucesso',
+    detail: 'Código de rastreamento salvo!'
+  });
+  this.authService.adicionarNotificacao(
+    'Rastreamento',
+    `Código de rastreamento: ${this.codigoRastreamento}`,
+    'info'
+  );
+  this.carregandoRastreamento = false;
+}
 
   filtrarPorStatus(status: string): void {
     this.statusAtivo = status;
@@ -841,33 +859,37 @@ export class PedidosComponent implements OnInit, OnDestroy {
     this.displayCancelamentoModal = true;
   }
 
-  async confirmarCancelamento(): Promise<void> {
-    try {
-      const token = this.authService.getToken();
-      const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoCancelamentoId}/cancelar`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        }
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.mensagem || 'Erro ao cancelar pedido');
+async confirmarCancelamento(): Promise<void> {
+  if (this.carregandoCancelar) return;
+  this.carregandoCancelar = true;
+  try {
+    const token = this.authService.getToken();
+    const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoCancelamentoId}/cancelar`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
       }
+    });
 
-      const pedido = this.pedidos.find(p => p.id === this.pedidoCancelamentoId);
-      const pedidoLabel = pedido ? `Pedido #${pedido.id}` : 'Pedido';
-      this.messageService.add({severity:'success', summary:'Sucesso', detail:`${pedidoLabel} cancelado!`});
-      this.authService.adicionarNotificacao('Cancelamento', `${pedidoLabel} cancelado com sucesso`, 'success');
-      await this.carregarPedidos();
-      this.displayCancelamentoModal = false;
-    } catch (error: any) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:error.message});
-      this.authService.adicionarNotificacao('Erro', error.message, 'error');
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.mensagem || 'Erro ao cancelar pedido');
     }
+
+    const pedido = this.pedidos.find(p => p.id === this.pedidoCancelamentoId);
+    const pedidoLabel = pedido ? `Pedido #${pedido.id}` : 'Pedido';
+    this.messageService.add({severity:'success', summary:'Sucesso', detail:`${pedidoLabel} cancelado!`});
+    this.authService.adicionarNotificacao('Cancelamento', `${pedidoLabel} cancelado com sucesso`, 'success');
+    await this.carregarPedidos();
+    this.displayCancelamentoModal = false;
+  } catch (error: any) {
+    this.messageService.add({severity:'error', summary:'Erro', detail:error.message});
+    this.authService.adicionarNotificacao('Erro', error.message, 'error');
+  } finally {
+    this.carregandoCancelar = false;
   }
+}
 
   async atualizarStatus(pedidoId: number, novoStatus: string, codigoRastreamento?: string): Promise<void> {
     try {
@@ -1037,81 +1059,89 @@ export class PedidosComponent implements OnInit, OnDestroy {
   }
 
   async confirmarDevolucao(): Promise<void> {
-    if (!this.motivoDevolucao.trim()) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Informe o motivo da devolução'});
-      return;
-    }
+  if (this.carregandoDevolucao) return;
+  this.carregandoDevolucao = true;
 
-    const itens = this.itensDevolucao
-      .filter(item => item.selecionado)
-      .map(item => {
-        const quantidade = Math.min(item.quantidadeDevolver, item.quantidadeDisponivel);
-        return {
-          itemPedidoId: item.id,
-          quantidade: quantidade
-        };
-      });
+  if (!this.motivoDevolucao.trim()) {
+    this.messageService.add({severity:'error', summary:'Erro', detail:'Informe o motivo da devolução'});
+    this.carregandoDevolucao = false;
+    return;
+  }
 
-    if (itens.length === 0) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:'Selecione pelo menos um item'});
-      return;
-    }
+  const itens = this.itensDevolucao
+    .filter(item => item.selecionado)
+    .map(item => {
+      const quantidade = Math.min(item.quantidadeDevolver, item.quantidadeDisponivel);
+      return {
+        itemPedidoId: item.id,
+        quantidade: quantidade
+      };
+    });
 
-    for (let i = 0; i < itens.length; i++) {
-      const itemSelecionado = this.itensDevolucao.filter(item => item.selecionado)[i];
-      if (itens[i].quantidade > itemSelecionado.quantidadeDisponivel) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Quantidade de devolução excede o disponível'
-        });
-        return;
-      }
-    }
+  if (itens.length === 0) {
+    this.messageService.add({severity:'error', summary:'Erro', detail:'Selecione pelo menos um item'});
+    this.carregandoDevolucao = false;
+    return;
+  }
 
-    try {
-      const token = this.authService.getToken();
-
-      const formData = new FormData();
-      formData.append('motivo', this.motivoDevolucao);
-      formData.append('itens', JSON.stringify(itens));
-
-      if (this.fotosDevolucao.length > 0) {
-        for (const foto of this.fotosDevolucao) {
-          formData.append('fotos', foto);
-        }
-      }
-
-      const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoDevolucaoId}/devolucao`, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.mensagem || 'Erro ao solicitar devolução');
-      }
-
-      const data = await response.json();
-      const pedidoLabel = `Pedido #${this.pedidoDevolucaoId}`;
+  for (let i = 0; i < itens.length; i++) {
+    const itemSelecionado = this.itensDevolucao.filter(item => item.selecionado)[i];
+    if (itens[i].quantidade > itemSelecionado.quantidadeDisponivel) {
       this.messageService.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: `Devolução do ${pedidoLabel} solicitada!`
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Quantidade de devolução excede o disponível'
       });
-      this.authService.adicionarNotificacao('Devolução', `Devolução do ${pedidoLabel} solicitada com sucesso`, 'success');
-      this.displayDevolucaoModal = false;
-      this.fotosDevolucao = [];
-      this.fotosDevolucaoPreview = [];
-      await this.carregarPedidos();
-    } catch (error: any) {
-      this.messageService.add({severity:'error', summary:'Erro', detail:error.message});
-      this.authService.adicionarNotificacao('Erro', error.message, 'error');
+      this.carregandoDevolucao = false;
+      return;
     }
   }
+
+  try {
+    const token = this.authService.getToken();
+
+    const formData = new FormData();
+    formData.append('motivo', this.motivoDevolucao);
+    formData.append('itens', JSON.stringify(itens));
+
+    if (this.fotosDevolucao.length > 0) {
+      for (const foto of this.fotosDevolucao) {
+        formData.append('fotos', foto);
+      }
+    }
+
+    const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoDevolucaoId}/devolucao`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.mensagem || 'Erro ao solicitar devolução');
+    }
+
+    const data = await response.json();
+    const pedidoLabel = `Pedido #${this.pedidoDevolucaoId}`;
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: `Devolução do ${pedidoLabel} solicitada!`
+    });
+    this.authService.adicionarNotificacao('Devolução', `Devolução do ${pedidoLabel} solicitada com sucesso`, 'success');
+    this.displayDevolucaoModal = false;
+    this.fotosDevolucao = [];
+    this.fotosDevolucaoPreview = [];
+    await this.carregarPedidos();
+  } catch (error: any) {
+    this.messageService.add({severity:'error', summary:'Erro', detail:error.message});
+    this.authService.adicionarNotificacao('Erro', error.message, 'error');
+  } finally {
+    this.carregandoDevolucao = false;
+  }
+}
 
   abrirConfirmarEntrega(pedidoId: number): void {
     const pedido = this.pedidos.find(p => p.id === pedidoId);
@@ -1132,99 +1162,114 @@ export class PedidosComponent implements OnInit, OnDestroy {
     this.displayConfirmarReembolso = true;
   }
 
-  async confirmarReembolsoFinal(): Promise<void> {
-    if (!this.pedidoReembolso) return;
+async confirmarReembolsoFinal(): Promise<void> {
+  if (this.carregandoReembolso) return;
+  this.carregandoReembolso = true;
 
-    try {
-      const token = this.authService.getToken();
-      const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoReembolso.id}/confirmar-reembolso`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao confirmar reembolso');
-      }
-
-      const pedidoAtualizado = await response.json();
-
-      const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
-      if (index !== -1) {
-        this.pedidos[index] = pedidoAtualizado;
-      }
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Reembolso confirmado',
-        detail: 'Reembolso confirmado para o pedido #' + this.pedidoReembolso.id
-      });
-      this.authService.adicionarNotificacao(
-        'Reembolso',
-        'Reembolso confirmado para o pedido #' + this.pedidoReembolso.id,
-        'success'
-      );
-
-      this.displayConfirmarReembolso = false;
-      this.pedidoReembolso = null;
-      this.filtrarPorStatus(this.statusAtivo);
-    } catch (error: any) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: error.message || 'Falha ao confirmar reembolso'
-      });
-    }
+  if (!this.pedidoReembolso) {
+    this.carregandoReembolso = false;
+    return;
   }
 
+  try {
+    const token = this.authService.getToken();
+    const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoReembolso.id}/confirmar-reembolso`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao confirmar reembolso');
+    }
+
+    const pedidoAtualizado = await response.json();
+
+    const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
+    if (index !== -1) {
+      this.pedidos[index] = pedidoAtualizado;
+    }
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Reembolso confirmado',
+      detail: 'Reembolso confirmado para o pedido #' + this.pedidoReembolso.id
+    });
+    this.authService.adicionarNotificacao(
+      'Reembolso',
+      'Reembolso confirmado para o pedido #' + this.pedidoReembolso.id,
+      'success'
+    );
+
+    this.displayConfirmarReembolso = false;
+    this.pedidoReembolso = null;
+    this.filtrarPorStatus(this.statusAtivo);
+  } catch (error: any) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: error.message || 'Falha ao confirmar reembolso'
+    });
+  } finally {
+    this.carregandoReembolso = false;
+  }
+}
   async confirmarEntregaFinal(): Promise<void> {
-    if (!this.pedidoEntrega) return;
+  if (this.carregandoEntrega) return;
+  this.carregandoEntrega = true;
 
-    try {
-      const token = this.authService.getToken();
-      const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoEntrega.id}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({ novoStatus: 'ENTREGUE' })
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao confirmar entrega');
-      }
-
-      const pedidoAtualizado = await response.json();
-
-      const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
-      if (index !== -1) {
-        this.pedidos[index] = pedidoAtualizado;
-      }
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Entrega confirmada',
-        detail: 'Pedido #' + this.pedidoEntrega.id + ' marcado como entregue!'
-      });
-      this.authService.adicionarNotificacao(
-        'Entrega',
-        'Pedido #' + this.pedidoEntrega.id + ' foi entregue com sucesso',
-        'success'
-      );
-
-      this.fecharConfirmarEntrega();
-      this.filtrarPorStatus(this.statusAtivo);
-    } catch (error: any) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: error.message || 'Falha ao confirmar entrega'
-      });
-    }
+  if (!this.pedidoEntrega) {
+    this.carregandoEntrega = false;
+    return;
   }
+
+  try {
+    const token = this.authService.getToken();
+    const response = await fetch(`${environment.apiUrl}/pedidos/${this.pedidoEntrega.id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ novoStatus: 'ENTREGUE' })
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao confirmar entrega');
+    }
+
+    const pedidoAtualizado = await response.json();
+
+    const index = this.pedidos.findIndex(p => p.id === pedidoAtualizado.id);
+    if (index !== -1) {
+      this.pedidos[index] = pedidoAtualizado;
+    }
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Entrega confirmada',
+      detail: 'Pedido #' + this.pedidoEntrega.id + ' marcado como entregue!'
+    });
+    this.authService.adicionarNotificacao(
+      'Entrega',
+      'Pedido #' + this.pedidoEntrega.id + ' foi entregue com sucesso',
+      'success'
+    );
+
+    this.fecharConfirmarEntrega();
+    this.filtrarPorStatus(this.statusAtivo);
+  } catch (error: any) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: error.message || 'Falha ao confirmar entrega'
+    });
+  } finally {
+    this.carregandoEntrega = false;
+  }
+}
 
   getActionIcon(action: string): string {
     const icons: any = {
