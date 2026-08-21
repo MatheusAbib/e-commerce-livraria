@@ -36,8 +36,7 @@ export class PerfilModalComponent implements OnInit {
   itemParaExcluir: { tipo: string, id: number } | null = null;
   novaSenha: string = '';
   confirmarSenha: string = '';
-  showNovaSenha: boolean = false;
-  showConfirmarSenha: boolean = false;
+
 
   carregandoEditarPerfil: boolean = false;
   carregandoSalvarPerfil: boolean = false;
@@ -190,18 +189,9 @@ export class PerfilModalComponent implements OnInit {
   alterarSenha(): void {
     this.novaSenha = '';
     this.confirmarSenha = '';
-    this.showNovaSenha = false;
-    this.showConfirmarSenha = false;
     this.displayAlterarSenha = true;
   }
 
-  toggleNovaSenha(): void {
-    this.showNovaSenha = !this.showNovaSenha;
-  }
-
-  toggleConfirmarSenha(): void {
-    this.showConfirmarSenha = !this.showConfirmarSenha;
-  }
 
   async salvarSenha(): Promise<void> {
     if (this.carregandoSalvarSenha) return;

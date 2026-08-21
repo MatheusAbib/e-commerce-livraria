@@ -404,35 +404,23 @@
     <div class="custom-modal-body">
       <div class="field">
         <label>Nova senha *</label>
-        <div class="password-wrapper">
-          <input
-            [(ngModel)]="novaSenha"
-            [type]="showNovaSenha ? 'text' : 'password'"
-            placeholder="Digite a nova senha"
-            class="auth-input"
-            id="nova-senha-input">
-          <i
-            class="pi password-toggle"
-            [class.pi-eye]="!showNovaSenha"
-            [class.pi-eye-slash]="showNovaSenha"
-            (click)="toggleNovaSenha()"></i>
-        </div>
+        <input
+          type="password"
+          [(ngModel)]="novaSenha"
+          placeholder="Digite a nova senha"
+          class="auth-input"
+          autocomplete="off"
+          id="nova-senha-input">
       </div>
       <div class="field">
         <label>Confirmar senha *</label>
-        <div class="password-wrapper">
-          <input
-            [(ngModel)]="confirmarSenha"
-            [type]="showConfirmarSenha ? 'text' : 'password'"
-            placeholder="Confirme a nova senha"
-            class="auth-input"
-            id="confirmar-senha-input">
-          <i
-            class="pi password-toggle"
-            [class.pi-eye]="!showConfirmarSenha"
-            [class.pi-eye-slash]="showConfirmarSenha"
-            (click)="toggleConfirmarSenha()"></i>
-        </div>
+        <input
+          type="password"
+          [(ngModel)]="confirmarSenha"
+          placeholder="Confirme a nova senha"
+          class="auth-input"
+          autocomplete="off"
+          id="confirmar-senha-input">
       </div>
     </div>
     <div class="custom-modal-footer">

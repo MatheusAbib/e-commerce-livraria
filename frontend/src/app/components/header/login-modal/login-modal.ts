@@ -10,7 +10,6 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AppComponent } from '../../../app';
 import { AuthService } from '../../../services/auth';
 import { Router } from '@angular/router';
-import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login-modal',
@@ -53,24 +52,25 @@ export class LoginModalComponent implements OnInit {
     this.carregarDadosLembrar();
   }
 
-carregarDadosLembrar(): void {
-  const dados = localStorage.getItem(this.REMEMBER_KEY);
-  if (dados) {
-    try {
-      const parsed = JSON.parse(dados);
-      this.email = parsed.email || '';
-      this.senha = parsed.senha || '';
-      this.lembrarMe = true;
-      setTimeout(() => {
-        this.dadosCarregados = true;
-      }, 100);
-    } catch (e) {
-      console.error('Erro ao carregar dados de lembrar:', e);
+  carregarDadosLembrar(): void {
+    const dados = localStorage.getItem(this.REMEMBER_KEY);
+    if (dados) {
+      try {
+        const parsed = JSON.parse(dados);
+        this.email = parsed.email || '';
+        this.senha = parsed.senha || '';
+        this.lembrarMe = true;
+        setTimeout(() => {
+          this.dadosCarregados = true;
+        }, 100);
+      } catch (e) {
+        console.error('Erro ao carregar dados de lembrar:', e);
+      }
+    } else {
+      this.lembrarMe = false;
     }
-  } else {
-    this.lembrarMe = false;
   }
-}
+
   salvarDadosLembrar(): void {
     if (this.lembrarMe) {
       localStorage.setItem(this.REMEMBER_KEY, JSON.stringify({
@@ -100,31 +100,19 @@ carregarDadosLembrar(): void {
     return this.email.trim() !== '' && this.senha.trim() !== '';
   }
 
-fechar(): void {
-  this.visible = false;
-  this.visibleChange.emit(false);
+  fechar(): void {
+    this.visible = false;
+    this.visibleChange.emit(false);
 
-  if (!this.lembrarMe) {
-    this.email = '';
-    this.senha = '';
-    this.dadosCarregados = false;
-    localStorage.removeItem(this.REMEMBER_KEY);
+    if (!this.lembrarMe) {
+      this.email = '';
+      this.senha = '';
+      this.dadosCarregados = false;
+      localStorage.removeItem(this.REMEMBER_KEY);
+    }
+    this.loading = false;
   }
-  this.loading = false;
-}
-togglePassword(inputId: string, iconId: string): void {
-  const input = document.getElementById(inputId) as HTMLInputElement;
-  const icon = document.getElementById(iconId) as HTMLElement;
-  if (!input || !icon) return;
 
-  if (input.type === 'password') {
-    input.type = 'text';
-    icon.className = 'pi pi-eye-slash password-toggle';
-  } else {
-    input.type = 'password';
-    icon.className = 'pi pi-eye password-toggle';
-  }
-}
   async fazerLogin(): Promise<void> {
     if (!this.email || !this.senha) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha todos os campos'});

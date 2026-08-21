@@ -518,28 +518,6 @@ input, select, textarea {
   color: #dc2626;
 }
 
-input[type="password"]::-webkit-credentials-auto-fill-button,
-input[type="password"]::-webkit-caps-lock-indicator,
-input[type="password"]::-webkit-textfield-decoration-container {
-  display: none !important;
-}
-
-input[type="password"]::-ms-reveal {
-  display: none !important;
-}
-
-input[type="password"]::-webkit-contacts-auto-fill-button {
-  visibility: hidden;
-  display: none !important;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-}
-
-input[type="password"]::-moz-reveal {
-  display: none !important;
-}
-
 .p-paginator{
 padding: 0.5rem 0rem !important;
 }
@@ -550,10 +528,6 @@ padding: 0.5rem 0rem !important;
 
 .p-paginator .p-paginator-first{
       min-width: 2rem !important;
-}
-
-.p-dropdown{
-  display: none !important;
 }
 
 * {
@@ -656,9 +630,9 @@ padding: 0.5rem 0rem !important;
   }
 
   .p-paginator .p-paginator-pages .p-paginator-page{
-        min-width: 2rem;
-    height: 2rem;
-    margin: 0.5rem;
+        min-width: 2.5rem;
+    height: 2.5rem;
+    margin: 0.4rem;
   }
 
   .p-paginator .p-paginator-next{

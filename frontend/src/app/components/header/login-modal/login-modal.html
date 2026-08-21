@@ -25,19 +25,14 @@
       </div>
       <div class="field">
         <label>Senha</label>
-        <div class="password-wrapper">
-          <input
-            id="login-senha-custom"
-            type="password"
-            [(ngModel)]="senha"
-            placeholder="Digite sua senha"
-            class="auth-input"
-            [class.carregado]="dadosCarregados && senha"
-            [class.preencher]="dadosCarregados"
-            (keyup.enter)="fazerLogin()"
-            [disabled]="loading">
-          <i class="pi pi-eye password-toggle" id="login-toggle" (click)="togglePassword('login-senha-custom', 'login-toggle')"></i>
-        </div>
+        <input
+          type="password"
+          [(ngModel)]="senha"
+          placeholder="Digite sua senha"
+          class="auth-input"
+          autocomplete="off"
+          (keyup.enter)="fazerLogin()"
+          [disabled]="loading">
       </div>
       <div class="auth-options">
         <label class="remember-me">
@@ -47,10 +42,10 @@
       </div>
     </div>
     <div class="custom-modal-footer">
-<button class="btn-primary" (click)="fazerLogin()" [disabled]="loading || !formValido()">
-  <i class="pi" [class.pi-spin]="loading" [class.pi-spinner]="loading" [class.pi-sign-in]="!loading"></i>
-  {{ loading ? 'Entrando...' : 'Entrar' }}
-</button>
+      <button class="btn-primary" (click)="fazerLogin()" [disabled]="loading || !formValido()">
+        <i class="pi" [class.pi-spin]="loading" [class.pi-spinner]="loading" [class.pi-sign-in]="!loading"></i>
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </button>
       <div class="auth-divider"><span>ou</span></div>
       <button class="btn-secondary" (click)="abrirCadastro()" [disabled]="loading">
         <i class="pi pi-user-plus"></i> Criar conta

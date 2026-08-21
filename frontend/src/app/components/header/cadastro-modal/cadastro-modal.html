@@ -26,10 +26,14 @@
       </div>
       <div class="field">
         <label>Senha *</label>
-        <div class="password-wrapper">
-          <input id="cadastro-senha" [type]="showSenha ? 'text' : 'password'" [(ngModel)]="senha" (input)="validarSenha()" placeholder="Crie uma senha" class="auth-input" [disabled]="loading">
-          <i class="pi password-toggle" [class.pi-eye]="!showSenha" [class.pi-eye-slash]="showSenha" (click)="toggleSenha()"></i>
-        </div>
+        <input
+          type="password"
+          [(ngModel)]="senha"
+          (input)="validarSenha()"
+          placeholder="Crie uma senha"
+          class="auth-input"
+          autocomplete="off"
+          [disabled]="loading">
         <div class="password-strength" *ngIf="senha.length > 0">
           <div class="strength-bar">
             <div class="strength-segment" [class.active]="senha.length >= 6"></div>
@@ -64,10 +68,14 @@
       </div>
       <div class="field">
         <label>Confirmar senha *</label>
-        <div class="password-wrapper">
-          <input id="cadastro-confirmar" [type]="showConfirmarSenha ? 'text' : 'password'" [(ngModel)]="confirmarSenha" placeholder="Confirme sua senha" class="auth-input" (keyup.enter)="fazerCadastro()" [disabled]="loading">
-          <i class="pi password-toggle" [class.pi-eye]="!showConfirmarSenha" [class.pi-eye-slash]="showConfirmarSenha" (click)="toggleConfirmarSenha()"></i>
-        </div>
+        <input
+          type="password"
+          [(ngModel)]="confirmarSenha"
+          placeholder="Confirme sua senha"
+          class="auth-input"
+          autocomplete="off"
+          (keyup.enter)="fazerCadastro()"
+          [disabled]="loading">
       </div>
     </div>
     <div class="custom-modal-footer">

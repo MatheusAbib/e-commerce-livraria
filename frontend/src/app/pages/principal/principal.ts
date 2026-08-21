@@ -258,37 +258,54 @@ export class Principal implements OnInit {
   filtrando: boolean = false;
 
   async aplicarFiltros(): Promise<void> {
-    this.carregandoFiltro = true;
-    this.loading = true;
+  if (this.carregandoFiltro) return;
+  this.carregandoFiltro = true;
+  this.loading = true;
 
-    this.filteredLivros = this.livros.filter(l => {
-      let match = true;
-      if (this.filtros.titulo && !l.titulo?.toLowerCase().includes(this.filtros.titulo.toLowerCase())) match = false;
-      if (this.filtros.autor && !l.autor?.toLowerCase().includes(this.filtros.autor.toLowerCase())) match = false;
-      if (this.filtros.editora && !l.editora?.toLowerCase().includes(this.filtros.editora.toLowerCase())) match = false;
-      if (this.filtros.categoria && l.categoria !== this.filtros.categoria) match = false;
-      if (this.filtros.precoMax && l.precoVenda > this.filtros.precoMax) match = false;
-      return match;
-    });
+  const inicio = Date.now();
 
-    this.totalRecords = this.filteredLivros.length;
-    this.first = 0;
+  this.filteredLivros = this.livros.filter(l => {
+    let match = true;
+    if (this.filtros.titulo && !l.titulo?.toLowerCase().includes(this.filtros.titulo.toLowerCase())) match = false;
+    if (this.filtros.autor && !l.autor?.toLowerCase().includes(this.filtros.autor.toLowerCase())) match = false;
+    if (this.filtros.editora && !l.editora?.toLowerCase().includes(this.filtros.editora.toLowerCase())) match = false;
+    if (this.filtros.categoria && l.categoria !== this.filtros.categoria) match = false;
+    if (this.filtros.precoMax && l.precoVenda > this.filtros.precoMax) match = false;
+    return match;
+  });
+
+  this.totalRecords = this.filteredLivros.length;
+  this.first = 0;
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
     this.loading = false;
     this.carregandoFiltro = false;
-  }
+  }, restante);
+}
 
-  async limparFiltros(): Promise<void> {
-    this.carregandoLimpar = true;
-    this.loading = true;
+async limparFiltros(): Promise<void> {
+  if (this.carregandoLimpar) return;
+  this.carregandoLimpar = true;
+  this.loading = true;
 
-    this.filtros = { titulo: '', autor: '', editora: '', categoria: '', precoMax: null };
-    this.filteredLivros = [...this.livros];
-    this.totalRecords = this.filteredLivros.length;
-    this.first = 0;
+  const inicio = Date.now();
 
+  this.filtros = { titulo: '', autor: '', editora: '', categoria: '', precoMax: null };
+  this.filteredLivros = [...this.livros];
+  this.totalRecords = this.filteredLivros.length;
+  this.first = 0;
+
+  const decorrido = Date.now() - inicio;
+  const restante = Math.max(0, 500 - decorrido);
+
+  setTimeout(() => {
     this.loading = false;
     this.carregandoLimpar = false;
-  }
+  }, restante);
+}
 
   onPageChange(event: any): void {
     this.first = event.first;
