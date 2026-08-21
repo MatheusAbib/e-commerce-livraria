@@ -626,13 +626,12 @@
 }
 
 @media (max-width: 768px) {
-  .page-header {
-    padding: 1.5rem;
-  }
+  .filtros-container{
+        padding: 1rem;
 
-  .page-header-content {
-    flex-direction: column;
-    text-align: center;
+  }
+  .page-header {
+    display: none;
   }
 
   .filtros-grid {
@@ -687,19 +686,6 @@
 
 @media (max-width: 480px) {
   .transacoes-container {
-    padding: 1rem;
-  }
-
-  .page-header-text h1 {
-    font-size: 1.4rem;
-  }
-
-  .page-header-icon {
-    width: 50px;
-    height: 50px;
-  }
-
-  .page-header-icon i {
-    font-size: 1.5rem;
+    padding: 0.7rem;
   }
 }

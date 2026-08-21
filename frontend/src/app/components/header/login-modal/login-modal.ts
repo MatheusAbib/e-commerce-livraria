@@ -112,18 +112,19 @@ fechar(): void {
   }
   this.loading = false;
 }
-  togglePassword(inputId: string, iconId: string): void {
-    const input = document.getElementById(inputId) as HTMLInputElement;
-    const icon = document.getElementById(iconId) as HTMLElement;
-    if (input.type === 'password') {
-      input.type = 'text';
-      icon.className = 'pi pi-eye-slash password-toggle';
-    } else {
-      input.type = 'password';
-      icon.className = 'pi pi-eye password-toggle';
-    }
-  }
+togglePassword(inputId: string, iconId: string): void {
+  const input = document.getElementById(inputId) as HTMLInputElement;
+  const icon = document.getElementById(iconId) as HTMLElement;
+  if (!input || !icon) return;
 
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.className = 'pi pi-eye-slash password-toggle';
+  } else {
+    input.type = 'password';
+    icon.className = 'pi pi-eye password-toggle';
+  }
+}
   async fazerLogin(): Promise<void> {
     if (!this.email || !this.senha) {
       this.messageService.add({severity:'error', summary:'Erro', detail:'Preencha todos os campos'});

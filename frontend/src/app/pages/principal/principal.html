@@ -300,14 +300,14 @@
       <div class="comentarios-header" (click)="toggleComentarios()">
         <div class="comentarios-header-left">
           <i class="pi pi-comment"></i>
-          <span>Comentários dos Clientes</span>
+          <span>Comentários</span>
           <span class="comentarios-count" *ngIf="selectedLivro?.avaliacao?.totalAvaliacoes > 0">
             ({{ selectedLivro.avaliacao.totalAvaliacoes }})
           </span>
         </div>
         <div class="comentarios-header-right">
           <span class="comentarios-toggle-text">
-            {{ comentariosExpandido ? 'Ocultar' : 'Ver todos' }}
+            {{ comentariosExpandido ? 'Ocultar' : 'Ver' }}
           </span>
           <i class="pi" [class.pi-chevron-down]="!comentariosExpandido" [class.pi-chevron-up]="comentariosExpandido"></i>
         </div>

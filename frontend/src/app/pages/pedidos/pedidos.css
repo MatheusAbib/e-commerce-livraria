@@ -1375,12 +1375,7 @@
 
 @media (max-width: 768px) {
   .page-header {
-    padding: 1.5rem;
-  }
-
-  .page-header-content {
-    flex-direction: column;
-    text-align: center;
+    display: none;
   }
 
   .pedido-header {
@@ -1432,23 +1427,6 @@
   }
   .pedidos-container {
     padding: 1rem 0.75rem;
-  }
-
-  .page-header {
-    padding: 1rem;
-  }
-
-  .page-header-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .page-header-icon i {
-    font-size: 1.5rem;
-  }
-
-  .page-header-text h1 {
-    font-size: 1.3rem;
   }
 
   .pedido-total {

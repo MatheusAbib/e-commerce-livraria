@@ -85,13 +85,14 @@
       </div>
 
       <div *ngIf="!loading && filteredLogs.length > 0">
-        <p-table
-          [value]="filteredLogs"
-          [paginator]="true"
-          [rows]="10"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          [totalRecords]="totalRecords"
-          styleClass="p-datatable-striped p-datatable-gridlines">
+<p-table
+  [value]="filteredLogs"
+  [paginator]="true"
+  [rows]="10"
+  [pageLinks]="3"
+  [rowsPerPageOptions]="[5, 10, 20]"
+  [totalRecords]="totalRecords"
+  styleClass="p-datatable-striped p-datatable-gridlines">
 
           <ng-template pTemplate="header">
             <tr>

@@ -2,6 +2,9 @@ body {
   margin: 0;
 }
 
+input, select, textarea {
+  font-size: 16px !important;
+}
 
 .loader-overlay {
   position: absolute;
@@ -549,6 +552,10 @@ padding: 0.5rem 0rem !important;
       min-width: 2rem !important;
 }
 
+.p-dropdown{
+  display: none !important;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: #c1c7cd transparent;
@@ -641,8 +648,35 @@ padding: 0.5rem 0rem !important;
 }
 
 @media (max-width: 768px) {
+
+  .p-paginator .p-paginator-prev{
+        min-width: 1rem !important;
+    height: 1rem !important;
+        margin: 0.1rem !important;
+  }
+
+  .p-paginator .p-paginator-pages .p-paginator-page{
+        min-width: 2rem;
+    height: 2rem;
+    margin: 0.5rem;
+  }
+
+  .p-paginator .p-paginator-next{
+        min-width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  .p-paginator .p-dropdown {
+    display: none;
+  }
+  .tab-btn{
+        padding: 0.5rem 0.8rem !important;
+  }
+  .tab-badge{
+    min-width: 16px !important;
+  }
   .p-toast-top-right{
-    right: 0.5rem !important;
+    right: 0;
   }
   .filtro-actions {
     flex-direction: column;
